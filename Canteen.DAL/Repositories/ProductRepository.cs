@@ -14,17 +14,42 @@ public class ProductRepository : IProductRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Product>> GetAllByCanteenAsync(int canteenId)
-        => await _context.Products
+    public async Task<IEnumerable<Product>> GetAllByCanteenAsync(
+        int canteenId,
+        bool availableOnly = false)
+    {
+        var query = _context.Products
             .AsNoTracking()
-            .Where(p => p.CanteenId == canteenId)
-            .ToListAsync();
+            .Where(p => p.CanteenId == canteenId);
 
-    public async Task<IEnumerable<Product>> GetByCategoryAsync(int canteenId, int categoryId)
-        => await _context.Products
+        if (availableOnly)
+        {
+            query = query.Where(p =>
+                p.IsAvailable && p.StockQuantity > 0);
+        }
+
+        return await query.ToListAsync();
+    }
+
+    public async Task<IEnumerable<Product>> GetByCategoryAsync(
+        int canteenId,
+        int categoryId,
+        bool availableOnly = false)
+    {
+        var query = _context.Products
             .AsNoTracking()
-            .Where(p => p.CanteenId == canteenId && p.CategoryId == categoryId)
-            .ToListAsync();
+            .Where(p =>
+                p.CanteenId == canteenId &&
+                p.CategoryId == categoryId);
+
+        if (availableOnly)
+        {
+            query = query.Where(p =>
+                p.IsAvailable && p.StockQuantity > 0);
+        }
+
+        return await query.ToListAsync();
+    }
 
     public async Task<Product?> GetByIdAsync(int productId)
         => await _context.Products
@@ -34,7 +59,9 @@ public class ProductRepository : IProductRepository
     public async Task<Product?> GetByIdAsync(int canteenId, int productId)
         => await _context.Products
             .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.CanteenId == canteenId && p.ProductId == productId);
+            .FirstOrDefaultAsync(p =>
+                p.CanteenId == canteenId &&
+                p.ProductId == productId);
 
     public async Task<Product> AddAsync(Product product)
     {
@@ -53,22 +80,40 @@ public class ProductRepository : IProductRepository
     public async Task<bool> DeleteAsync(int productId)
     {
         var entity = await _context.Products.FindAsync(productId);
-        if (entity is null) return false;
+
+        if (entity is null)
+            return false;
+
         _context.Products.Remove(entity);
         await _context.SaveChangesAsync();
+
         return true;
     }
 
     public async Task<bool> DeleteAsync(int canteenId, int productId)
     {
         var entity = await _context.Products
-            .FirstOrDefaultAsync(p => p.CanteenId == canteenId && p.ProductId == productId);
-        if (entity is null) return false;
+            .FirstOrDefaultAsync(p =>
+                p.CanteenId == canteenId &&
+                p.ProductId == productId);
+
+        if (entity is null)
+            return false;
+
         _context.Products.Remove(entity);
         await _context.SaveChangesAsync();
+
         return true;
     }
 
     public async Task<bool> ExistsAsync(int productId)
-        => await _context.Products.AnyAsync(p => p.ProductId == productId);
+        => await _context.Products
+            .AnyAsync(p => p.ProductId == productId);
+
+    public async Task<bool> AnyWithCategoryAsync(
+        int canteenId,
+        int categoryId)
+        => await _context.Products.AnyAsync(p =>
+            p.CanteenId == canteenId &&
+            p.CategoryId == categoryId);
 }

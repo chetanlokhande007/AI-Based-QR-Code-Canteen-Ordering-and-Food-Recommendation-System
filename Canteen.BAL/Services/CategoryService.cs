@@ -8,19 +8,26 @@ namespace Canteen.BAL.Services;
 public class CategoryService : ICategoryService
 {
     private readonly ICategoryRepository _repo;
+    private readonly IProductRepository _productRepo;
 
-    public CategoryService(ICategoryRepository repo)
+    public CategoryService(
+        ICategoryRepository repo,
+        IProductRepository productRepo)
     {
         _repo = repo;
+        _productRepo = productRepo;
     }
 
-    public async Task<IEnumerable<CategoryDto>> GetAllByCanteenAsync(int canteenId)
+    public async Task<IEnumerable<CategoryDto>> GetAllByCanteenAsync(
+        int canteenId)
     {
         var entities = await _repo.GetAllByCanteenAsync(canteenId);
         return entities.Select(ToDto);
     }
 
-    public async Task<CategoryDto?> GetByIdAsync(int canteenId, int categoryId)
+    public async Task<CategoryDto?> GetByIdAsync(
+        int canteenId,
+        int categoryId)
     {
         var entity = await _repo.GetByIdAsync(canteenId, categoryId);
         return entity is null ? null : ToDto(entity);
@@ -34,14 +41,20 @@ public class CategoryService : ICategoryService
             Name = dto.Name,
             Description = dto.Description
         };
+
         var created = await _repo.AddAsync(entity);
         return ToDto(created);
     }
 
-    public async Task<CategoryDto?> UpdateAsync(int canteenId, int categoryId, UpdateCategoryDto dto)
+    public async Task<CategoryDto?> UpdateAsync(
+        int canteenId,
+        int categoryId,
+        UpdateCategoryDto dto)
     {
         var entity = await _repo.GetByIdAsync(canteenId, categoryId);
-        if (entity is null) return null;
+
+        if (entity is null)
+            return null;
 
         entity.Name = dto.Name;
         entity.Description = dto.Description;
@@ -52,7 +65,24 @@ public class CategoryService : ICategoryService
     }
 
     public async Task<bool> DeleteAsync(int canteenId, int categoryId)
-        => await _repo.DeleteAsync(canteenId, categoryId);
+    {
+        var category = await _repo.GetByIdAsync(canteenId, categoryId);
+
+        if (category is null)
+            return false;
+
+        var hasProducts = await _productRepo.AnyWithCategoryAsync(
+            canteenId,
+            categoryId);
+
+        if (hasProducts)
+        {
+            throw new InvalidOperationException(
+                "Cannot delete this category because it contains products.");
+        }
+
+        return await _repo.DeleteAsync(canteenId, categoryId);
+    }
 
     private static CategoryDto ToDto(Category c) => new()
     {
