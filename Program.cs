@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.AspNetCore.Diagnostics;
 using System.Text;
 using Canteen.BAL.Interfaces;
 using Canteen.BAL.Services;
@@ -135,6 +136,34 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ─── Middleware pipeline ──────────────────────────────────────────────────────
+
+// Global exception handler: returns a structured JSON 500 in all environments
+// without leaking internal details (stack traces, EF queries, etc.) to clients.
+app.UseExceptionHandler(errApp =>
+{
+    errApp.Run(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+
+        var feature = context.Features.Get<IExceptionHandlerFeature>();
+        var isDev = app.Environment.IsDevelopment();
+
+        // In development, include the exception message to assist debugging.
+        // In production, return only a generic message to avoid leaking internals.
+        var detail = isDev && feature?.Error != null
+            ? feature.Error.Message
+            : "An unexpected error occurred. Please try again later.";
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            status = 500,
+            error  = "Internal Server Error",
+            detail
+        });
+    });
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

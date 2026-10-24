@@ -1,5 +1,6 @@
 using Canteen.BAL.Interfaces;
 using Canteen.Model.DTOs;
+using CanteenManagementSystem.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,7 +43,8 @@ public class CanteensController : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreateCanteenDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var created = await _service.CreateAsync(dto);
+        var ownerId = User.GetOwnerId();
+        var created = await _service.CreateAsync(dto, ownerId);
         return CreatedAtAction(nameof(GetById), new { id = created.CanteenId }, created);
     }
 
@@ -50,10 +52,17 @@ public class CanteensController : ControllerBase
     [HttpPut("{id:int}")]
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(typeof(CanteenDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateCanteenDto dto)
     {
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId == null || ownerCanteenId.Value != id)
+        {
+            return Forbid();
+        }
+
         var updated = await _service.UpdateAsync(id, dto);
         return updated is null ? NotFound() : Ok(updated);
     }
@@ -62,10 +71,17 @@ public class CanteensController : ControllerBase
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Delete(int id)
     {
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId == null || ownerCanteenId.Value != id)
+        {
+            return Forbid();
+        }
+
         var deleted = await _service.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
     }

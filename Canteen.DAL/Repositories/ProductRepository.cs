@@ -31,6 +31,11 @@ public class ProductRepository : IProductRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.ProductId == productId);
 
+    public async Task<Product?> GetByIdAsync(int canteenId, int productId)
+        => await _context.Products
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.CanteenId == canteenId && p.ProductId == productId);
+
     public async Task<Product> AddAsync(Product product)
     {
         _context.Products.Add(product);
@@ -48,6 +53,16 @@ public class ProductRepository : IProductRepository
     public async Task<bool> DeleteAsync(int productId)
     {
         var entity = await _context.Products.FindAsync(productId);
+        if (entity is null) return false;
+        _context.Products.Remove(entity);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteAsync(int canteenId, int productId)
+    {
+        var entity = await _context.Products
+            .FirstOrDefaultAsync(p => p.CanteenId == canteenId && p.ProductId == productId);
         if (entity is null) return false;
         _context.Products.Remove(entity);
         await _context.SaveChangesAsync();

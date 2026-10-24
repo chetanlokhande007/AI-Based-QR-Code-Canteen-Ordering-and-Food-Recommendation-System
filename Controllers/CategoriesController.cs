@@ -1,5 +1,6 @@
 using Canteen.BAL.Interfaces;
 using Canteen.Model.DTOs;
+using CanteenManagementSystem.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,9 +39,16 @@ public class CategoriesController : ControllerBase
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create(int canteenId, [FromBody] CreateCategoryDto dto)
     {
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        {
+            return Forbid();
+        }
+
         if (!ModelState.IsValid) return BadRequest(ModelState);
         dto.CanteenId = canteenId;
         var created = await _service.CreateAsync(dto);
@@ -51,10 +59,17 @@ public class CategoriesController : ControllerBase
     [HttpPut("{categoryId:int}")]
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Update(int canteenId, int categoryId, [FromBody] UpdateCategoryDto dto)
     {
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        {
+            return Forbid();
+        }
+
         var updated = await _service.UpdateAsync(canteenId, categoryId, dto);
         return updated is null ? NotFound() : Ok(updated);
     }
@@ -63,10 +78,17 @@ public class CategoriesController : ControllerBase
     [HttpDelete("{categoryId:int}")]
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Delete(int canteenId, int categoryId)
     {
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        {
+            return Forbid();
+        }
+
         var deleted = await _service.DeleteAsync(canteenId, categoryId);
         return deleted ? NoContent() : NotFound();
     }

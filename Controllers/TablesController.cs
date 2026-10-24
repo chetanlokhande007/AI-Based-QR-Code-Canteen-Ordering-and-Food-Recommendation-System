@@ -1,5 +1,6 @@
 using Canteen.BAL.Interfaces;
 using Canteen.Model.DTOs;
+using CanteenManagementSystem.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +30,7 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int canteenId, int tableId)
     {
-        var dto = await _service.GetByIdAsync(tableId);
+        var dto = await _service.GetByIdAsync(canteenId, tableId);
         return dto is null ? NotFound() : Ok(dto);
     }
 
@@ -40,7 +41,11 @@ public class TablesController : ControllerBase
     public async Task<IActionResult> GetByQR(int canteenId, string token)
     {
         var dto = await _service.GetByQRTokenAsync(token);
-        return dto is null ? NotFound() : Ok(dto);
+        if (dto is null || dto.CanteenId != canteenId)
+        {
+            return NotFound();
+        }
+        return Ok(dto);
     }
 
     /// <summary>Create a new table for a canteen (Owner only).</summary>
@@ -48,9 +53,16 @@ public class TablesController : ControllerBase
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(typeof(CanteenTableDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create(int canteenId, [FromBody] CreateCanteenTableDto dto)
     {
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        {
+            return Forbid();
+        }
+
         if (!ModelState.IsValid) return BadRequest(ModelState);
         dto.CanteenId = canteenId;
         var created = await _service.CreateAsync(dto);
@@ -61,11 +73,18 @@ public class TablesController : ControllerBase
     [HttpPut("{tableId:int}")]
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(typeof(CanteenTableDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Update(int canteenId, int tableId, [FromBody] UpdateCanteenTableDto dto)
     {
-        var updated = await _service.UpdateAsync(tableId, dto);
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        {
+            return Forbid();
+        }
+
+        var updated = await _service.UpdateAsync(canteenId, tableId, dto);
         return updated is null ? NotFound() : Ok(updated);
     }
 
@@ -73,11 +92,18 @@ public class TablesController : ControllerBase
     [HttpDelete("{tableId:int}")]
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Delete(int canteenId, int tableId)
     {
-        var deleted = await _service.DeleteAsync(tableId);
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        {
+            return Forbid();
+        }
+
+        var deleted = await _service.DeleteAsync(canteenId, tableId);
         return deleted ? NoContent() : NotFound();
     }
 }

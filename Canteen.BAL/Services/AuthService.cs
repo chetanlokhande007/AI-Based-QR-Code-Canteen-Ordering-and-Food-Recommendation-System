@@ -84,7 +84,7 @@ public class AuthService : IAuthService
         };
     }
 
-    public string GenerateJwtToken(Owner owner)
+    private string GenerateJwtToken(Owner owner)
     {
         var jwtKey = _configuration["Jwt:Key"]
             ?? throw new InvalidOperationException("JWT key is missing.");

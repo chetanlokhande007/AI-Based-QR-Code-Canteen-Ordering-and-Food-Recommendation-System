@@ -26,6 +26,12 @@ public class CanteenTableService : ICanteenTableService
         return entity is null ? null : ToDto(entity);
     }
 
+    public async Task<CanteenTableDto?> GetByIdAsync(int canteenId, int tableId)
+    {
+        var entity = await _repo.GetByIdAsync(canteenId, tableId);
+        return entity is null ? null : ToDto(entity);
+    }
+
     public async Task<CanteenTableDto?> GetByQRTokenAsync(string qrToken)
     {
         var entity = await _repo.GetByQRTokenAsync(qrToken);
@@ -58,8 +64,24 @@ public class CanteenTableService : ICanteenTableService
         return ToDto(updated);
     }
 
+    public async Task<CanteenTableDto?> UpdateAsync(int canteenId, int tableId, UpdateCanteenTableDto dto)
+    {
+        var entity = await _repo.GetByIdAsync(canteenId, tableId);
+        if (entity is null) return null;
+
+        entity.TableNumber = dto.TableNumber;
+        entity.Capacity = dto.Capacity;
+        entity.IsAvailable = dto.IsAvailable;
+
+        var updated = await _repo.UpdateAsync(entity);
+        return ToDto(updated);
+    }
+
     public async Task<bool> DeleteAsync(int tableId)
         => await _repo.DeleteAsync(tableId);
+
+    public async Task<bool> DeleteAsync(int canteenId, int tableId)
+        => await _repo.DeleteAsync(canteenId, tableId);
 
     private static CanteenTableDto ToDto(CanteenTable t) => new()
     {
