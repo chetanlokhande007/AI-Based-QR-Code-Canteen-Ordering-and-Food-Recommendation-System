@@ -80,6 +80,34 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+// ─── CORS ────────────────────────────────────────────────────────────────────
+// Origins are loaded from Cors:AllowedOrigins in appsettings (per-environment).
+// Production values must be set via environment variables or a secret manager.
+const string CorsPolicyName = "AllowFrontend";
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? Array.Empty<string>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(CorsPolicyName, policy =>
+    {
+        if (allowedOrigins.Length == 0)
+        {
+            // Fail fast: a missing origins list is a misconfiguration, not a
+            // reason to silently open the API to every origin.
+            throw new InvalidOperationException(
+                "Cors:AllowedOrigins must contain at least one origin.");
+        }
+
+        policy
+            .WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 // ─── API ─────────────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
 
@@ -173,6 +201,9 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = string.Empty;   // serve Swagger UI at root "/"
     });
 }
+
+// CORS must run before auth so pre-flight OPTIONS requests are handled correctly.
+app.UseCors(CorsPolicyName);
 
 app.UseHttpsRedirection();
 

@@ -18,6 +18,8 @@
 *.crash
 
 ## Secrets & local environment configs
+appsettings.Development.json
+appsettings.Staging.json
 appsettings.Production.json
 secrets.json
 .env
