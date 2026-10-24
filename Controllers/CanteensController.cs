@@ -40,12 +40,20 @@ public class CanteensController : ControllerBase
     [ProducesResponseType(typeof(CanteenDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Create([FromBody] CreateCanteenDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         var ownerId = User.GetOwnerId();
-        var created = await _service.CreateAsync(dto, ownerId);
-        return CreatedAtAction(nameof(GetById), new { id = created.CanteenId }, created);
+        try
+        {
+            var created = await _service.CreateAsync(dto, ownerId);
+            return CreatedAtAction(nameof(GetById), new { id = created.CanteenId }, created);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
 
     /// <summary>Update an existing canteen (Owner only).</summary>
