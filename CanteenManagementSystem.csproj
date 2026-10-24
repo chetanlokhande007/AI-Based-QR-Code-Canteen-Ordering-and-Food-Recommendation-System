@@ -28,6 +28,7 @@
     <None Remove="Canteen.DAL\**" />
     <None Remove="Canteen.Model\**" />
     <None Remove="tests\**" />
+    <Content Remove="tests\**" />
   </ItemGroup>
 
   <ItemGroup>
