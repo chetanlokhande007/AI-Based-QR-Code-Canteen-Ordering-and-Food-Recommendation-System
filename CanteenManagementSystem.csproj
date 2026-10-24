@@ -34,6 +34,7 @@
   <ItemGroup>
     <!-- Swagger / Swashbuckle -->
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
+    <PackageReference Include="QRCoder" Version="1.8.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
     <!-- EF Core Design for migration commands from the API project -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">

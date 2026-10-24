@@ -25,6 +25,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICanteenTableRepository, CanteenTableRepository>();
 builder.Services.AddScoped<IOwnerRepository, OwnerRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 // ─── BAL – Services ──────────────────────────────────────────────────────────
 builder.Services.AddScoped<ICanteenService, CanteenService>();

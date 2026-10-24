@@ -186,8 +186,10 @@ public class SecurityDefectTests
     private class FakeProductRepository : IProductRepository
     {
         public List<Product> Products { get; } = new();
-        public Task<IEnumerable<Product>> GetAllByCanteenAsync(int canteenId) => Task.FromResult(Products.Where(p => p.CanteenId == canteenId));
-        public Task<IEnumerable<Product>> GetByCategoryAsync(int canteenId, int categoryId) => Task.FromResult(Products.Where(p => p.CanteenId == canteenId && p.CategoryId == categoryId));
+        public Task<IEnumerable<Product>> GetAllByCanteenAsync(int canteenId, bool availableOnly = false) =>
+            Task.FromResult<IEnumerable<Product>>(Products.Where(p => p.CanteenId == canteenId && (!availableOnly || (p.IsAvailable && p.StockQuantity > 0))).ToList());
+        public Task<IEnumerable<Product>> GetByCategoryAsync(int canteenId, int categoryId, bool availableOnly = false) =>
+            Task.FromResult<IEnumerable<Product>>(Products.Where(p => p.CanteenId == canteenId && p.CategoryId == categoryId && (!availableOnly || (p.IsAvailable && p.StockQuantity > 0))).ToList());
         public Task<Product?> GetByIdAsync(int id) => Task.FromResult(Products.FirstOrDefault(p => p.ProductId == id));
         public Task<Product?> GetByIdAsync(int canteenId, int productId) => Task.FromResult(Products.FirstOrDefault(p => p.CanteenId == canteenId && p.ProductId == productId));
         public Task<Product> AddAsync(Product product) { product.ProductId = Products.Count + 1; Products.Add(product); return Task.FromResult(product); }
@@ -195,6 +197,7 @@ public class SecurityDefectTests
         public Task<bool> DeleteAsync(int id) => Task.FromResult(true);
         public Task<bool> DeleteAsync(int canteenId, int productId) => Task.FromResult(true);
         public Task<bool> ExistsAsync(int id) => Task.FromResult(Products.Any(p => p.ProductId == id));
+        public Task<bool> AnyWithCategoryAsync(int canteenId, int categoryId) => Task.FromResult(Products.Any(p => p.CanteenId == canteenId && p.CategoryId == categoryId));
     }
 
     private class FakeTableRepository : ICanteenTableRepository

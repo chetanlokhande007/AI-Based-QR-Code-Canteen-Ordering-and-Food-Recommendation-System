@@ -22,6 +22,10 @@ public class CanteenDbContext : DbContext
 
     public DbSet<Owner> Owners => Set<Owner>();
 
+    public DbSet<Order> Orders => Set<Order>();
+
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
     {
@@ -59,6 +63,13 @@ public class CanteenDbContext : DbContext
         // does not follow the default EF Core convention (EntityNameId).
         modelBuilder.Entity<CanteenTable>()
             .HasKey(t => t.TableId);
+
+        modelBuilder.Entity<CanteenTable>()
+            .HasAlternateKey(t => new
+            {
+                t.CanteenId,
+                t.TableId
+            });
 
         modelBuilder.Entity<Category>()
             .HasKey(c => c.CategoryId);
@@ -143,6 +154,74 @@ public class CanteenDbContext : DbContext
                 c.CanteenId,
                 c.CategoryId
             })
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure Order entity
+        modelBuilder.Entity<Order>()
+            .HasKey(o => o.OrderId);
+
+        modelBuilder.Entity<Order>()
+            .Property(o => o.OrderNumber)
+            .HasMaxLength(50)
+            .IsRequired();
+
+        modelBuilder.Entity<Order>()
+            .Property(o => o.Status)
+            .HasMaxLength(30)
+            .IsRequired();
+
+        modelBuilder.Entity<Order>()
+            .Property(o => o.TotalAmount)
+            .HasPrecision(18, 2);
+
+        // Order numbers must be unique within each canteen.
+        modelBuilder.Entity<Order>()
+            .HasIndex(o => new { o.CanteenId, o.OrderNumber })
+            .IsUnique();
+
+        // One canteen can have many orders.
+        modelBuilder.Entity<Order>()
+            .HasOne(o => o.Canteen)
+            .WithMany()
+            .HasForeignKey(o => o.CanteenId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // An order must reference a table belonging to the same canteen.
+        modelBuilder.Entity<Order>()
+            .HasOne(o => o.Table)
+            .WithMany()
+            .HasForeignKey(o => new
+            {
+                o.CanteenId,
+                o.TableId
+            })
+            .HasPrincipalKey(t => new
+            {
+                t.CanteenId,
+                t.TableId
+            })
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure OrderItem entity
+        modelBuilder.Entity<OrderItem>()
+            .HasKey(oi => oi.OrderItemId);
+
+        modelBuilder.Entity<OrderItem>()
+            .Property(oi => oi.UnitPrice)
+            .HasPrecision(18, 2);
+
+        // One order contains multiple order items.
+        modelBuilder.Entity<OrderItem>()
+            .HasOne(oi => oi.Order)
+            .WithMany(o => o.Items)
+            .HasForeignKey(oi => oi.OrderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // One product can appear in many order items.
+        modelBuilder.Entity<OrderItem>()
+            .HasOne(oi => oi.Product)
+            .WithMany()
+            .HasForeignKey(oi => oi.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
