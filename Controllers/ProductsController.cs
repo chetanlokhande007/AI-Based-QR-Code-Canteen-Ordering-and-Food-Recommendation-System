@@ -1,5 +1,6 @@
 using Canteen.BAL.Interfaces;
 using Canteen.Model.DTOs;
+using CanteenManagementSystem.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -44,11 +45,19 @@ public class ProductsController : ControllerBase
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(typeof(ProductDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create([FromBody] CreateProductDto dto)
     {
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId == null)
+        {
+            return Forbid();
+        }
+
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var created = await _service.CreateAsync(dto);
+        dto.CanteenId = ownerCanteenId.Value;
+        var created = await _service.CreateAsync(ownerCanteenId.Value, dto);
         return CreatedAtAction(nameof(GetById), new { id = created.ProductId }, created);
     }
 
@@ -56,11 +65,18 @@ public class ProductsController : ControllerBase
     [HttpPut("{id:int}")]
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDto dto)
     {
-        var updated = await _service.UpdateAsync(id, dto);
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId == null)
+        {
+            return Forbid();
+        }
+
+        var updated = await _service.UpdateAsync(ownerCanteenId.Value, id, dto);
         return updated is null ? NotFound() : Ok(updated);
     }
 
@@ -68,11 +84,18 @@ public class ProductsController : ControllerBase
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Delete(int id)
     {
-        var deleted = await _service.DeleteAsync(id);
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId == null)
+        {
+            return Forbid();
+        }
+
+        var deleted = await _service.DeleteAsync(ownerCanteenId.Value, id);
         return deleted ? NoContent() : NotFound();
     }
 }

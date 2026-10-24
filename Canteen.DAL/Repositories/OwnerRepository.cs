@@ -36,6 +36,13 @@ public class OwnerRepository : IOwnerRepository
         return owner;
     }
 
+    public async Task<Owner> UpdateAsync(Owner owner)
+    {
+        _context.Owners.Update(owner);
+        await _context.SaveChangesAsync();
+        return owner;
+    }
+
     public async Task<bool> EmailExistsAsync(string email)
     {
         var normalizedEmail = email.Trim().ToLower();

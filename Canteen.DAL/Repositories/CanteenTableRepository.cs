@@ -25,6 +25,11 @@ public class CanteenTableRepository : ICanteenTableRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.TableId == tableId);
 
+    public async Task<CanteenTable?> GetByIdAsync(int canteenId, int tableId)
+        => await _context.Tables
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.CanteenId == canteenId && t.TableId == tableId);
+
     public async Task<CanteenTable?> GetByQRTokenAsync(string qrToken)
         => await _context.Tables
             .AsNoTracking()
@@ -47,6 +52,16 @@ public class CanteenTableRepository : ICanteenTableRepository
     public async Task<bool> DeleteAsync(int tableId)
     {
         var entity = await _context.Tables.FindAsync(tableId);
+        if (entity is null) return false;
+        _context.Tables.Remove(entity);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteAsync(int canteenId, int tableId)
+    {
+        var entity = await _context.Tables
+            .FirstOrDefaultAsync(t => t.CanteenId == canteenId && t.TableId == tableId);
         if (entity is null) return false;
         _context.Tables.Remove(entity);
         await _context.SaveChangesAsync();
