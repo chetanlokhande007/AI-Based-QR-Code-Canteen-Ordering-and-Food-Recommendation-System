@@ -14,11 +14,16 @@ namespace Canteen.BAL.Services;
 public class AuthService : IAuthService
 {
     private readonly IOwnerRepository _ownerRepository;
+    private readonly ICanteenRepository _canteenRepository;
     private readonly IConfiguration _configuration;
 
-    public AuthService(IOwnerRepository ownerRepository, IConfiguration configuration)
+    public AuthService(
+        IOwnerRepository ownerRepository,
+        ICanteenRepository canteenRepository,
+        IConfiguration configuration)
     {
         _ownerRepository = ownerRepository;
+        _canteenRepository = canteenRepository;
         _configuration = configuration;
     }
 
@@ -27,6 +32,11 @@ public class AuthService : IAuthService
         if (await _ownerRepository.EmailExistsAsync(dto.Email))
         {
             throw new InvalidOperationException("An account with this email already exists.");
+        }
+
+        if (dto.CanteenId.HasValue && !await _canteenRepository.ExistsAsync(dto.CanteenId.Value))
+        {
+            throw new KeyNotFoundException($"Canteen with ID {dto.CanteenId.Value} does not exist.");
         }
 
         var owner = new Owner

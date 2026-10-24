@@ -30,6 +30,16 @@ public class CanteenService : ICanteenService
 
     public async Task<CanteenDto> CreateAsync(CreateCanteenDto dto, int? ownerId = null)
     {
+        Owner? owner = null;
+        if (ownerId.HasValue)
+        {
+            owner = await _ownerRepo.GetByIdAsync(ownerId.Value);
+            if (owner != null && owner.CanteenId.HasValue)
+            {
+                throw new InvalidOperationException("This owner already has an assigned canteen.");
+            }
+        }
+
         var entity = new Model.Entities.Canteen
         {
             Name = dto.Name,
@@ -37,14 +47,10 @@ public class CanteenService : ICanteenService
         };
         var created = await _repo.AddAsync(entity);
 
-        if (ownerId.HasValue)
+        if (owner != null)
         {
-            var owner = await _ownerRepo.GetByIdAsync(ownerId.Value);
-            if (owner != null && !owner.CanteenId.HasValue)
-            {
-                owner.CanteenId = created.CanteenId;
-                await _ownerRepo.UpdateAsync(owner);
-            }
+            owner.CanteenId = created.CanteenId;
+            await _ownerRepo.UpdateAsync(owner);
         }
 
         return ToDto(created);
