@@ -3,4 +3,5 @@
   <Project Path="Canteen.DAL/Canteen.DAL.csproj" />
   <Project Path="Canteen.Model/Canteen.Model.csproj" />
   <Project Path="CanteenManagementSystem.csproj" />
+  <Project Path="tests/Canteen.Tests/Canteen.Tests.csproj" />
 </Solution>

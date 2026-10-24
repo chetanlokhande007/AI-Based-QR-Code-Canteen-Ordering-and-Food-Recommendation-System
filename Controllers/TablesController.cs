@@ -55,6 +55,7 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Create(int canteenId, [FromBody] CreateCanteenTableDto dto)
     {
         var ownerCanteenId = User.GetCanteenId();
@@ -65,17 +66,26 @@ public class TablesController : ControllerBase
 
         if (!ModelState.IsValid) return BadRequest(ModelState);
         dto.CanteenId = canteenId;
-        var created = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { canteenId, tableId = created.TableId }, created);
+        try
+        {
+            var created = await _service.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { canteenId, tableId = created.TableId }, created);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
 
     /// <summary>Update a table (Owner only).</summary>
     [HttpPut("{tableId:int}")]
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(typeof(CanteenTableDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update(int canteenId, int tableId, [FromBody] UpdateCanteenTableDto dto)
     {
         var ownerCanteenId = User.GetCanteenId();
@@ -84,8 +94,17 @@ public class TablesController : ControllerBase
             return Forbid();
         }
 
-        var updated = await _service.UpdateAsync(canteenId, tableId, dto);
-        return updated is null ? NotFound() : Ok(updated);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        try
+        {
+            var updated = await _service.UpdateAsync(canteenId, tableId, dto);
+            return updated is null ? NotFound() : Ok(updated);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
 
     /// <summary>Delete a table (Owner only).</summary>

@@ -34,18 +34,13 @@ public class AuthService : IAuthService
             throw new InvalidOperationException("An account with this email already exists.");
         }
 
-        if (dto.CanteenId.HasValue && !await _canteenRepository.ExistsAsync(dto.CanteenId.Value))
-        {
-            throw new KeyNotFoundException($"Canteen with ID {dto.CanteenId.Value} does not exist.");
-        }
-
         var owner = new Owner
         {
             FullName = dto.FullName.Trim(),
             Email = dto.Email.Trim().ToLower(),
             PasswordHash = HashPassword(dto.Password),
             Role = "CanteenOwner",
-            CanteenId = dto.CanteenId,
+            CanteenId = null,
             CreatedAt = DateTime.UtcNow
         };
 

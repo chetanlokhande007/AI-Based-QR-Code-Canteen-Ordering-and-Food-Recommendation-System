@@ -57,14 +57,22 @@ public class ProductsController : ControllerBase
 
         if (!ModelState.IsValid) return BadRequest(ModelState);
         dto.CanteenId = ownerCanteenId.Value;
-        var created = await _service.CreateAsync(ownerCanteenId.Value, dto);
-        return CreatedAtAction(nameof(GetById), new { id = created.ProductId }, created);
+        try
+        {
+            var created = await _service.CreateAsync(ownerCanteenId.Value, dto);
+            return CreatedAtAction(nameof(GetById), new { id = created.ProductId }, created);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     /// <summary>Update an existing product (Owner only).</summary>
     [HttpPut("{id:int}")]
     [Authorize(Roles = "CanteenOwner")]
     [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -76,8 +84,17 @@ public class ProductsController : ControllerBase
             return Forbid();
         }
 
-        var updated = await _service.UpdateAsync(ownerCanteenId.Value, id, dto);
-        return updated is null ? NotFound() : Ok(updated);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        try
+        {
+            var updated = await _service.UpdateAsync(ownerCanteenId.Value, id, dto);
+            return updated is null ? NotFound() : Ok(updated);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     /// <summary>Delete a product by ID (Owner only).</summary>

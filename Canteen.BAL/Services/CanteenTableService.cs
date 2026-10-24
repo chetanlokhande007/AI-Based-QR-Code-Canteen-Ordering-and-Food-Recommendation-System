@@ -40,6 +40,11 @@ public class CanteenTableService : ICanteenTableService
 
     public async Task<CanteenTableDto> CreateAsync(CreateCanteenTableDto dto)
     {
+        if (await _repo.TableNumberExistsAsync(dto.CanteenId, dto.TableNumber))
+        {
+            throw new InvalidOperationException($"Table number {dto.TableNumber} already exists in this canteen.");
+        }
+
         var entity = new CanteenTable
         {
             CanteenId = dto.CanteenId,
@@ -47,8 +52,16 @@ public class CanteenTableService : ICanteenTableService
             Capacity = dto.Capacity,
             QRToken = Guid.NewGuid().ToString("N")
         };
-        var created = await _repo.AddAsync(entity);
-        return ToDto(created);
+
+        try
+        {
+            var created = await _repo.AddAsync(entity);
+            return ToDto(created);
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+        {
+            throw new InvalidOperationException($"Table number {dto.TableNumber} already exists in this canteen.", ex);
+        }
     }
 
     public async Task<CanteenTableDto?> UpdateAsync(int tableId, UpdateCanteenTableDto dto)
@@ -56,12 +69,25 @@ public class CanteenTableService : ICanteenTableService
         var entity = await _repo.GetByIdAsync(tableId);
         if (entity is null) return null;
 
+        if (entity.TableNumber != dto.TableNumber &&
+            await _repo.TableNumberExistsAsync(entity.CanteenId, dto.TableNumber, tableId))
+        {
+            throw new InvalidOperationException($"Table number {dto.TableNumber} already exists in this canteen.");
+        }
+
         entity.TableNumber = dto.TableNumber;
         entity.Capacity = dto.Capacity;
         entity.IsAvailable = dto.IsAvailable;
 
-        var updated = await _repo.UpdateAsync(entity);
-        return ToDto(updated);
+        try
+        {
+            var updated = await _repo.UpdateAsync(entity);
+            return ToDto(updated);
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+        {
+            throw new InvalidOperationException($"Table number {dto.TableNumber} already exists in this canteen.", ex);
+        }
     }
 
     public async Task<CanteenTableDto?> UpdateAsync(int canteenId, int tableId, UpdateCanteenTableDto dto)
@@ -69,12 +95,25 @@ public class CanteenTableService : ICanteenTableService
         var entity = await _repo.GetByIdAsync(canteenId, tableId);
         if (entity is null) return null;
 
+        if (entity.TableNumber != dto.TableNumber &&
+            await _repo.TableNumberExistsAsync(canteenId, dto.TableNumber, tableId))
+        {
+            throw new InvalidOperationException($"Table number {dto.TableNumber} already exists in this canteen.");
+        }
+
         entity.TableNumber = dto.TableNumber;
         entity.Capacity = dto.Capacity;
         entity.IsAvailable = dto.IsAvailable;
 
-        var updated = await _repo.UpdateAsync(entity);
-        return ToDto(updated);
+        try
+        {
+            var updated = await _repo.UpdateAsync(entity);
+            return ToDto(updated);
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+        {
+            throw new InvalidOperationException($"Table number {dto.TableNumber} already exists in this canteen.", ex);
+        }
     }
 
     public async Task<bool> DeleteAsync(int tableId)
@@ -92,4 +131,18 @@ public class CanteenTableService : ICanteenTableService
         QRToken = t.QRToken,
         IsAvailable = t.IsAvailable
     };
+
+    private static bool IsUniqueConstraintViolation(Microsoft.EntityFrameworkCore.DbUpdateException ex)
+    {
+        if (ex.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+        {
+            return true;
+        }
+
+        var message = ex.InnerException?.Message ?? ex.Message;
+        return message.Contains("23505", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("CK_Tables_CanteenId_TableNumber", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("IX_Tables_CanteenId_TableNumber", StringComparison.OrdinalIgnoreCase) ||
+               (message.Contains("TableNumber", StringComparison.OrdinalIgnoreCase) && message.Contains("unique", StringComparison.OrdinalIgnoreCase));
+    }
 }

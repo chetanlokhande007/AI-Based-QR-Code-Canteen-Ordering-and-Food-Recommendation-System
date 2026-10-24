@@ -19,12 +19,15 @@
     <Compile Remove="Canteen.BAL\**\*.cs" />
     <Compile Remove="Canteen.DAL\**\*.cs" />
     <Compile Remove="Canteen.Model\**\*.cs" />
+    <Compile Remove="tests\**\*.cs" />
     <EmbeddedResource Remove="Canteen.BAL\**" />
     <EmbeddedResource Remove="Canteen.DAL\**" />
     <EmbeddedResource Remove="Canteen.Model\**" />
+    <EmbeddedResource Remove="tests\**" />
     <None Remove="Canteen.BAL\**" />
     <None Remove="Canteen.DAL\**" />
     <None Remove="Canteen.Model\**" />
+    <None Remove="tests\**" />
   </ItemGroup>
 
   <ItemGroup>
