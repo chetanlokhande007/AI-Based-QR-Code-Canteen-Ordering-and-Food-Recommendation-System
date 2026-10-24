@@ -67,4 +67,14 @@ public class CanteenTableRepository : ICanteenTableRepository
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<bool> TableNumberExistsAsync(int canteenId, int tableNumber, int? excludeTableId = null)
+    {
+        var query = _context.Tables.Where(t => t.CanteenId == canteenId && t.TableNumber == tableNumber);
+        if (excludeTableId.HasValue)
+        {
+            query = query.Where(t => t.TableId != excludeTableId.Value);
+        }
+        return await query.AnyAsync();
+    }
 }

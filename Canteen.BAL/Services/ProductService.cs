@@ -8,10 +8,12 @@ namespace Canteen.BAL.Services;
 public class ProductService : IProductService
 {
     private readonly IProductRepository _repo;
+    private readonly ICategoryRepository _categoryRepo;
 
-    public ProductService(IProductRepository repo)
+    public ProductService(IProductRepository repo, ICategoryRepository categoryRepo)
     {
         _repo = repo;
+        _categoryRepo = categoryRepo;
     }
 
     public async Task<IEnumerable<ProductDto>> GetAllByCanteenAsync(int canteenId)
@@ -40,6 +42,12 @@ public class ProductService : IProductService
 
     public async Task<ProductDto> CreateAsync(CreateProductDto dto)
     {
+        var categoryExists = await _categoryRepo.ExistsAsync(dto.CanteenId, dto.CategoryId);
+        if (!categoryExists)
+        {
+            throw new ArgumentException($"Category with ID {dto.CategoryId} does not exist in canteen {dto.CanteenId}.");
+        }
+
         var entity = new Product
         {
             CanteenId = dto.CanteenId,
@@ -65,6 +73,16 @@ public class ProductService : IProductService
         var entity = await _repo.GetByIdAsync(productId);
         if (entity is null) return null;
 
+        if (dto.CategoryId.HasValue && dto.CategoryId.Value != entity.CategoryId)
+        {
+            var categoryExists = await _categoryRepo.ExistsAsync(entity.CanteenId, dto.CategoryId.Value);
+            if (!categoryExists)
+            {
+                throw new ArgumentException($"Category with ID {dto.CategoryId.Value} does not exist in canteen {entity.CanteenId}.");
+            }
+            entity.CategoryId = dto.CategoryId.Value;
+        }
+
         entity.Name = dto.Name;
         entity.Description = dto.Description;
         entity.Price = dto.Price;
@@ -80,6 +98,16 @@ public class ProductService : IProductService
     {
         var entity = await _repo.GetByIdAsync(canteenId, productId);
         if (entity is null) return null;
+
+        if (dto.CategoryId.HasValue && dto.CategoryId.Value != entity.CategoryId)
+        {
+            var categoryExists = await _categoryRepo.ExistsAsync(canteenId, dto.CategoryId.Value);
+            if (!categoryExists)
+            {
+                throw new ArgumentException($"Category with ID {dto.CategoryId.Value} does not exist in canteen {canteenId}.");
+            }
+            entity.CategoryId = dto.CategoryId.Value;
+        }
 
         entity.Name = dto.Name;
         entity.Description = dto.Description;

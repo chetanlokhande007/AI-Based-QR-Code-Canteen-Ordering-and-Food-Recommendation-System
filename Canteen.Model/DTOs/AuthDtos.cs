@@ -16,8 +16,6 @@ public class RegisterOwnerDto
     [Required]
     [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters long.")]
     public string Password { get; set; } = string.Empty;
-
-    public int? CanteenId { get; set; }
 }
 
 public class LoginRequestDto

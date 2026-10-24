@@ -97,8 +97,8 @@ Navigate to:
 ### 🔐 Authentication (`/api/auth`)
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| `POST` | `/api/auth/register` | Public | Register a new canteen owner (Returns 201 Created) |
-| `POST` | `/api/auth/login` | Public | Authenticate owner and receive JWT token |
+| `POST` | `/api/auth/register` | Public | Register a new canteen owner with unassigned canteen (`CanteenId = null`, Returns 201 Created) |
+| `POST` | `/api/auth/login` | Public | Authenticate owner and receive JWT token (includes `CanteenId` claim if assigned) |
 
 ### 🏬 Canteens (`/api/canteens`)
 | Method | Endpoint | Access | Description |
@@ -109,33 +109,34 @@ Navigate to:
 | `PUT` | `/api/canteens/{id}` | CanteenOwner | Update canteen (Caller must own the canteen) |
 | `DELETE` | `/api/canteens/{id}` | CanteenOwner | Remove canteen (Caller must own the canteen) |
 
-### 📂 Categories (`/api/categories`)
+### 📂 Categories (`/api/canteens/{canteenId}/categories`)
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| `GET` | `/api/categories` | Public | List categories (Optional `canteenId` filter) |
-| `GET` | `/api/categories/{id}` | Public | Get category details |
-| `POST` | `/api/categories` | CanteenOwner | Create category for caller's canteen |
-| `PUT` | `/api/categories/{id}` | CanteenOwner | Update category (Tenant verified) |
-| `DELETE` | `/api/categories/{id}` | CanteenOwner | Delete category (Tenant verified) |
+| `GET` | `/api/canteens/{canteenId}/categories` | Public | List categories for a canteen |
+| `GET` | `/api/canteens/{canteenId}/categories/{categoryId}` | Public | Get category details |
+| `POST` | `/api/canteens/{canteenId}/categories` | CanteenOwner | Create category for caller's canteen |
+| `PUT` | `/api/canteens/{canteenId}/categories/{categoryId}` | CanteenOwner | Update category (Tenant verified) |
+| `DELETE` | `/api/canteens/{canteenId}/categories/{categoryId}` | CanteenOwner | Delete category (Tenant verified) |
 
 ### 🍔 Products (`/api/products`)
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| `GET` | `/api/products` | Public | List products (Filter by `canteenId`, `categoryId`, `isAvailable`) |
+| `GET` | `/api/products/canteen/{canteenId}` | Public | List products for a canteen |
+| `GET` | `/api/products/canteen/{canteenId}/category/{categoryId}` | Public | List products for a category |
 | `GET` | `/api/products/{id}` | Public | Get product details |
-| `POST` | `/api/products` | CanteenOwner | Add product to caller's canteen |
-| `PUT` | `/api/products/{id}` | CanteenOwner | Update product details/stock (Tenant verified) |
+| `POST` | `/api/products` | CanteenOwner | Add product to caller's canteen (Category verified) |
+| `PUT` | `/api/products/{id}` | CanteenOwner | Update product details/stock (Tenant & category verified) |
 | `DELETE` | `/api/products/{id}` | CanteenOwner | Delete product (Tenant verified) |
 
-### 🪑 Tables & QR Codes (`/api/tables`)
+### 🪑 Tables & QR Codes (`/api/canteens/{canteenId}/tables`)
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| `GET` | `/api/tables` | Public | List tables (Optional `canteenId` filter) |
-| `GET` | `/api/tables/{id}` | Public | Get table details |
-| `GET` | `/api/tables/qr/{qrToken}`| Public | Customer QR code lookup to load table menu |
-| `POST` | `/api/tables` | CanteenOwner | Add a table to caller's canteen |
-| `PUT` | `/api/tables/{id}` | CanteenOwner | Update table details (Tenant verified) |
-| `DELETE` | `/api/tables/{id}` | CanteenOwner | Delete table (Tenant verified) |
+| `GET` | `/api/canteens/{canteenId}/tables` | Public | List tables for a canteen |
+| `GET` | `/api/canteens/{canteenId}/tables/{tableId}` | Public | Get table details |
+| `GET` | `/api/canteens/{canteenId}/tables/qr/{token}` | Public | Customer QR code lookup to load table menu |
+| `POST` | `/api/canteens/{canteenId}/tables` | CanteenOwner | Add a table to caller's canteen (Unique table number verified) |
+| `PUT` | `/api/canteens/{canteenId}/tables/{tableId}` | CanteenOwner | Update table details (Unique table number verified) |
+| `DELETE` | `/api/canteens/{canteenId}/tables/{tableId}` | CanteenOwner | Delete table (Tenant verified) |
 
 ---
 
