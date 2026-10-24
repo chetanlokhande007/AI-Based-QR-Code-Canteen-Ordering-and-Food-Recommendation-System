@@ -1,0 +1,24 @@
+## Visual Studio / VS Code caches & local user settings
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+## Build artifacts & temporary outputs
+[Bb]in/
+[Oo]bj/
+**/[Bb]in/
+**/[Oo]bj/
+
+## Test / logs / crash dumps
+*.log
+*.tmp
+*.crash
+
+## Secrets & local environment configs
+appsettings.Production.json
+secrets.json
+.env
+.env.*

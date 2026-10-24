@@ -1,0 +1,62 @@
+@HostAddress = http://localhost:5000
+
+### 1. Test Protected Endpoint Without Token (Expected: 401 Unauthorized)
+GET {{HostAddress}}/api/owner-test
+Accept: application/json
+
+###
+
+### 2. Register a Canteen Owner
+# @name register
+POST {{HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Chetan Lokhande",
+  "email": "owner@canteen.com",
+  "password": "Password123!",
+  "canteenId": null
+}
+
+###
+
+### 3. Login as Canteen Owner (Obtain JWT)
+# @name login
+POST {{HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "owner@canteen.com",
+  "password": "Password123!"
+}
+
+###
+
+### Store Token from response
+@authToken = {{login.response.body.token}}
+
+### 4. Test Protected Endpoint With Token (Expected: 200 OK)
+GET {{HostAddress}}/api/owner-test
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 5. Create Canteen (Owner Only)
+POST {{HostAddress}}/api/canteens
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Main Campus Canteen",
+  "location": "Building A, Ground Floor",
+  "isActive": true
+}
+
+###
+
+### 6. Get All Canteens (Public)
+GET {{HostAddress}}/api/canteens
+Accept: application/json
+
+###

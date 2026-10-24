@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Canteen.BAL/Canteen.BAL.csproj" />
+  <Project Path="Canteen.DAL/Canteen.DAL.csproj" />
+  <Project Path="Canteen.Model/Canteen.Model.csproj" />
+  <Project Path="CanteenManagementSystem.csproj" />
+</Solution>

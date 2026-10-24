@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Enable XML doc comments for Swagger summary descriptions -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <UserSecretsId>66b5c14d-afbf-4798-aef8-adfc3f410fcf</UserSecretsId>
+  </PropertyGroup>
+
+  <!--
+    The Canteen.BAL, Canteen.DAL, and Canteen.Model folders are sibling class-library
+    projects inside this directory. We must explicitly exclude them from the web
+    project's glob so the SDK does NOT pick up their .cs files as sources here.
+  -->
+  <ItemGroup>
+    <Compile Remove="Canteen.BAL\**\*.cs" />
+    <Compile Remove="Canteen.DAL\**\*.cs" />
+    <Compile Remove="Canteen.Model\**\*.cs" />
+    <EmbeddedResource Remove="Canteen.BAL\**" />
+    <EmbeddedResource Remove="Canteen.DAL\**" />
+    <EmbeddedResource Remove="Canteen.Model\**" />
+    <None Remove="Canteen.BAL\**" />
+    <None Remove="Canteen.DAL\**" />
+    <None Remove="Canteen.Model\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Swagger / Swashbuckle -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+    <!-- EF Core Design for migration commands from the API project -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Canteen.BAL\Canteen.BAL.csproj" />
+    <ProjectReference Include="Canteen.DAL\Canteen.DAL.csproj" />
+    <ProjectReference Include="Canteen.Model\Canteen.Model.csproj" />
+  </ItemGroup>
+
+</Project>
