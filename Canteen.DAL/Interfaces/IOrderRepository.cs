@@ -14,5 +14,7 @@ public interface IOrderRepository
 
     Task<Order> UpdateAsync(Order order);
 
+    Task<Order?> GetByTrackingTokenAsync(string trackingToken, bool asNoTracking = true);
+
     Task<bool> OrderNumberExistsAsync(int canteenId, string orderNumber);
 }

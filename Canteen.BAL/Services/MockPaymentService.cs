@@ -18,6 +18,7 @@ public class MockPaymentService : IPaymentService
     private readonly IConfiguration _configuration;
     private readonly IOrderRepository _orderRepository;
     private readonly IPaymentRepository _paymentRepository;
+    private readonly IOrderNotificationService? _notificationService;
     private readonly ILogger<MockPaymentService> _logger;
 
     public MockPaymentService(
@@ -25,10 +26,21 @@ public class MockPaymentService : IPaymentService
         IOrderRepository orderRepository,
         IPaymentRepository paymentRepository,
         ILogger<MockPaymentService> logger)
+        : this(configuration, orderRepository, paymentRepository, null, logger)
+    {
+    }
+
+    public MockPaymentService(
+        IConfiguration configuration,
+        IOrderRepository orderRepository,
+        IPaymentRepository paymentRepository,
+        IOrderNotificationService? notificationService,
+        ILogger<MockPaymentService> logger)
     {
         _configuration = configuration;
         _orderRepository = orderRepository;
         _paymentRepository = paymentRepository;
+        _notificationService = notificationService;
         _logger = logger;
     }
 
@@ -152,6 +164,15 @@ public class MockPaymentService : IPaymentService
                 order.Status = "Confirmed";
             }
             await _paymentRepository.UpdatePaymentAndOrderAsync(payment, order);
+            if (_notificationService != null)
+            {
+                await _notificationService.NotifyPaymentConfirmedAsync(
+                    payment.CanteenId,
+                    payment.OrderId,
+                    order.OrderNumber,
+                    payment.Amount,
+                    payment.PaidAt ?? DateTime.UtcNow);
+            }
         }
         else
         {
@@ -238,6 +259,15 @@ public class MockPaymentService : IPaymentService
                                 order.Status = "Confirmed";
                             }
                             await _paymentRepository.UpdatePaymentAndOrderAsync(payment, order);
+                            if (_notificationService != null)
+                            {
+                                await _notificationService.NotifyPaymentConfirmedAsync(
+                                    payment.CanteenId,
+                                    payment.OrderId,
+                                    order.OrderNumber,
+                                    payment.Amount,
+                                    payment.PaidAt ?? DateTime.UtcNow);
+                            }
                         }
                         else
                         {

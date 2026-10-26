@@ -20,6 +20,8 @@ namespace Canteen.Model.Entities
 
         public decimal TotalAmount { get; set; }
 
+        public string TrackingToken { get; set; } = string.Empty;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties

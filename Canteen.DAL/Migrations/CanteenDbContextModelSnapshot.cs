@@ -150,7 +150,16 @@ namespace Canteen.DAL.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
+                    b.Property<string>("TrackingToken")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasDefaultValue("");
+
                     b.HasKey("OrderId");
+
+                    b.HasIndex("TrackingToken");
 
                     b.HasIndex("CanteenId", "OrderNumber")
                         .IsUnique();

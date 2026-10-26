@@ -11,4 +11,5 @@ public interface IOrderService
     Task<IEnumerable<OrderDto>> GetAllByCanteenAsync(int canteenId);
 
     Task<OrderDto?> UpdateStatusAsync(int canteenId, int orderId, string newStatus);
+    Task<OrderDto?> GetByTrackingTokenAsync(string trackingToken);
 }

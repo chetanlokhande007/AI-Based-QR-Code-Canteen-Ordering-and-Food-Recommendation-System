@@ -184,6 +184,15 @@ public class CanteenDbContext : DbContext
             .Property(o => o.TotalAmount)
             .HasPrecision(18, 2);
 
+        modelBuilder.Entity<Order>()
+            .Property(o => o.TrackingToken)
+            .HasMaxLength(100)
+            .IsRequired()
+            .HasDefaultValue("");
+
+        modelBuilder.Entity<Order>()
+            .HasIndex(o => o.TrackingToken);
+
         // Order numbers must be unique within each canteen.
         modelBuilder.Entity<Order>()
             .HasIndex(o => new { o.CanteenId, o.OrderNumber })

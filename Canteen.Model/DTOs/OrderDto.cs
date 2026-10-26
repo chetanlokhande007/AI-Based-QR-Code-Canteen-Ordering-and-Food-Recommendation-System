@@ -19,6 +19,8 @@ public class OrderDto
 
     public decimal TotalAmount { get; set; }
 
+    public string TrackingToken { get; set; } = string.Empty;
+
     public DateTime CreatedAt { get; set; }
 
     public List<OrderItemDto> Items { get; set; } = new();

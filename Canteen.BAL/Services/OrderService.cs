@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Canteen.BAL.Exceptions;
 using Canteen.BAL.Interfaces;
@@ -20,15 +21,18 @@ public class OrderService : IOrderService
     private readonly IOrderRepository _orderRepo;
     private readonly IProductRepository _productRepo;
     private readonly ICanteenTableRepository _tableRepo;
+    private readonly IOrderNotificationService _notificationService;
 
     public OrderService(
         IOrderRepository orderRepo,
         IProductRepository productRepo,
-        ICanteenTableRepository tableRepo)
+        ICanteenTableRepository tableRepo,
+        IOrderNotificationService notificationService)
     {
         _orderRepo = orderRepo;
         _productRepo = productRepo;
         _tableRepo = tableRepo;
+        _notificationService = notificationService;
     }
 
     public async Task<OrderDto> CreateAsync(CreateOrderDto dto, string qrToken)
@@ -126,7 +130,7 @@ public class OrderService : IOrderService
             });
         }
 
-        // 5. Generate human-friendly unique order number
+        // 5. Generate human-friendly unique order number and cryptographically random tracking token
         string orderNumber;
         int attempts = 0;
         do
@@ -135,6 +139,8 @@ public class OrderService : IOrderService
             attempts++;
         }
         while (await _orderRepo.OrderNumberExistsAsync(canteenId, orderNumber) && attempts < 10);
+
+        var trackingToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
 
         // 6. Persist order
         var order = new Order
@@ -145,6 +151,7 @@ public class OrderService : IOrderService
             Status = "Pending",
             PaymentStatus = "Pending",
             TotalAmount = totalAmount,
+            TrackingToken = trackingToken,
             CreatedAt = DateTime.UtcNow,
             Items = orderItems
         };
@@ -160,12 +167,25 @@ public class OrderService : IOrderService
             }
         }
 
-        return ToDto(created);
+        var orderDto = ToDto(created);
+        await _notificationService.NotifyNewOrderPlacedAsync(orderDto);
+        return orderDto;
     }
 
     public async Task<OrderDto?> GetByIdAsync(int canteenId, int orderId)
     {
         var entity = await _orderRepo.GetByIdAsync(canteenId, orderId, asNoTracking: true);
+        return entity is null ? null : ToDto(entity);
+    }
+
+    public async Task<OrderDto?> GetByTrackingTokenAsync(string trackingToken)
+    {
+        if (string.IsNullOrWhiteSpace(trackingToken))
+        {
+            return null;
+        }
+
+        var entity = await _orderRepo.GetByTrackingTokenAsync(trackingToken, asNoTracking: true);
         return entity is null ? null : ToDto(entity);
     }
 
@@ -192,7 +212,15 @@ public class OrderService : IOrderService
 
         order.Status = newStatus;
         var updated = await _orderRepo.UpdateAsync(order);
-        return ToDto(updated);
+        var dto = ToDto(updated);
+
+        if (string.Equals(newStatus, "InPreparation", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(newStatus, "Ready", StringComparison.OrdinalIgnoreCase))
+        {
+            await _notificationService.NotifyOrderStatusUpdatedAsync(order.OrderId, order.OrderNumber, newStatus, DateTime.UtcNow);
+        }
+
+        return dto;
     }
 
     private static void ValidateStatusTransition(string currentStatus, string nextStatus)
@@ -232,6 +260,7 @@ public class OrderService : IOrderService
         Status = o.Status,
         PaymentStatus = o.PaymentStatus,
         TotalAmount = o.TotalAmount,
+        TrackingToken = o.TrackingToken,
         CreatedAt = o.CreatedAt,
         Items = o.Items.Select(i => new OrderItemDto
         {

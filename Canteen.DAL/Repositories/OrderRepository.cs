@@ -79,6 +79,28 @@ public class OrderRepository : IOrderRepository
         return order;
     }
 
+    public async Task<Order?> GetByTrackingTokenAsync(
+        string trackingToken,
+        bool asNoTracking = true)
+    {
+        if (string.IsNullOrWhiteSpace(trackingToken))
+        {
+            return null;
+        }
+
+        IQueryable<Order> query = _context.Orders;
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+            .FirstOrDefaultAsync(o => o.TrackingToken == trackingToken);
+    }
+
     public async Task<bool> OrderNumberExistsAsync(int canteenId, string orderNumber)
     {
         return await _context.Orders

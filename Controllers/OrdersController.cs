@@ -45,8 +45,8 @@ public class OrdersController : ControllerBase
         {
             var created = await _orderService.CreateAsync(dto, qrToken);
             return CreatedAtAction(
-                nameof(GetById),
-                new { canteenId = created.CanteenId, orderId = created.OrderId },
+                nameof(TrackOrder),
+                new { trackingToken = created.TrackingToken },
                 created);
         }
         catch (InsufficientStockException ex)
@@ -57,6 +57,22 @@ public class OrdersController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    /// <summary>Track an order's status securely using its unguessable tracking token (Customer access).</summary>
+    [HttpGet("api/orders/track/{trackingToken}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> TrackOrder(string trackingToken)
+    {
+        if (string.IsNullOrWhiteSpace(trackingToken))
+        {
+            return NotFound();
+        }
+
+        var order = await _orderService.GetByTrackingTokenAsync(trackingToken);
+        return order is null ? NotFound() : Ok(order);
     }
 
     /// <summary>Get all orders for a canteen (Owner only).</summary>
