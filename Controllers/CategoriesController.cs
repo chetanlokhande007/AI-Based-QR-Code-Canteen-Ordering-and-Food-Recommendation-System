@@ -1,3 +1,4 @@
+using Canteen.BAL.Exceptions;
 using Canteen.BAL.Interfaces;
 using Canteen.Model.DTOs;
 using CanteenManagementSystem.Extensions;
@@ -95,7 +96,7 @@ public class CategoriesController : ControllerBase
             var deleted = await _service.DeleteAsync(canteenId, categoryId);
             return deleted ? NoContent() : NotFound();
         }
-        catch (InvalidOperationException ex)
+        catch (CategoryNotEmptyException ex)
         {
             return Conflict(new { message = ex.Message });
         }

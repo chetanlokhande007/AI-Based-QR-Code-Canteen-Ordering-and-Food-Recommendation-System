@@ -13,4 +13,5 @@ public interface ICanteenTableService
     Task<CanteenTableDto?> UpdateAsync(int canteenId, int tableId, UpdateCanteenTableDto dto);
     Task<bool> DeleteAsync(int tableId);
     Task<bool> DeleteAsync(int canteenId, int tableId);
+    Task<CanteenTableDto?> RegenerateQrTokenAsync(int canteenId, int tableId);
 }

@@ -12,10 +12,14 @@ namespace CanteenManagementSystem.Controllers;
 public class TablesController : ControllerBase
 {
     private readonly ICanteenTableService _service;
+    private readonly IQrCodeService _qrCodeService;
 
-    public TablesController(ICanteenTableService service)
+    public TablesController(
+        ICanteenTableService service,
+        IQrCodeService qrCodeService)
     {
         _service = service;
+        _qrCodeService = qrCodeService;
     }
 
     /// <summary>Get all tables for a canteen.</summary>
@@ -124,5 +128,64 @@ public class TablesController : ControllerBase
 
         var deleted = await _service.DeleteAsync(canteenId, tableId);
         return deleted ? NoContent() : NotFound();
+    }
+
+    /// <summary>Download or view the QR code PNG image for a table.</summary>
+    [HttpGet("{tableId:int}/qr-image")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetQrImage(int canteenId, int tableId, [FromQuery] int pixelsPerModule = 10)
+    {
+        var table = await _service.GetByIdAsync(canteenId, tableId);
+        if (table is null)
+        {
+            return NotFound();
+        }
+
+        var menuUrl = _qrCodeService.GenerateTableMenuUrl(canteenId, tableId, table.QRToken);
+        var pngBytes = _qrCodeService.GenerateQrCodePng(menuUrl, Math.Clamp(pixelsPerModule, 5, 30));
+
+        return File(pngBytes, "image/png", $"table-{tableId}-qr.png");
+    }
+
+    /// <summary>Get the customer menu URL encoded in the table's QR code.</summary>
+    [HttpGet("{tableId:int}/qr-url")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetQrUrl(int canteenId, int tableId)
+    {
+        var table = await _service.GetByIdAsync(canteenId, tableId);
+        if (table is null)
+        {
+            return NotFound();
+        }
+
+        var menuUrl = _qrCodeService.GenerateTableMenuUrl(canteenId, tableId, table.QRToken);
+        return Ok(new
+        {
+            tableId = table.TableId,
+            canteenId = table.CanteenId,
+            tableNumber = table.TableNumber,
+            qrToken = table.QRToken,
+            menuUrl
+        });
+    }
+
+    /// <summary>Regenerate a table's QR token (Owner only).</summary>
+    [HttpPost("{tableId:int}/regenerate-qr")]
+    [Authorize(Roles = "CanteenOwner")]
+    [ProducesResponseType(typeof(CanteenTableDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RegenerateQr(int canteenId, int tableId)
+    {
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        {
+            return Forbid();
+        }
+
+        var updated = await _service.RegenerateQrTokenAsync(canteenId, tableId);
+        return updated is null ? NotFound() : Ok(updated);
     }
 }

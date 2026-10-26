@@ -1,3 +1,4 @@
+using Canteen.BAL.Exceptions;
 using Canteen.BAL.Interfaces;
 using Canteen.DAL.Interfaces;
 using Canteen.Model.DTOs;
@@ -77,7 +78,7 @@ public class CategoryService : ICategoryService
 
         if (hasProducts)
         {
-            throw new InvalidOperationException(
+            throw new CategoryNotEmptyException(
                 "Cannot delete this category because it contains products.");
         }
 

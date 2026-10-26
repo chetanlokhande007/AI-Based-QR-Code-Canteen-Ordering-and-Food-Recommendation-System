@@ -122,6 +122,16 @@ public class CanteenTableService : ICanteenTableService
     public async Task<bool> DeleteAsync(int canteenId, int tableId)
         => await _repo.DeleteAsync(canteenId, tableId);
 
+    public async Task<CanteenTableDto?> RegenerateQrTokenAsync(int canteenId, int tableId)
+    {
+        var entity = await _repo.GetByIdAsync(canteenId, tableId);
+        if (entity is null) return null;
+
+        entity.QRToken = Guid.NewGuid().ToString("N");
+        var updated = await _repo.UpdateAsync(entity);
+        return ToDto(updated);
+    }
+
     private static CanteenTableDto ToDto(CanteenTable t) => new()
     {
         TableId = t.TableId,

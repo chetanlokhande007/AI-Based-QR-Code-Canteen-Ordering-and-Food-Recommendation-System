@@ -32,6 +32,7 @@ builder.Services.AddScoped<ICanteenService, CanteenService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICanteenTableService, CanteenTableService>();
+builder.Services.AddScoped<IQrCodeService, QrCodeService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // ─── JWT Authentication ──────────────────────────────────────────────────────
@@ -157,16 +158,16 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// ─── Auto-apply migrations on startup (dev-friendly) ────────────────────────
-using (var scope = app.Services.CreateScope())
+// ─── Auto-apply migrations on startup (development only) ──────────────────────
+// Production migrations must be applied through controlled CI/CD pipelines
+// or EF Core migration bundles to prevent concurrency deadlocks across replicas.
+if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<CanteenDbContext>();
-    if (!app.Environment.IsEnvironment("Testing") && db.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
+    if (db.Database.IsRelational())
     {
-        if (db.Database.IsRelational())
-        {
-            db.Database.Migrate();
-        }
+        db.Database.Migrate();
     }
 }
 
