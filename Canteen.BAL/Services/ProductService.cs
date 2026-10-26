@@ -16,15 +16,15 @@ public class ProductService : IProductService
         _categoryRepo = categoryRepo;
     }
 
-    public async Task<IEnumerable<ProductDto>> GetAllByCanteenAsync(int canteenId)
+    public async Task<IEnumerable<ProductDto>> GetAllByCanteenAsync(int canteenId, bool availableOnly = false)
     {
-        var entities = await _repo.GetAllByCanteenAsync(canteenId);
+        var entities = await _repo.GetAllByCanteenAsync(canteenId, availableOnly);
         return entities.Select(ToDto);
     }
 
-    public async Task<IEnumerable<ProductDto>> GetByCategoryAsync(int canteenId, int categoryId)
+    public async Task<IEnumerable<ProductDto>> GetByCategoryAsync(int canteenId, int categoryId, bool availableOnly = false)
     {
-        var entities = await _repo.GetByCategoryAsync(canteenId, categoryId);
+        var entities = await _repo.GetByCategoryAsync(canteenId, categoryId, availableOnly);
         return entities.Select(ToDto);
     }
 

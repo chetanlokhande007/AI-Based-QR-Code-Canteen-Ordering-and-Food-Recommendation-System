@@ -21,14 +21,14 @@ public class ProductsController : ControllerBase
     /// <summary>Get all products for a canteen.</summary>
     [HttpGet("canteen/{canteenId:int}")]
     [ProducesResponseType(typeof(IEnumerable<ProductDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetByCanteen(int canteenId)
-        => Ok(await _service.GetAllByCanteenAsync(canteenId));
+    public async Task<IActionResult> GetByCanteen(int canteenId, [FromQuery] bool availableOnly = false)
+        => Ok(await _service.GetAllByCanteenAsync(canteenId, availableOnly));
 
     /// <summary>Get all products for a specific category within a canteen.</summary>
     [HttpGet("canteen/{canteenId:int}/category/{categoryId:int}")]
     [ProducesResponseType(typeof(IEnumerable<ProductDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetByCategory(int canteenId, int categoryId)
-        => Ok(await _service.GetByCategoryAsync(canteenId, categoryId));
+    public async Task<IActionResult> GetByCategory(int canteenId, int categoryId, [FromQuery] bool availableOnly = false)
+        => Ok(await _service.GetByCategoryAsync(canteenId, categoryId, availableOnly));
 
     /// <summary>Get a product by ID.</summary>
     [HttpGet("{id:int}")]

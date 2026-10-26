@@ -4,8 +4,8 @@ namespace Canteen.BAL.Interfaces;
 
 public interface IProductService
 {
-    Task<IEnumerable<ProductDto>> GetAllByCanteenAsync(int canteenId);
-    Task<IEnumerable<ProductDto>> GetByCategoryAsync(int canteenId, int categoryId);
+    Task<IEnumerable<ProductDto>> GetAllByCanteenAsync(int canteenId, bool availableOnly = false);
+    Task<IEnumerable<ProductDto>> GetByCategoryAsync(int canteenId, int categoryId, bool availableOnly = false);
     Task<ProductDto?> GetByIdAsync(int productId);
     Task<ProductDto?> GetByIdAsync(int canteenId, int productId);
     Task<ProductDto> CreateAsync(CreateProductDto dto);

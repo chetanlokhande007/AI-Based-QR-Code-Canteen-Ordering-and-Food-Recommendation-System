@@ -81,6 +81,7 @@ public class CategoriesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete(int canteenId, int categoryId)
     {
         var ownerCanteenId = User.GetCanteenId();
@@ -89,7 +90,14 @@ public class CategoriesController : ControllerBase
             return Forbid();
         }
 
-        var deleted = await _service.DeleteAsync(canteenId, categoryId);
-        return deleted ? NoContent() : NotFound();
+        try
+        {
+            var deleted = await _service.DeleteAsync(canteenId, categoryId);
+            return deleted ? NoContent() : NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
 }

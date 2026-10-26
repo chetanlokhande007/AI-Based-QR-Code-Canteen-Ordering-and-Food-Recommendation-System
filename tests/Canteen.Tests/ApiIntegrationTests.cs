@@ -289,6 +289,184 @@ public class ApiIntegrationTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(HttpStatusCode.BadRequest, invalidProductRes.StatusCode);
     }
 
+    // ─── 9. Category Deletion Conflict Guard (BUG-001) ───────────────────────
+    [Fact]
+    public async Task DeleteCategory_WhenCategoryContainsProducts_Returns409Conflict()
+    {
+        var (token, canteenId) = await RegisterAndCreateCanteenAsync("catConflictOwner", "Conflict Canteen");
+
+        // 1. Create a category
+        var catReq = new HttpRequestMessage(HttpMethod.Post, $"/api/canteens/{canteenId}/categories")
+        {
+            Content = JsonContent.Create(new { Name = "Main Dishes", Description = "Entrees" })
+        };
+        catReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var catRes = await _client.SendAsync(catReq);
+        Assert.Equal(HttpStatusCode.Created, catRes.StatusCode);
+        var category = await catRes.Content.ReadFromJsonAsync<CategoryDto>();
+        Assert.NotNull(category);
+
+        // 2. Create a product inside that category
+        var prodReq = new HttpRequestMessage(HttpMethod.Post, "/api/products")
+        {
+            Content = JsonContent.Create(new
+            {
+                CategoryId = category.CategoryId,
+                Name = "Cheeseburger",
+                Price = 8.50m,
+                StockQuantity = 20
+            })
+        };
+        prodReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var prodRes = await _client.SendAsync(prodReq);
+        Assert.Equal(HttpStatusCode.Created, prodRes.StatusCode);
+
+        // 3. Attempt to delete the category while it still contains products
+        var deleteReq = new HttpRequestMessage(HttpMethod.Delete, $"/api/canteens/{canteenId}/categories/{category.CategoryId}");
+        deleteReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var deleteRes = await _client.SendAsync(deleteReq);
+
+        // Assert: Must return 409 Conflict, NOT 500 Internal Server Error
+        Assert.Equal(HttpStatusCode.Conflict, deleteRes.StatusCode);
+    }
+
+    // ─── 10. Empty Category Deletion Allowed ─────────────────────────────────
+    [Fact]
+    public async Task DeleteCategory_WhenCategoryIsEmpty_Returns204NoContent()
+    {
+        var (token, canteenId) = await RegisterAndCreateCanteenAsync("emptyCatOwner", "Empty Cat Canteen");
+
+        // 1. Create an empty category
+        var catReq = new HttpRequestMessage(HttpMethod.Post, $"/api/canteens/{canteenId}/categories")
+        {
+            Content = JsonContent.Create(new { Name = "Empty Desserts" })
+        };
+        catReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var catRes = await _client.SendAsync(catReq);
+        Assert.Equal(HttpStatusCode.Created, catRes.StatusCode);
+        var category = await catRes.Content.ReadFromJsonAsync<CategoryDto>();
+        Assert.NotNull(category);
+
+        // 2. Delete the empty category
+        var deleteReq = new HttpRequestMessage(HttpMethod.Delete, $"/api/canteens/{canteenId}/categories/{category.CategoryId}");
+        deleteReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var deleteRes = await _client.SendAsync(deleteReq);
+
+        // Assert: Returns 204 NoContent
+        Assert.Equal(HttpStatusCode.NoContent, deleteRes.StatusCode);
+    }
+
+    // ─── 11. Product Availability Filter (BUG-003) ───────────────────────────
+    [Fact]
+    public async Task GetProducts_WithAvailableOnlyFilter_ReturnsOnlyInStockAndAvailableProducts()
+    {
+        var (token, canteenId) = await RegisterAndCreateCanteenAsync("filterOwner", "Filter Canteen");
+
+        // 1. Create Category
+        var catReq = new HttpRequestMessage(HttpMethod.Post, $"/api/canteens/{canteenId}/categories")
+        {
+            Content = JsonContent.Create(new { Name = "Snacks" })
+        };
+        catReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var catRes = await _client.SendAsync(catReq);
+        Assert.Equal(HttpStatusCode.Created, catRes.StatusCode);
+        var cat = await catRes.Content.ReadFromJsonAsync<CategoryDto>();
+        Assert.NotNull(cat);
+
+        // 2. Create Product 1: Available + In Stock (Stock = 10, IsAvailable = true)
+        var p1Req = new HttpRequestMessage(HttpMethod.Post, "/api/products")
+        {
+            Content = JsonContent.Create(new
+            {
+                CategoryId = cat.CategoryId,
+                Name = "Available InStock Snack",
+                Price = 5.00m,
+                StockQuantity = 10
+            })
+        };
+        p1Req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var p1Res = await _client.SendAsync(p1Req);
+        Assert.Equal(HttpStatusCode.Created, p1Res.StatusCode);
+
+        // 3. Create Product 2: Available + Zero Stock (Stock = 0, IsAvailable = true)
+        var p2Req = new HttpRequestMessage(HttpMethod.Post, "/api/products")
+        {
+            Content = JsonContent.Create(new
+            {
+                CategoryId = cat.CategoryId,
+                Name = "SoldOut Snack",
+                Price = 4.00m,
+                StockQuantity = 0
+            })
+        };
+        p2Req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var p2Res = await _client.SendAsync(p2Req);
+        Assert.Equal(HttpStatusCode.Created, p2Res.StatusCode);
+
+        // 4. Create Product 3: Unavailable + In Stock (Stock = 5, IsAvailable = false)
+        var p3Req = new HttpRequestMessage(HttpMethod.Post, "/api/products")
+        {
+            Content = JsonContent.Create(new
+            {
+                CategoryId = cat.CategoryId,
+                Name = "Unavailable Snack",
+                Price = 6.00m,
+                StockQuantity = 5
+            })
+        };
+        p3Req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var p3Res = await _client.SendAsync(p3Req);
+        Assert.Equal(HttpStatusCode.Created, p3Res.StatusCode);
+        var p3 = await p3Res.Content.ReadFromJsonAsync<ProductDto>();
+        Assert.NotNull(p3);
+
+        // Set Product 3 to IsAvailable = false
+        var updateP3Req = new HttpRequestMessage(HttpMethod.Put, $"/api/products/{p3.ProductId}")
+        {
+            Content = JsonContent.Create(new
+            {
+                CategoryId = cat.CategoryId,
+                Name = "Unavailable Snack",
+                Price = 6.00m,
+                StockQuantity = 5,
+                IsAvailable = false
+            })
+        };
+        updateP3Req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var updateP3Res = await _client.SendAsync(updateP3Req);
+        Assert.Equal(HttpStatusCode.OK, updateP3Res.StatusCode);
+
+        // ─── Verification A: availableOnly = true by Canteen ─────────────────
+        var filteredRes = await _client.GetAsync($"/api/products/canteen/{canteenId}?availableOnly=true");
+        Assert.Equal(HttpStatusCode.OK, filteredRes.StatusCode);
+        var filteredProducts = await filteredRes.Content.ReadFromJsonAsync<List<ProductDto>>();
+        Assert.NotNull(filteredProducts);
+        Assert.Single(filteredProducts);
+        Assert.Equal("Available InStock Snack", filteredProducts[0].Name);
+
+        // ─── Verification B: default (availableOnly omitted) returns all 3 ──
+        var allRes = await _client.GetAsync($"/api/products/canteen/{canteenId}");
+        Assert.Equal(HttpStatusCode.OK, allRes.StatusCode);
+        var allProducts = await allRes.Content.ReadFromJsonAsync<List<ProductDto>>();
+        Assert.NotNull(allProducts);
+        Assert.Equal(3, allProducts.Count);
+
+        // ─── Verification C: availableOnly = true by Category ────────────────
+        var catFilteredRes = await _client.GetAsync($"/api/products/canteen/{canteenId}/category/{cat.CategoryId}?availableOnly=true");
+        Assert.Equal(HttpStatusCode.OK, catFilteredRes.StatusCode);
+        var catFilteredProducts = await catFilteredRes.Content.ReadFromJsonAsync<List<ProductDto>>();
+        Assert.NotNull(catFilteredProducts);
+        Assert.Single(catFilteredProducts);
+        Assert.Equal("Available InStock Snack", catFilteredProducts[0].Name);
+
+        // ─── Verification D: default by Category returns all 3 ───────────────
+        var catAllRes = await _client.GetAsync($"/api/products/canteen/{canteenId}/category/{cat.CategoryId}");
+        Assert.Equal(HttpStatusCode.OK, catAllRes.StatusCode);
+        var catAllProducts = await catAllRes.Content.ReadFromJsonAsync<List<ProductDto>>();
+        Assert.NotNull(catAllProducts);
+        Assert.Equal(3, catAllProducts.Count);
+    }
+
     // ─── Helper: Register, Create Canteen, and Login to receive CanteenId claim
     private async Task<(string Token, int CanteenId)> RegisterAndCreateCanteenAsync(string prefix, string canteenName)
     {
