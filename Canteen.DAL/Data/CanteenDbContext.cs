@@ -171,6 +171,12 @@ public class CanteenDbContext : DbContext
             .IsRequired();
 
         modelBuilder.Entity<Order>()
+            .Property(o => o.PaymentStatus)
+            .HasMaxLength(30)
+            .IsRequired()
+            .HasDefaultValue("Pending");
+
+        modelBuilder.Entity<Order>()
             .Property(o => o.TotalAmount)
             .HasPrecision(18, 2);
 

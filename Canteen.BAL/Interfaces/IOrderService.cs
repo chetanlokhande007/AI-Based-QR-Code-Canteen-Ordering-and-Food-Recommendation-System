@@ -9,4 +9,6 @@ public interface IOrderService
     Task<OrderDto?> GetByIdAsync(int canteenId, int orderId);
 
     Task<IEnumerable<OrderDto>> GetAllByCanteenAsync(int canteenId);
+
+    Task<OrderDto?> UpdateStatusAsync(int canteenId, int orderId, string newStatus);
 }

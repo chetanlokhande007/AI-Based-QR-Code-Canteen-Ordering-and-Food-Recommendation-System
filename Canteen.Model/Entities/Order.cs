@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Canteen.Model.Entities;
 
@@ -15,6 +15,8 @@ namespace Canteen.Model.Entities
         public string OrderNumber { get; set; } = string.Empty;
 
         public string Status { get; set; } = "Pending";
+
+        public string PaymentStatus { get; set; } = "Pending";
 
         public decimal TotalAmount { get; set; }
 

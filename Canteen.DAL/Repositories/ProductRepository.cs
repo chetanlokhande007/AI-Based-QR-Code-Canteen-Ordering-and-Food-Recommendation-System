@@ -124,7 +124,7 @@ public class ProductRepository : IProductRepository
             throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity must be greater than zero.");
         }
 
-        if (_context.Database.IsRelational())
+        if (_context.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory" && _context.Database.IsRelational())
         {
             var rowsAffected = await _context.Database.ExecuteSqlInterpolatedAsync(
                 $"UPDATE \"Products\" SET \"StockQuantity\" = \"StockQuantity\" - {quantity} WHERE \"ProductId\" = {productId} AND \"CanteenId\" = {canteenId} AND \"IsAvailable\" = TRUE AND \"StockQuantity\" >= {quantity}");
@@ -153,7 +153,7 @@ public class ProductRepository : IProductRepository
             throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity must be greater than zero.");
         }
 
-        if (_context.Database.IsRelational())
+        if (_context.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory" && _context.Database.IsRelational())
         {
             var rowsAffected = await _context.Database.ExecuteSqlInterpolatedAsync(
                 $"UPDATE \"Products\" SET \"StockQuantity\" = \"StockQuantity\" + {quantity} WHERE \"ProductId\" = {productId} AND \"CanteenId\" = {canteenId}");

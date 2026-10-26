@@ -33,6 +33,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICanteenTableService, CanteenTableService>();
 builder.Services.AddScoped<IQrCodeService, QrCodeService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // ─── JWT Authentication ──────────────────────────────────────────────────────
@@ -183,12 +184,12 @@ app.UseExceptionHandler(errApp =>
         context.Response.ContentType = "application/json";
 
         var feature = context.Features.Get<IExceptionHandlerFeature>();
-        var isDev = app.Environment.IsDevelopment();
+        var isDevOrTest = app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing");
 
-        // In development, include the exception message to assist debugging.
+        // In development/testing, include the exception message to assist debugging.
         // In production, return only a generic message to avoid leaking internals.
-        var detail = isDev && feature?.Error != null
-            ? feature.Error.Message
+        var detail = isDevOrTest && feature?.Error != null
+            ? feature.Error.ToString()
             : "An unexpected error occurred. Please try again later.";
 
         await context.Response.WriteAsJsonAsync(new

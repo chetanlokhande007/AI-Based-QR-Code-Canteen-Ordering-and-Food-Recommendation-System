@@ -131,6 +131,13 @@ namespace Canteen.DAL.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasDefaultValue("Pending");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(30)

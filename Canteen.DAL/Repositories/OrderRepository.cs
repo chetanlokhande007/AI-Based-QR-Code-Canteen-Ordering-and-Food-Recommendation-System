@@ -25,10 +25,17 @@ public class OrderRepository : IOrderRepository
 
     public async Task<Order?> GetByIdAsync(
         int canteenId,
-        int orderId)
+        int orderId,
+        bool asNoTracking = true)
     {
-        return await _context.Orders
-            .AsNoTracking()
+        IQueryable<Order> query = _context.Orders;
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query
             .Include(o => o.Items)
                 .ThenInclude(i => i.Product)
             .FirstOrDefaultAsync(o =>
@@ -46,5 +53,18 @@ public class OrderRepository : IOrderRepository
                 .ThenInclude(i => i.Product)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
+    }
+
+    public async Task<Order> UpdateAsync(Order order)
+    {
+        _context.Orders.Update(order);
+        await _context.SaveChangesAsync();
+        return order;
+    }
+
+    public async Task<bool> OrderNumberExistsAsync(int canteenId, string orderNumber)
+    {
+        return await _context.Orders
+            .AnyAsync(o => o.CanteenId == canteenId && o.OrderNumber == orderNumber);
     }
 }
