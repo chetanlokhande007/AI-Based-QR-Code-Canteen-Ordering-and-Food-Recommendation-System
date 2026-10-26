@@ -89,6 +89,40 @@ public class AuthService : IAuthService
         };
     }
 
+    public async Task<AuthResponseDto?> RefreshTokenAsync(int ownerId)
+    {
+        var owner = await _ownerRepository.GetByIdAsync(ownerId);
+        if (owner == null)
+        {
+            return null;
+        }
+
+        var token = GenerateJwtToken(owner);
+        var expiryMinutes = int.TryParse(_configuration["Jwt:ExpiryMinutes"], out var exp) ? exp : 30;
+
+        return new AuthResponseDto
+        {
+            Token = token,
+            OwnerId = owner.OwnerId,
+            FullName = owner.FullName,
+            Email = owner.Email,
+            Role = owner.Role,
+            CanteenId = owner.CanteenId,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
+        };
+    }
+
+    public async Task<string?> GenerateTokenForOwnerAsync(int ownerId)
+    {
+        var owner = await _ownerRepository.GetByIdAsync(ownerId);
+        if (owner == null)
+        {
+            return null;
+        }
+
+        return GenerateJwtToken(owner);
+    }
+
     private string GenerateJwtToken(Owner owner)
     {
         var jwtKey = _configuration["Jwt:Key"]

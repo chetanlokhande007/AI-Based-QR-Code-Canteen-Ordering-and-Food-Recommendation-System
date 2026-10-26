@@ -28,4 +28,8 @@ public interface IProductRepository
     Task<bool> ExistsAsync(int productId);
 
     Task<bool> AnyWithCategoryAsync(int canteenId, int categoryId);
+
+    Task<bool> DeductStockAsync(int canteenId, int productId, int quantity);
+
+    Task<bool> RestoreStockAsync(int canteenId, int productId, int quantity);
 }

@@ -467,6 +467,88 @@ public class ApiIntegrationTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(3, catAllProducts.Count);
     }
 
+    // ─── 12. Owner JWT CanteenId Claim & Immediate Access (BUG-004 fix) ──────
+    [Fact]
+    public async Task CreateCanteen_ReturnsRefreshedTokenWithCanteenIdClaim_EnablingImmediateCategoryCreation()
+    {
+        var email = $"claimOwner_{Guid.NewGuid():N}@test.com";
+        var password = "SecurePassword123!";
+
+        // 1. Register owner: Initial JWT has NO CanteenId claim
+        var regRes = await _client.PostAsJsonAsync("/api/auth/register", new
+        {
+            FullName = "Claim Test Owner",
+            Email = email,
+            Password = password
+        });
+        Assert.Equal(HttpStatusCode.Created, regRes.StatusCode);
+        var regAuth = await regRes.Content.ReadFromJsonAsync<AuthResponseDto>();
+        Assert.NotNull(regAuth);
+        Assert.Null(regAuth.CanteenId);
+
+        // 2. Create canteen: Returns CanteenDto with freshly minted Token containing CanteenId
+        var canteenReq = new HttpRequestMessage(HttpMethod.Post, "/api/canteens")
+        {
+            Content = JsonContent.Create(new { Name = "Claim Verified Canteen", Location = "Tower 2" })
+        };
+        canteenReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", regAuth.Token);
+        var canteenRes = await _client.SendAsync(canteenReq);
+        Assert.Equal(HttpStatusCode.Created, canteenRes.StatusCode);
+        var canteen = await canteenRes.Content.ReadFromJsonAsync<CanteenDto>();
+        Assert.NotNull(canteen);
+        Assert.False(string.IsNullOrWhiteSpace(canteen.Token), "Canteen creation must return an updated JWT token containing CanteenId.");
+
+        // 3. Immediately create a Category USING THE NEW TOKEN without re-logging in!
+        var catReq = new HttpRequestMessage(HttpMethod.Post, $"/api/canteens/{canteen.CanteenId}/categories")
+        {
+            Content = JsonContent.Create(new { Name = "Immediate Breakfast" })
+        };
+        catReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", canteen.Token);
+        var catRes = await _client.SendAsync(catReq);
+
+        // Assert: MUST succeed with 201 Created (NOT 403 Forbidden!)
+        Assert.Equal(HttpStatusCode.Created, catRes.StatusCode);
+    }
+
+    // ─── 13. Auth Refresh Endpoint Updates Owner Token ───────────────────────
+    [Fact]
+    public async Task AuthRefresh_ReturnsUpdatedTokenWithCanteenIdClaim()
+    {
+        var email = $"refreshOwner_{Guid.NewGuid():N}@test.com";
+        var password = "SecurePassword123!";
+
+        // 1. Register owner
+        var regRes = await _client.PostAsJsonAsync("/api/auth/register", new
+        {
+            FullName = "Refresh Test Owner",
+            Email = email,
+            Password = password
+        });
+        var regAuth = await regRes.Content.ReadFromJsonAsync<AuthResponseDto>();
+        Assert.NotNull(regAuth);
+
+        // 2. Create canteen using initial token
+        var canteenReq = new HttpRequestMessage(HttpMethod.Post, "/api/canteens")
+        {
+            Content = JsonContent.Create(new { Name = "Refresh Canteen", Location = "Tower 3" })
+        };
+        canteenReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", regAuth.Token);
+        var canteenRes = await _client.SendAsync(canteenReq);
+        var canteen = await canteenRes.Content.ReadFromJsonAsync<CanteenDto>();
+        Assert.NotNull(canteen);
+
+        // 3. Call POST /api/auth/refresh using initial token (which didn't have CanteenId)
+        var refreshReq = new HttpRequestMessage(HttpMethod.Post, "/api/auth/refresh");
+        refreshReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", regAuth.Token);
+        var refreshRes = await _client.SendAsync(refreshReq);
+        Assert.Equal(HttpStatusCode.OK, refreshRes.StatusCode);
+
+        var refreshedAuth = await refreshRes.Content.ReadFromJsonAsync<AuthResponseDto>();
+        Assert.NotNull(refreshedAuth);
+        Assert.Equal(canteen.CanteenId, refreshedAuth.CanteenId);
+        Assert.False(string.IsNullOrWhiteSpace(refreshedAuth.Token));
+    }
+
     // ─── Helper: Register, Create Canteen, and Login to receive CanteenId claim
     private async Task<(string Token, int CanteenId)> RegisterAndCreateCanteenAsync(string prefix, string canteenName)
     {

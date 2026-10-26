@@ -198,6 +198,20 @@ public class SecurityDefectTests
         public Task<bool> DeleteAsync(int canteenId, int productId) => Task.FromResult(true);
         public Task<bool> ExistsAsync(int id) => Task.FromResult(Products.Any(p => p.ProductId == id));
         public Task<bool> AnyWithCategoryAsync(int canteenId, int categoryId) => Task.FromResult(Products.Any(p => p.CanteenId == canteenId && p.CategoryId == categoryId));
+        public Task<bool> DeductStockAsync(int canteenId, int productId, int quantity)
+        {
+            var product = Products.FirstOrDefault(p => p.ProductId == productId && p.CanteenId == canteenId);
+            if (product == null || !product.IsAvailable || product.StockQuantity < quantity) return Task.FromResult(false);
+            product.StockQuantity -= quantity;
+            return Task.FromResult(true);
+        }
+        public Task<bool> RestoreStockAsync(int canteenId, int productId, int quantity)
+        {
+            var product = Products.FirstOrDefault(p => p.ProductId == productId && p.CanteenId == canteenId);
+            if (product == null) return Task.FromResult(false);
+            product.StockQuantity += quantity;
+            return Task.FromResult(true);
+        }
     }
 
     private class FakeTableRepository : ICanteenTableRepository

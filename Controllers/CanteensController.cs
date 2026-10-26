@@ -12,10 +12,12 @@ namespace CanteenManagementSystem.Controllers;
 public class CanteensController : ControllerBase
 {
     private readonly ICanteenService _service;
+    private readonly IAuthService _authService;
 
-    public CanteensController(ICanteenService service)
+    public CanteensController(ICanteenService service, IAuthService authService)
     {
         _service = service;
+        _authService = authService;
     }
 
     /// <summary>Get all canteens.</summary>
@@ -48,6 +50,10 @@ public class CanteensController : ControllerBase
         try
         {
             var created = await _service.CreateAsync(dto, ownerId);
+            if (ownerId.HasValue)
+            {
+                created.Token = await _authService.GenerateTokenForOwnerAsync(ownerId.Value);
+            }
             return CreatedAtAction(nameof(GetById), new { id = created.CanteenId }, created);
         }
         catch (InvalidOperationException ex)

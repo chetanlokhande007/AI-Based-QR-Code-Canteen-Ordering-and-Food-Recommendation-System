@@ -116,4 +116,62 @@ public class ProductRepository : IProductRepository
         => await _context.Products.AnyAsync(p =>
             p.CanteenId == canteenId &&
             p.CategoryId == categoryId);
+
+    public async Task<bool> DeductStockAsync(int canteenId, int productId, int quantity)
+    {
+        if (quantity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity must be greater than zero.");
+        }
+
+        if (_context.Database.IsRelational())
+        {
+            var rowsAffected = await _context.Database.ExecuteSqlInterpolatedAsync(
+                $"UPDATE \"Products\" SET \"StockQuantity\" = \"StockQuantity\" - {quantity} WHERE \"ProductId\" = {productId} AND \"CanteenId\" = {canteenId} AND \"IsAvailable\" = TRUE AND \"StockQuantity\" >= {quantity}");
+
+            return rowsAffected > 0;
+        }
+
+        var product = await _context.Products.FirstOrDefaultAsync(p =>
+            p.ProductId == productId &&
+            p.CanteenId == canteenId);
+
+        if (product == null || !product.IsAvailable || product.StockQuantity < quantity)
+        {
+            return false;
+        }
+
+        product.StockQuantity -= quantity;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> RestoreStockAsync(int canteenId, int productId, int quantity)
+    {
+        if (quantity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity must be greater than zero.");
+        }
+
+        if (_context.Database.IsRelational())
+        {
+            var rowsAffected = await _context.Database.ExecuteSqlInterpolatedAsync(
+                $"UPDATE \"Products\" SET \"StockQuantity\" = \"StockQuantity\" + {quantity} WHERE \"ProductId\" = {productId} AND \"CanteenId\" = {canteenId}");
+
+            return rowsAffected > 0;
+        }
+
+        var product = await _context.Products.FirstOrDefaultAsync(p =>
+            p.ProductId == productId &&
+            p.CanteenId == canteenId);
+
+        if (product == null)
+        {
+            return false;
+        }
+
+        product.StockQuantity += quantity;
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

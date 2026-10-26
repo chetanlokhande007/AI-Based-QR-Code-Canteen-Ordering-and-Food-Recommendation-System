@@ -126,6 +126,26 @@ public class ProductService : IProductService
     public async Task<bool> DeleteAsync(int canteenId, int productId)
         => await _repo.DeleteAsync(canteenId, productId);
 
+    public async Task<bool> ReserveStockAsync(int canteenId, int productId, int quantity)
+    {
+        if (quantity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity to reserve must be greater than zero.");
+        }
+
+        return await _repo.DeductStockAsync(canteenId, productId, quantity);
+    }
+
+    public async Task<bool> ReleaseStockAsync(int canteenId, int productId, int quantity)
+    {
+        if (quantity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity to release must be greater than zero.");
+        }
+
+        return await _repo.RestoreStockAsync(canteenId, productId, quantity);
+    }
+
     private static ProductDto ToDto(Product p) => new()
     {
         ProductId = p.ProductId,

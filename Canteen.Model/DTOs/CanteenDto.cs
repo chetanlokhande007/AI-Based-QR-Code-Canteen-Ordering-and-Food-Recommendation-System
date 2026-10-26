@@ -9,6 +9,7 @@ namespace Canteen.Model.DTOs
         public string Location { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string? Token { get; set; }
     }
 
     public class CreateCanteenDto

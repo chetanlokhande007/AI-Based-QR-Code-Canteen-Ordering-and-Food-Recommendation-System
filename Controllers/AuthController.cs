@@ -1,5 +1,6 @@
 using Canteen.BAL.Interfaces;
 using Canteen.Model.DTOs;
+using CanteenManagementSystem.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -57,6 +58,28 @@ public class AuthController : ControllerBase
         if (response == null)
         {
             return Unauthorized(new { message = "Invalid email or password." });
+        }
+
+        return Ok(response);
+    }
+
+    /// <summary>Refresh the authenticated owner's JWT token to reflect current database state.</summary>
+    [HttpPost("refresh")]
+    [Authorize]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Refresh()
+    {
+        var ownerId = User.GetOwnerId();
+        if (!ownerId.HasValue)
+        {
+            return Unauthorized();
+        }
+
+        var response = await _authService.RefreshTokenAsync(ownerId.Value);
+        if (response == null)
+        {
+            return Unauthorized();
         }
 
         return Ok(response);
