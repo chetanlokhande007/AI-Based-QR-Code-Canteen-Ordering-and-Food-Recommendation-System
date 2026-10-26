@@ -112,6 +112,77 @@ namespace Canteen.DAL.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.Order", b =>
+                {
+                    b.Property<int>("OrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrderId"));
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<int>("TableId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("OrderId");
+
+                    b.HasIndex("CanteenId", "OrderNumber")
+                        .IsUnique();
+
+                    b.HasIndex("CanteenId", "TableId");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.OrderItem", b =>
+                {
+                    b.Property<int>("OrderItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrderItemId"));
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("OrderItemId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("OrderItems");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.Owner", b =>
                 {
                     b.Property<int>("OwnerId")
@@ -226,6 +297,45 @@ namespace Canteen.DAL.Migrations
                     b.Navigation("Canteen");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.Order", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany()
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.CanteenTable", "Table")
+                        .WithMany()
+                        .HasForeignKey("CanteenId", "TableId")
+                        .HasPrincipalKey("CanteenId", "TableId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+
+                    b.Navigation("Table");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.OrderItem", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Order", "Order")
+                        .WithMany("Items")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.Owner", b =>
                 {
                     b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
@@ -266,6 +376,11 @@ namespace Canteen.DAL.Migrations
             modelBuilder.Entity("Canteen.Model.Entities.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.Order", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }
