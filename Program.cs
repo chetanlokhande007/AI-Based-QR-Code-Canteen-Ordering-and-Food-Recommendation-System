@@ -26,6 +26,7 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICanteenTableRepository, CanteenTableRepository>();
 builder.Services.AddScoped<IOwnerRepository, OwnerRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 // ─── BAL – Services ──────────────────────────────────────────────────────────
 builder.Services.AddScoped<ICanteenService, CanteenService>();
@@ -35,6 +36,22 @@ builder.Services.AddScoped<ICanteenTableService, CanteenTableService>();
 builder.Services.AddScoped<IQrCodeService, QrCodeService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddHttpClient<RazorpayPaymentService>();
+var useMockPayment = builder.Configuration.GetValue<bool>("Razorpay:UseMock");
+if (useMockPayment)
+{
+    if (builder.Environment.IsProduction())
+    {
+        throw new InvalidOperationException("Mock payment provider is strictly forbidden in Production environment.");
+    }
+
+    builder.Services.AddScoped<IPaymentService, MockPaymentService>();
+}
+else
+{
+    builder.Services.AddScoped<IPaymentService, RazorpayPaymentService>();
+}
 
 // ─── JWT Authentication ──────────────────────────────────────────────────────
 var jwtKey = builder.Configuration["Jwt:Key"]

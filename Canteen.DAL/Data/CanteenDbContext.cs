@@ -26,6 +26,10 @@ public class CanteenDbContext : DbContext
 
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
+    public DbSet<Payment> Payments => Set<Payment>();
+
+    public DbSet<PaymentWebhookEvent> PaymentWebhookEvents => Set<PaymentWebhookEvent>();
+
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
     {
@@ -229,5 +233,59 @@ public class CanteenDbContext : DbContext
             .WithMany()
             .HasForeignKey(oi => oi.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure Payment entity
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.HasKey(p => p.PaymentId);
+
+            entity.Property(p => p.RazorpayOrderId)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(p => p.RazorpayPaymentId)
+                .HasMaxLength(100);
+
+            entity.Property(p => p.RazorpaySignature)
+                .HasMaxLength(200);
+
+            entity.Property(p => p.Amount)
+                .HasPrecision(18, 2);
+
+            entity.Property(p => p.Currency)
+                .HasMaxLength(10)
+                .IsRequired();
+
+            entity.Property(p => p.Status)
+                .HasMaxLength(30)
+                .IsRequired();
+
+            entity.HasIndex(p => p.RazorpayOrderId)
+                .IsUnique();
+
+            entity.HasIndex(p => new { p.CanteenId, p.OrderId });
+
+            entity.HasOne(p => p.Order)
+                .WithMany()
+                .HasForeignKey(p => p.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configure PaymentWebhookEvent entity
+        modelBuilder.Entity<PaymentWebhookEvent>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.EventId)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(e => e.EventType)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.HasIndex(e => e.EventId)
+                .IsUnique();
+        });
     }
 }

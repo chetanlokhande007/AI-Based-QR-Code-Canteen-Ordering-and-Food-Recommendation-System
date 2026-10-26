@@ -43,6 +43,23 @@ public class OrderRepository : IOrderRepository
                 o.OrderId == orderId);
     }
 
+    public async Task<Order?> GetByIdAsync(
+        int orderId,
+        bool asNoTracking = true)
+    {
+        IQueryable<Order> query = _context.Orders;
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+            .FirstOrDefaultAsync(o => o.OrderId == orderId);
+    }
+
     public async Task<IEnumerable<Order>> GetAllByCanteenAsync(
         int canteenId)
     {

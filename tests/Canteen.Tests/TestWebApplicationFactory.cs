@@ -1,3 +1,5 @@
+using Canteen.BAL.Interfaces;
+using Canteen.BAL.Services;
 using Canteen.DAL.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -30,6 +32,13 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                 options.UseInMemoryDatabase(_dbName);
                 options.UseInternalServiceProvider(internalSp);
             });
+
+            var paymentDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IPaymentService));
+            if (paymentDescriptor != null)
+            {
+                services.Remove(paymentDescriptor);
+            }
+            services.AddScoped<IPaymentService, MockPaymentService>();
         });
 
         builder.UseEnvironment("Testing");
