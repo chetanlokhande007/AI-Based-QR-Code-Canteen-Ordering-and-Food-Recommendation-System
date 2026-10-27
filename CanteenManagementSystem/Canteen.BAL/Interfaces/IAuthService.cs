@@ -8,4 +8,6 @@ public interface IAuthService
     Task<AuthResponseDto?> LoginAsync(LoginRequestDto dto);
     Task<AuthResponseDto?> RefreshTokenAsync(int ownerId);
     Task<string?> GenerateTokenForOwnerAsync(int ownerId);
+    Task<ForgotPasswordResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto dto, bool isDevelopment);
+    Task<bool> ResetPasswordAsync(ResetPasswordRequestDto dto);
 }

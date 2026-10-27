@@ -260,4 +260,4 @@ app.MapHub<OrderHub>("/hubs/orders");
 
 app.Run();
 
-public partial class Program { }
+

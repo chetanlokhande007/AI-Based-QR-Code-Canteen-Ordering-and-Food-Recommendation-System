@@ -58,6 +58,10 @@ public class CanteenDbContext : DbContext
             .IsRequired();
 
         modelBuilder.Entity<Owner>()
+            .Property(o => o.PasswordResetToken)
+            .HasMaxLength(200);
+
+        modelBuilder.Entity<Owner>()
             .HasOne(o => o.Canteen)
             .WithMany()
             .HasForeignKey(o => o.CanteenId)

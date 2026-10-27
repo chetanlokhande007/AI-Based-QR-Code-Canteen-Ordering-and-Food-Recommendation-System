@@ -12,10 +12,12 @@ namespace CanteenManagementSystem.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IWebHostEnvironment _env;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, IWebHostEnvironment env)
     {
         _authService = authService;
+        _env = env;
     }
 
     /// <summary>Register a new canteen owner.</summary>
@@ -83,5 +85,43 @@ public class AuthController : ControllerBase
         }
 
         return Ok(response);
+    }
+
+    /// <summary>Request a password reset token.</summary>
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ForgotPasswordResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var isDev = _env.IsDevelopment() || _env.IsEnvironment("Testing");
+        var result = await _authService.ForgotPasswordAsync(dto, isDev);
+        return Ok(result);
+    }
+
+    /// <summary>Reset password using a reset token.</summary>
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var success = await _authService.ResetPasswordAsync(dto);
+        if (!success)
+        {
+            return BadRequest(new { message = "Invalid, expired, or previously used password reset token." });
+        }
+
+        return Ok(new { message = "Password has been successfully reset. You can now log in with your new password." });
     }
 }

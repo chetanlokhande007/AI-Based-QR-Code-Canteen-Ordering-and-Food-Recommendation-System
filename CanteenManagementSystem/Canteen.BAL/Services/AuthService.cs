@@ -123,6 +123,63 @@ public class AuthService : IAuthService
         return GenerateJwtToken(owner);
     }
 
+    public async Task<ForgotPasswordResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto dto, bool isDevelopment)
+    {
+        var response = new ForgotPasswordResponseDto
+        {
+            Message = "If an account with this email exists, password reset instructions have been generated."
+        };
+
+        var owner = await _ownerRepository.GetByEmailAsync(dto.Email);
+        if (owner == null)
+        {
+            return response;
+        }
+
+        // Generate cryptographically secure token (32 bytes = 64 hex characters)
+        var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
+        owner.PasswordResetToken = token;
+        owner.PasswordResetTokenExpiry = DateTime.UtcNow.AddMinutes(30);
+
+        await _ownerRepository.UpdateAsync(owner);
+
+        if (isDevelopment)
+        {
+            response.ResetToken = token;
+        }
+
+        return response;
+    }
+
+    public async Task<bool> ResetPasswordAsync(ResetPasswordRequestDto dto)
+    {
+        var owner = await _ownerRepository.GetByEmailAsync(dto.Email);
+        if (owner == null)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(owner.PasswordResetToken) ||
+            !CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(owner.PasswordResetToken),
+                Encoding.UTF8.GetBytes(dto.Token.Trim())))
+        {
+            return false;
+        }
+
+        if (!owner.PasswordResetTokenExpiry.HasValue || owner.PasswordResetTokenExpiry.Value < DateTime.UtcNow)
+        {
+            return false;
+        }
+
+        owner.PasswordHash = HashPassword(dto.NewPassword);
+        owner.PasswordResetToken = null;
+        owner.PasswordResetTokenExpiry = null;
+
+        await _ownerRepository.UpdateAsync(owner);
+        return true;
+    }
+
     private string GenerateJwtToken(Owner owner)
     {
         var jwtKey = _configuration["Jwt:Key"]

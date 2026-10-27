@@ -1,11 +1,323 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, inject, signal, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../../core/services/auth.service';
+
+export type AuthViewMode = 'login' | 'register' | 'forgot' | 'reset';
 
 @Component({
   selector: 'app-login',
-  imports: [],
+  standalone: true,
+  imports: [FormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.css',
+  styleUrl: './login.css'
 })
-export class Login {
+export class Login implements OnInit {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
 
+  ngOnInit(): void {
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/dashboard']);
+    }
+  }
+
+  // Active view: 'login' | 'register' | 'forgot' | 'reset'
+  readonly activeTab = signal<AuthViewMode>('login');
+
+  // Login & Registration inputs
+  email = '';
+  password = '';
+  fullName = '';
+  confirmPassword = '';
+  rememberMe = true;
+
+  // Password Recovery inputs
+  resetEmail = '';
+  resetToken = '';
+  newPassword = '';
+  confirmNewPassword = '';
+  readonly devResetToken = signal<string | null>(null);
+
+  // UI state signals
+  readonly showPassword = signal(false);
+  readonly loading = signal(false);
+  readonly errorMessage = signal('');
+  readonly successMessage = signal('');
+
+  switchTab(tab: AuthViewMode): void {
+    this.activeTab.set(tab);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.cdr.markForCheck();
+  }
+
+  openForgotPassword(): void {
+    this.activeTab.set('forgot');
+    this.resetEmail = this.email.trim();
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.cdr.markForCheck();
+  }
+
+  openResetPassword(): void {
+    this.activeTab.set('reset');
+    if (!this.resetEmail) {
+      this.resetEmail = this.email.trim();
+    }
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.cdr.markForCheck();
+  }
+
+  fillDemoCredentials(): void {
+    this.activeTab.set('login');
+    this.email = 'owner@canteen.com';
+    this.password = 'Password123!';
+    this.errorMessage.set('');
+    this.successMessage.set('Demo owner credentials applied! Click "Sign In" to continue.');
+    this.cdr.markForCheck();
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword.update((visible) => !visible);
+  }
+
+  onSubmit(): void {
+    const mode = this.activeTab();
+    if (mode === 'login') {
+      this.handleLogin();
+    } else if (mode === 'register') {
+      this.handleRegister();
+    } else if (mode === 'forgot') {
+      this.handleForgotPassword();
+    } else if (mode === 'reset') {
+      this.handleResetPassword();
+    }
+  }
+
+  private handleLogin(): void {
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    const trimmedEmail = this.email.trim();
+    if (!trimmedEmail || !this.password) {
+      this.errorMessage.set('Please provide both your email and password.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(trimmedEmail)) {
+      this.errorMessage.set('Please enter a valid email address.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.loading.set(true);
+    this.cdr.markForCheck();
+
+    this.authService.login({
+      email: trimmedEmail,
+      password: this.password
+    }).subscribe({
+      next: (response) => {
+        this.loading.set(false);
+        this.successMessage.set(`Welcome back, ${response.fullName}! Redirecting to dashboard...`);
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']);
+        }, 500);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loading.set(false);
+        if (error.status === 401) {
+          this.errorMessage.set(error.error?.message || 'Invalid email or password. Please try again.');
+        } else if (error.status === 400) {
+          this.errorMessage.set(error.error?.message || 'Please check the provided login credentials.');
+        } else if (error.status === 0) {
+          this.errorMessage.set('Cannot reach backend API (http://localhost:5151). Please verify the server is running.');
+        } else {
+          this.errorMessage.set(error.error?.message || 'An unexpected error occurred. Please try again.');
+        }
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private handleRegister(): void {
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    const trimmedName = this.fullName.trim();
+    const trimmedEmail = this.email.trim();
+
+    if (!trimmedName || !trimmedEmail || !this.password) {
+      this.errorMessage.set('All fields are required.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (trimmedName.length < 2) {
+      this.errorMessage.set('Full name must be at least 2 characters long.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(trimmedEmail)) {
+      this.errorMessage.set('Please enter a valid email address.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.password.length < 6) {
+      this.errorMessage.set('Password must be at least 6 characters long.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.password !== this.confirmPassword) {
+      this.errorMessage.set('Passwords do not match. Please re-enter.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.loading.set(true);
+    this.cdr.markForCheck();
+
+    this.authService.register({
+      fullName: trimmedName,
+      email: trimmedEmail,
+      password: this.password
+    }).subscribe({
+      next: (response) => {
+        this.loading.set(false);
+        this.successMessage.set(`Welcome, ${response.fullName}! Your canteen owner account was created successfully. Redirecting to dashboard...`);
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']);
+        }, 600);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loading.set(false);
+        if (error.status === 409) {
+          this.errorMessage.set(error.error?.message || 'An account with this email address already exists.');
+        } else if (error.status === 400) {
+          this.errorMessage.set(error.error?.message || 'Please verify the registration details and try again.');
+        } else if (error.status === 0) {
+          this.errorMessage.set('Cannot reach backend API (http://localhost:5151). Please verify the server is running.');
+        } else {
+          this.errorMessage.set(error.error?.message || 'Registration failed. Please try again.');
+        }
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private handleForgotPassword(): void {
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    const trimmedEmail = this.resetEmail.trim();
+    if (!trimmedEmail) {
+      this.errorMessage.set('Please enter your email address.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(trimmedEmail)) {
+      this.errorMessage.set('Please enter a valid email address.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.loading.set(true);
+    this.cdr.markForCheck();
+
+    this.authService.forgotPassword({ email: trimmedEmail }).subscribe({
+      next: (response) => {
+        this.loading.set(false);
+        this.successMessage.set(response.message);
+
+        // In development, auto-populate the token and move to 'reset' step!
+        if (response.resetToken) {
+          this.devResetToken.set(response.resetToken);
+          this.resetToken = response.resetToken;
+          this.successMessage.set(
+            'Reset token generated! Enter your new password below to complete recovery.'
+          );
+        }
+
+        // Advance to the token entry step
+        this.activeTab.set('reset');
+        this.cdr.markForCheck();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.errorMessage.set(
+          error.error?.message || 'Failed to process password reset request. Please try again.'
+        );
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private handleResetPassword(): void {
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    const trimmedEmail = this.resetEmail.trim();
+    const trimmedToken = this.resetToken.trim();
+
+    if (!trimmedEmail || !trimmedToken || !this.newPassword) {
+      this.errorMessage.set('Email, reset token, and new password are all required.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.newPassword.length < 6) {
+      this.errorMessage.set('New password must be at least 6 characters long.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.newPassword !== this.confirmNewPassword) {
+      this.errorMessage.set('Passwords do not match. Please verify both passwords.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.loading.set(true);
+    this.cdr.markForCheck();
+
+    this.authService.resetPassword({
+      email: trimmedEmail,
+      token: trimmedToken,
+      newPassword: this.newPassword
+    }).subscribe({
+      next: (response) => {
+        this.loading.set(false);
+        this.email = trimmedEmail;
+        this.password = '';
+        this.resetToken = '';
+        this.newPassword = '';
+        this.confirmNewPassword = '';
+        this.devResetToken.set(null);
+        this.activeTab.set('login');
+        this.successMessage.set(response.message || 'Password has been reset successfully! Please sign in with your new password.');
+        this.cdr.markForCheck();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.errorMessage.set(
+          error.error?.message || 'Invalid or expired reset token. Please check and try again.'
+        );
+        this.cdr.markForCheck();
+      }
+    });
+  }
 }

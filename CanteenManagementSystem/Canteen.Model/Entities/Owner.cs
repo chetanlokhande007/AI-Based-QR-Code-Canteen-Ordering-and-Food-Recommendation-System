@@ -18,6 +18,10 @@ public class Owner
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public string? PasswordResetToken { get; set; }
+
+    public DateTime? PasswordResetTokenExpiry { get; set; }
+
     // Navigation property
     public Canteen? Canteen { get; set; }
 }
