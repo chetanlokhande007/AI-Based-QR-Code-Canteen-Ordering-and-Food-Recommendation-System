@@ -1,16 +1,27 @@
 ## Visual Studio / VS Code caches & local user settings
 .vs/
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 *.user
 *.userosscache
 *.sln.docstates
 *.suo
 
-## Build artifacts & temporary outputs
+## Build artifacts & temporary outputs (.NET)
 [Bb]in/
 [Oo]bj/
 **/[Bb]in/
 **/[Oo]bj/
+
+## Frontend build outputs & dependencies (Angular/Node)
+**/node_modules/
+**/dist/
+**/.angular/cache
+npm-debug.log*
+yarn-error.log*
 
 ## Test / logs / crash dumps
 *.log
