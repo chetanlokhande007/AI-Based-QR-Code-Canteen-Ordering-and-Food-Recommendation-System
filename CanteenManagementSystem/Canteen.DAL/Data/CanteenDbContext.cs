@@ -67,6 +67,13 @@ public class CanteenDbContext : DbContext
             .HasForeignKey(o => o.CanteenId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        // One owner owns many canteens
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .HasOne(c => c.Owner)
+            .WithMany(o => o.Canteens)
+            .HasForeignKey(c => c.OwnerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Explicitly declare primary keys for entities whose key name
         // does not follow the default EF Core convention (EntityNameId).
         modelBuilder.Entity<CanteenTable>()

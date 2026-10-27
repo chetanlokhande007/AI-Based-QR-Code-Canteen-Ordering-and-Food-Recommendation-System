@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Canteen.BAL.Interfaces;
 using Canteen.DAL.Interfaces;
 using Canteen.Model.DTOs;
@@ -9,11 +13,22 @@ public class CanteenService : ICanteenService
 {
     private readonly ICanteenRepository _repo;
     private readonly IOwnerRepository _ownerRepo;
+    private readonly IProductRepository _productRepo;
+    private readonly ICanteenTableRepository _tableRepo;
+    private readonly IOrderRepository _orderRepo;
 
-    public CanteenService(ICanteenRepository repo, IOwnerRepository ownerRepo)
+    public CanteenService(
+        ICanteenRepository repo,
+        IOwnerRepository ownerRepo,
+        IProductRepository productRepo,
+        ICanteenTableRepository tableRepo,
+        IOrderRepository orderRepo)
     {
         _repo = repo;
         _ownerRepo = ownerRepo;
+        _productRepo = productRepo;
+        _tableRepo = tableRepo;
+        _orderRepo = orderRepo;
     }
 
     public async Task<IEnumerable<CanteenDto>> GetAllAsync()
@@ -34,19 +49,31 @@ public class CanteenService : ICanteenService
         if (ownerId.HasValue)
         {
             owner = await _ownerRepo.GetByIdAsync(ownerId.Value);
-            if (owner != null && owner.CanteenId.HasValue)
-            {
-                throw new InvalidOperationException("This owner already has an assigned canteen.");
-            }
         }
 
         var entity = new Model.Entities.Canteen
         {
+            OwnerId = ownerId,
             Name = dto.Name,
-            Location = dto.Location
+            Location = dto.Location,
+            CanteenType = dto.CanteenType,
+            Description = dto.Description,
+            ContactPhone = dto.ContactPhone,
+            ContactEmail = dto.ContactEmail,
+            AddressLine1 = dto.AddressLine1,
+            AddressLine2 = dto.AddressLine2,
+            City = dto.City,
+            State = dto.State,
+            PostalCode = dto.PostalCode,
+            Country = dto.Country,
+            Landmark = dto.Landmark,
+            OperatingHoursJson = dto.OperatingHoursJson,
+            ImageUrl = dto.ImageUrl,
+            IsActive = true
         };
         var created = await _repo.AddAsync(entity);
 
+        // Update the owner's active canteen context to the newly created canteen
         if (owner != null)
         {
             owner.CanteenId = created.CanteenId;
@@ -63,6 +90,19 @@ public class CanteenService : ICanteenService
 
         entity.Name = dto.Name;
         entity.Location = dto.Location;
+        entity.CanteenType = dto.CanteenType ?? entity.CanteenType;
+        entity.Description = dto.Description ?? entity.Description;
+        entity.ContactPhone = dto.ContactPhone ?? entity.ContactPhone;
+        entity.ContactEmail = dto.ContactEmail ?? entity.ContactEmail;
+        entity.AddressLine1 = dto.AddressLine1 ?? entity.AddressLine1;
+        entity.AddressLine2 = dto.AddressLine2 ?? entity.AddressLine2;
+        entity.City = dto.City ?? entity.City;
+        entity.State = dto.State ?? entity.State;
+        entity.PostalCode = dto.PostalCode ?? entity.PostalCode;
+        entity.Country = dto.Country ?? entity.Country;
+        entity.Landmark = dto.Landmark ?? entity.Landmark;
+        entity.OperatingHoursJson = dto.OperatingHoursJson ?? entity.OperatingHoursJson;
+        entity.ImageUrl = dto.ImageUrl ?? entity.ImageUrl;
         entity.IsActive = dto.IsActive;
 
         var updated = await _repo.UpdateAsync(entity);
@@ -72,12 +112,87 @@ public class CanteenService : ICanteenService
     public async Task<bool> DeleteAsync(int id)
         => await _repo.DeleteAsync(id);
 
+    public async Task<IEnumerable<CanteenSummaryDto>> GetOwnerCanteensAsync(int ownerId)
+    {
+        var canteens = await _repo.GetByOwnerIdAsync(ownerId);
+        var summaries = new List<CanteenSummaryDto>();
+        var todayUtc = DateTime.UtcNow.Date;
+
+        foreach (var c in canteens)
+        {
+            var products = await _productRepo.GetAllByCanteenAsync(c.CanteenId);
+            var tables = await _tableRepo.GetAllByCanteenAsync(c.CanteenId);
+            var orders = await _orderRepo.GetAllByCanteenAsync(c.CanteenId);
+
+            var menuItemsCount = products.Count();
+            var tablesCount = tables.Count();
+            var todayOrdersCount = orders.Count(o => o.CreatedAt.Date == todayUtc);
+
+            var isSetupComplete = !string.IsNullOrWhiteSpace(c.AddressLine1) && (tablesCount > 0 || menuItemsCount > 0);
+
+            string status;
+            if (!c.IsActive)
+            {
+                status = "Inactive";
+            }
+            else if (!isSetupComplete)
+            {
+                status = "Setup Pending";
+            }
+            else
+            {
+                status = "Active";
+            }
+
+            var locationDisplay = !string.IsNullOrWhiteSpace(c.AddressLine1)
+                ? $"{c.AddressLine1}, {c.City}"
+                : (!string.IsNullOrWhiteSpace(c.Location) && c.Location != "Location will be shown here" ? c.Location : "Not configured yet");
+
+            summaries.Add(new CanteenSummaryDto
+            {
+                CanteenId = c.CanteenId,
+                Name = c.Name,
+                Location = locationDisplay,
+                Description = !string.IsNullOrWhiteSpace(c.Description)
+                    ? c.Description
+                    : (isSetupComplete ? "A cafe serving fresh snacks, meals, and beverages for students and staff." : "Complete the setup to start managing your menu, tables, and orders for this canteen."),
+                ImageUrl = c.ImageUrl,
+                Status = status,
+                MenuItemsCount = menuItemsCount,
+                TablesCount = tablesCount,
+                TodayOrdersCount = todayOrdersCount,
+                IsActive = c.IsActive,
+                IsSetupComplete = isSetupComplete,
+                CreatedAt = c.CreatedAt
+            });
+        }
+
+        return summaries;
+    }
+
+    public async Task<bool> IsOwnerAuthorizedAsync(int ownerId, int canteenId)
+        => await _repo.IsOwnerAuthorizedAsync(ownerId, canteenId);
+
     private static CanteenDto ToDto(Model.Entities.Canteen c) => new()
     {
         CanteenId = c.CanteenId,
         Name = c.Name,
         Location = c.Location,
+        CanteenType = c.CanteenType,
+        Description = c.Description,
+        ContactPhone = c.ContactPhone,
+        ContactEmail = c.ContactEmail,
+        AddressLine1 = c.AddressLine1,
+        AddressLine2 = c.AddressLine2,
+        City = c.City,
+        State = c.State,
+        PostalCode = c.PostalCode,
+        Country = c.Country,
+        Landmark = c.Landmark,
+        OperatingHoursJson = c.OperatingHoursJson,
+        ImageUrl = c.ImageUrl,
         IsActive = c.IsActive,
-        CreatedAt = c.CreatedAt
+        CreatedAt = c.CreatedAt,
+        OwnerId = c.OwnerId
     };
 }

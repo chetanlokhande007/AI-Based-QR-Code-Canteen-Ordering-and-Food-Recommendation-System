@@ -1,0 +1,1421 @@
+<div class="canteen-setup-layout">
+
+  <!-- Left Sidebar (Enterprise SaaS Navigation matching Reference) -->
+  <aside class="sidebar-container">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M18 2h-3a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h3" />
+            <path d="M6 2v14a3 3 0 0 0 3 3h3" />
+            <line x1="6" y1="6" x2="12" y2="6" />
+            <line x1="6" y1="10" x2="12" y2="10" />
+          </svg>
+        </div>
+        <div class="brand-text-block">
+          <span class="brand-title">CanteenHub</span>
+          <span class="brand-subtitle">SMART CANTEEN OS</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Canteen Setup (Active) -->
+      <a class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span class="nav-label">Canteen Setup</span>
+      </a>
+
+      <!-- Dashboard -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="7" height="9" x="3" y="3" rx="1" />
+          <rect width="7" height="5" x="14" y="3" rx="1" />
+          <rect width="7" height="9" x="14" y="12" rx="1" />
+          <rect width="7" height="5" x="3" y="16" rx="1" />
+        </svg>
+        <span class="nav-label">Dashboard</span>
+      </a>
+
+      <!-- Food Items -->
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+          <path d="M7 2v20" />
+          <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+        </svg>
+        <span class="nav-label">Food Items</span>
+      </a>
+
+      <!-- Categories -->
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+        </svg>
+        <span class="nav-label">Categories</span>
+      </a>
+
+      <!-- Tables & QR Codes -->
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="5" height="5" x="3" y="3" rx="1" />
+          <rect width="5" height="5" x="16" y="3" rx="1" />
+          <rect width="5" height="5" x="3" y="16" rx="1" />
+          <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+          <path d="M21 21v.01" />
+          <path d="M12 7v3a2 2 0 0 1-2 2H7" />
+          <path d="M3 12h.01" />
+          <path d="M12 3h.01" />
+          <path d="M12 16v.01" />
+          <path d="M16 12h1" />
+        </svg>
+        <span class="nav-label">Tables & QR Codes</span>
+      </a>
+
+      <!-- Orders -->
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <rect width="8" height="4" x="8" y="2" rx="1" />
+        </svg>
+        <span class="nav-label">Orders</span>
+      </a>
+
+      <!-- Kitchen Display -->
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m13 2-2 2.5h3L12 7" />
+          <path d="M10 14v4" />
+          <path d="M14 14v4" />
+          <path d="M11 4h2" />
+          <rect width="18" height="12" x="3" y="8" rx="2" />
+        </svg>
+        <span class="nav-label">Kitchen Display</span>
+      </a>
+
+      <!-- Payments -->
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="20" height="14" x="2" y="5" rx="2" />
+          <line x1="2" x2="22" y1="10" y2="10" />
+        </svg>
+        <span class="nav-label">Payments</span>
+      </a>
+
+      <!-- Reports -->
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 3v18h18" />
+          <path d="m19 9-5 5-4-4-3 3" />
+        </svg>
+        <span class="nav-label">Reports</span>
+      </a>
+
+      <!-- Staff Management -->
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        <span class="nav-label">Staff Management</span>
+      </a>
+
+      <!-- Inventory -->
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+          <path d="m3.3 7 8.7 5 8.7-5" />
+          <path d="M12 22V12" />
+        </svg>
+        <span class="nav-label">Inventory</span>
+      </a>
+
+      <!-- Settings -->
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        <span class="nav-label">Settings</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="content-wrapper">
+
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="canteen-logo-badge">
+          <div class="logo-icon-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M18 2h-3a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h3" />
+              <path d="M6 2v14a3 3 0 0 0 3 3h3" />
+              <line x1="6" y1="6" x2="12" y2="6" />
+              <line x1="6" y1="10" x2="12" y2="10" />
+            </svg>
+          </div>
+          <div class="logo-text-group">
+            <span class="header-brand-name">CanteenHub</span>
+            <span class="header-brand-tag">SMART CANTEEN OS</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Theme Toggle Button -->
+        <button type="button" class="theme-toggle-btn" (click)="toggleTheme()" [title]="activeTheme() === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
+          @if (activeTheme() === 'light') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2" />
+              <path d="M12 20v2" />
+              <path d="m4.93 4.93 1.41 1.41" />
+              <path d="m17.66 17.66 1.41 1.41" />
+              <path d="M2 12h2" />
+              <path d="M20 12h2" />
+              <path d="m6.34 17.66-1.41 1.41" />
+              <path d="m19.07 4.93-1.41 1.41" />
+            </svg>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+            </svg>
+          }
+        </button>
+
+        <!-- Notification Bell -->
+        <button type="button" class="icon-btn notification-btn" title="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+          </svg>
+          <span class="notification-dot"></span>
+        </button>
+
+        <!-- User Profile Pill -->
+        <div class="user-pill">
+          <div class="user-avatar-circle">
+            {{ ownerInitials }}
+          </div>
+          <div class="user-info-text">
+            <span class="user-name-title">{{ currentUser()?.fullName || 'Canteen Owner' }}</span>
+            <span class="user-role-subtitle">Owner Account</span>
+          </div>
+          <button type="button" class="btn-signout" (click)="logout()" title="Sign Out">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Body Content -->
+    <main class="wizard-main-body">
+
+      <!-- STEP 0: Check Canteen Setup Status (Workflow Step 2) -->
+      @if (currentStep() === 0) {
+        <div class="setup-status-viewport">
+          <div class="setup-status-card">
+            <div class="setup-status-icon-wrapper">
+              <div class="setup-status-icon-circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+              </div>
+            </div>
+            <h1 class="setup-status-headline">Welcome to CanteenHub!</h1>
+            <p class="setup-status-message">
+              It looks like you haven't set up your canteen yet. Let's get started by registering your canteen to manage your menu, tables, and orders.
+            </p>
+            <div class="setup-status-actions">
+              <button type="button" class="btn-setup-primary" (click)="startWizard()">
+                <span>Set Up Your Canteen</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </button>
+              <button type="button" class="btn-setup-skip" (click)="skipToDashboard()">
+                Skip for now
+              </button>
+            </div>
+          </div>
+        </div>
+      } @else {
+
+      <!-- Dynamic Page Intro Header matching active step -->
+      <div class="page-intro-header">
+        <span class="eyebrow-tag">CANTEEN SETUP</span>
+        @if (currentStep() === 1) {
+          <h1 class="main-heading">Let's set up your canteen</h1>
+          <p class="sub-heading">You've successfully created your owner account. Now register your canteen to start managing your menu, tables, and orders.</p>
+        } @else if (currentStep() === 2) {
+          <h1 class="main-heading">Add your canteen address</h1>
+          <p class="sub-heading">Enter your canteen location. This address will be used for customer reference and map navigation.</p>
+        } @else if (currentStep() === 3) {
+          <h1 class="main-heading">Store Hours</h1>
+          <p class="sub-heading">Select whether or not your store is open on that day and the hours that it will be open.</p>
+        } @else if (currentStep() === 4) {
+          <h1 class="main-heading">Review & Create</h1>
+          <p class="sub-heading">Please review all details before creating your canteen. You can go back to edit any section if needed.</p>
+        }
+      </div>
+
+      <!-- Stepper Navigation (1, 2, 3, 4) -->
+      <div class="stepper-card">
+        <!-- Step 1 -->
+        <div class="step-item" [class.active]="currentStep() === 1" [class.completed]="currentStep() > 1" (click)="goToStep(1)">
+          <div class="step-circle">
+            @if (currentStep() > 1) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            } @else {
+              <span>1</span>
+            }
+          </div>
+          <div class="step-label-group">
+            <span class="step-title">Canteen Details</span>
+            <span class="step-desc">Basic information</span>
+          </div>
+        </div>
+
+        <div class="step-line" [class.filled]="currentStep() > 1"></div>
+
+        <!-- Step 2 -->
+        <div class="step-item" [class.active]="currentStep() === 2" [class.completed]="currentStep() > 2" (click)="goToStep(2)">
+          <div class="step-circle">
+            @if (currentStep() > 2) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            } @else {
+              <span>2</span>
+            }
+          </div>
+          <div class="step-label-group">
+            <span class="step-title">Address</span>
+            <span class="step-desc">Location details</span>
+          </div>
+        </div>
+
+        <div class="step-line" [class.filled]="currentStep() > 2"></div>
+
+        <!-- Step 3 -->
+        <div class="step-item" [class.active]="currentStep() === 3" [class.completed]="currentStep() > 3" (click)="goToStep(3)">
+          <div class="step-circle">
+            @if (currentStep() > 3) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            } @else {
+              <span>3</span>
+            }
+          </div>
+          <div class="step-label-group">
+            <span class="step-title">Operating Hours</span>
+            <span class="step-desc">Business hours</span>
+          </div>
+        </div>
+
+        <div class="step-line" [class.filled]="currentStep() > 3"></div>
+
+        <!-- Step 4 -->
+        <div class="step-item" [class.active]="currentStep() === 4" [class.completed]="currentStep() === 5" (click)="goToStep(4)">
+          <div class="step-circle">
+            @if (currentStep() === 5) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            } @else {
+              <span>4</span>
+            }
+          </div>
+          <div class="step-label-group">
+            <span class="step-title">Review & Create</span>
+            <span class="step-desc">Confirm information</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback Alerts -->
+      @if (errorMessage()) {
+        <div class="alert-box alert-error" role="alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      @if (successMessage()) {
+        <div class="alert-box alert-success" role="alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+          <span>{{ successMessage() }}</span>
+        </div>
+      }
+
+      <!-- STEP 1: CANTEEN DETAILS -->
+      @if (currentStep() === 1) {
+        <div class="wizard-columns-grid">
+          <!-- Form Card -->
+          <div class="step-form-card">
+            <div class="form-header">
+              <h2 class="form-title">Canteen Details</h2>
+              <p class="form-subtitle">Tell us about your canteen. This information will be shown to your customers.</p>
+            </div>
+
+            <div class="form-grid">
+              <!-- Canteen Name -->
+              <div class="field-group">
+                <label for="canteenName" class="field-label">
+                  Canteen Name <span class="required-star">*</span>
+                </label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                  </svg>
+                  <input
+                    id="canteenName"
+                    type="text"
+                    [(ngModel)]="canteenName"
+                    placeholder="e.g. ABC Engineering Canteen"
+                    required />
+                </div>
+              </div>
+
+              <!-- Canteen Type -->
+              <div class="field-group">
+                <label for="canteenType" class="field-label">
+                  Canteen Type <span class="required-star">*</span>
+                </label>
+                <div class="input-box select-box">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+                    <path d="M7 2v20" />
+                    <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+                  </svg>
+                  <select id="canteenType" [(ngModel)]="canteenType" required>
+                    @for (type of canteenTypes; track type) {
+                      <option [value]="type">{{ type }}</option>
+                    }
+                  </select>
+                  <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div class="field-group full-span">
+                <label for="description" class="field-label">Description</label>
+                <div class="input-box textarea-box">
+                  <svg class="input-icon textarea-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
+                  <textarea
+                    id="description"
+                    [(ngModel)]="description"
+                    maxlength="500"
+                    rows="3"
+                    placeholder="Brief description about your canteen (optional)..."></textarea>
+                </div>
+                <div class="char-counter">{{ description.length }}/500</div>
+              </div>
+
+              <!-- Contact Phone -->
+              <div class="field-group">
+                <label for="phone" class="field-label">
+                  Contact Phone <span class="required-star">*</span>
+                </label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                  </svg>
+                  <input
+                    id="phone"
+                    type="tel"
+                    [(ngModel)]="phone"
+                    placeholder="e.g. 9876543210"
+                    required />
+                </div>
+              </div>
+
+              <!-- Contact Email -->
+              <div class="field-group">
+                <label for="email" class="field-label">Contact Email</label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect width="20" height="16" x="2" y="4" rx="2" />
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                  </svg>
+                  <input
+                    id="email"
+                    type="email"
+                    [(ngModel)]="email"
+                    placeholder="e.g. canteen@example.com" />
+                </div>
+                <span class="field-helper">This will be used for customer communications.</span>
+              </div>
+
+              <!-- Canteen Photo / Banner Upload (Stored in Database) -->
+              <div class="field-group full-span photo-upload-field">
+                <label class="field-label">
+                  <span>Canteen Photo / Banner</span>
+                  <span class="optional-tag">Stored in Database</span>
+                </label>
+
+                @if (imageUploadError()) {
+                  <div class="alert-box alert-error upload-error-alert">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="8" x2="12" y2="12"/>
+                      <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span>{{ imageUploadError() }}</span>
+                  </div>
+                }
+
+                @if (!canteenImage()) {
+                  <!-- Drag and Drop Upload Zone -->
+                  <div
+                    class="upload-dropzone"
+                    [class.dragging]="isDraggingImage()"
+                    (dragover)="onImageDragOver($event)"
+                    (dragleave)="onImageDragLeave($event)"
+                    (drop)="onImageDrop($event)"
+                    (click)="step1FileInput.click()">
+
+                    <div class="upload-icon-circle">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                    </div>
+
+                    <div class="dropzone-text-group">
+                      <p class="dropzone-main-text">
+                        <span class="upload-link-text">Click to upload</span> or drag and drop canteen photo
+                      </p>
+                      <p class="dropzone-sub-text">PNG, JPG or WebP up to 5MB. Photo will be saved directly into PostgreSQL.</p>
+                    </div>
+
+                    <button type="button" class="btn-browse-photo" (click)="$event.stopPropagation(); step1FileInput.click()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                        <circle cx="9" cy="9" r="2"/>
+                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                      </svg>
+                      <span>Choose File</span>
+                    </button>
+
+                    <input #step1FileInput type="file" (change)="onImageFileChange($event)" accept="image/*" class="visually-hidden" />
+                  </div>
+                } @else {
+                  <!-- Active Image Preview Pill -->
+                  <div class="uploaded-image-card">
+                    <img [src]="canteenImage()" alt="Uploaded canteen photo" class="uploaded-thumbnail" />
+                    <div class="uploaded-meta-col">
+                      <span class="uploaded-file-name">{{ imageFileName() || 'canteen-photo.jpg' }}</span>
+                      <span class="uploaded-status-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Saved to database with canteen profile
+                      </span>
+                    </div>
+                    <div class="uploaded-actions-row">
+                      <button type="button" class="btn-change-image" (click)="step1ChangeFileInput.click()">
+                        <span>Change</span>
+                      </button>
+                      <button type="button" class="btn-remove-image" (click)="removeImage()" title="Remove photo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                    <input #step1ChangeFileInput type="file" (change)="onImageFileChange($event)" accept="image/*" class="visually-hidden" />
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Card: Live Preview -->
+          <div class="preview-panel-card">
+            <div class="preview-header">
+              <svg class="preview-header-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>Preview</span>
+            </div>
+
+            <div class="preview-display-card">
+              <div class="storefront-hero">
+                @if (canteenImage()) {
+                  <img [src]="canteenImage()" alt="Canteen photo preview" class="storefront-uploaded-img" />
+                } @else {
+                  <svg class="store-svg" width="140" height="100" viewBox="0 0 160 120" fill="none">
+                    <rect x="25" y="40" width="110" height="15" rx="3" fill="#047857" />
+                    <path d="M25 55 L35 70 L45 55 L55 70 L65 55 L75 70 L85 55 L95 70 L105 55 L115 70 L125 55 L135 70 V55 Z" fill="#065F46" />
+                    <path d="M35 40 L40 55 H50 L45 40 Z" fill="#34D399" />
+                    <path d="M65 40 L70 55 H80 L75 40 Z" fill="#34D399" />
+                    <path d="M95 40 L100 55 H110 L105 40 Z" fill="#34D399" />
+                    <rect x="35" y="70" width="90" height="42" rx="2" fill="#E2E8F0" />
+                    <rect x="70" y="82" width="20" height="30" rx="1.5" fill="#64748B" />
+                    <rect x="44" y="78" width="18" height="16" rx="1" fill="#93C5FD" opacity="0.8" />
+                    <rect x="98" y="78" width="18" height="16" rx="1" fill="#93C5FD" opacity="0.8" />
+                    <line x1="15" y1="112" x2="145" y2="112" stroke="#CBD5E1" stroke-width="2" />
+                    <circle cx="28" cy="105" r="5" fill="#10B981" />
+                    <circle cx="132" cy="105" r="5" fill="#10B981" />
+                  </svg>
+                }
+              </div>
+
+              <div class="preview-meta-body">
+                <h3 class="preview-canteen-name">{{ canteenName.trim() || 'Canteen Name' }}</h3>
+                <div class="preview-type-pill">
+                  <svg class="preview-type-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+                    <path d="M7 2v20" />
+                    <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+                  </svg>
+                  <span>{{ canteenType || 'Canteen Type' }}</span>
+                </div>
+                <div class="preview-location-line">
+                  <svg class="preview-loc-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <span>{{ formattedLocation }}</span>
+                </div>
+                <div class="preview-divider"></div>
+                <p class="preview-desc-text">{{ description.trim() || 'Your canteen description will appear here for customers.' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- STEP 2: ADDRESS DETAILS (Matching User Mockup 1 Exactly) -->
+      @if (currentStep() === 2) {
+        <div class="wizard-columns-grid">
+          <!-- Form Card -->
+          <div class="step-form-card">
+            <div class="form-header">
+              <h2 class="form-title">Address Details</h2>
+              <p class="form-subtitle">Enter the complete address of your canteen.</p>
+            </div>
+
+            <div class="form-grid">
+              <!-- Address Line 1 -->
+              <div class="field-group full-span">
+                <label for="addressLine1" class="field-label">
+                  Address Line 1 <span class="required-star">*</span>
+                </label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <input
+                    id="addressLine1"
+                    type="text"
+                    [(ngModel)]="addressLine1"
+                    placeholder="e.g. ABC College, Main Building"
+                    required />
+                </div>
+              </div>
+
+              <!-- Address Line 2 -->
+              <div class="field-group full-span">
+                <label for="addressLine2" class="field-label">Address Line 2 (Optional)</label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect width="16" height="20" x="4" y="2" rx="2" />
+                    <line x1="9" y1="22" x2="9" y2="2" />
+                  </svg>
+                  <input
+                    id="addressLine2"
+                    type="text"
+                    [(ngModel)]="addressLine2"
+                    placeholder="e.g. Near Library, Floor 1" />
+                </div>
+              </div>
+
+              <!-- City -->
+              <div class="field-group">
+                <label for="city" class="field-label">
+                  City <span class="required-star">*</span>
+                </label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 21h18" />
+                    <path d="M19 21v-4" />
+                    <path d="M19 13a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v8" />
+                  </svg>
+                  <input
+                    id="city"
+                    type="text"
+                    [(ngModel)]="city"
+                    placeholder="e.g. Pune"
+                    required />
+                </div>
+              </div>
+
+              <!-- State -->
+              <div class="field-group">
+                <label for="state" class="field-label">
+                  State <span class="required-star">*</span>
+                </label>
+                <div class="input-box select-box">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                  <select id="state" [(ngModel)]="state" required>
+                    @for (s of indianStates; track s) {
+                      <option [value]="s">{{ s }}</option>
+                    }
+                  </select>
+                  <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Postal Code -->
+              <div class="field-group">
+                <label for="postalCode" class="field-label">
+                  Postal Code <span class="required-star">*</span>
+                </label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect width="5" height="5" x="3" y="3" rx="1" />
+                    <rect width="5" height="5" x="16" y="3" rx="1" />
+                    <rect width="5" height="5" x="3" y="16" rx="1" />
+                    <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+                  </svg>
+                  <input
+                    id="postalCode"
+                    type="text"
+                    [(ngModel)]="postalCode"
+                    placeholder="e.g. 411001"
+                    required />
+                </div>
+              </div>
+
+              <!-- Country -->
+              <div class="field-group">
+                <label for="country" class="field-label">
+                  Country <span class="required-star">*</span>
+                </label>
+                <div class="input-box select-box">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                  </svg>
+                  <select id="country" [(ngModel)]="country" required>
+                    <option value="India">India</option>
+                    <option value="United States">United States</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="United Arab Emirates">United Arab Emirates</option>
+                  </select>
+                  <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Landmark -->
+              <div class="field-group full-span">
+                <label for="landmark" class="field-label">Landmark (Optional)</label>
+                <div class="input-box">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <input
+                    id="landmark"
+                    type="text"
+                    [(ngModel)]="landmark"
+                    placeholder="e.g. Near Main Gate, Opp. Bus Stop" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Card: Location Preview (Map Display matching Mockup 1) -->
+          <div class="preview-panel-card">
+            <div class="preview-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span>Location Preview</span>
+            </div>
+
+            <div class="location-map-container">
+              <!-- Stylized Vector Map Graphics matching Mockup 1 -->
+              <div class="map-graphic-box">
+                <svg class="map-vector" viewBox="0 0 340 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Ground / Map canvas -->
+                  <rect width="340" height="220" fill="#F1F5F9" rx="8" />
+                  <!-- Greenery zones -->
+                  <path d="M0 0 H140 L110 80 H0 Z" fill="#DCFCE7" opacity="0.7" />
+                  <path d="M220 140 H340 V220 H180 Z" fill="#FEF3C7" opacity="0.6" />
+                  <!-- Roads -->
+                  <path d="M-10 110 L350 110" stroke="#FFFFFF" stroke-width="16" />
+                  <path d="M120 -10 L120 230" stroke="#FFFFFF" stroke-width="14" />
+                  <path d="M60 230 L280 -10" stroke="#FFFFFF" stroke-width="12" />
+                  <path d="M-10 110 L350 110" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="6 4" />
+                  <!-- Buildings & Landmarks -->
+                  <rect x="25" y="130" width="75" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" />
+                  <text x="32" y="154" font-size="9" font-weight="700" fill="#334155" font-family="sans-serif">Central Library</text>
+
+                  <rect x="230" y="145" width="65" height="35" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" />
+                  <text x="240" y="167" font-size="9" font-weight="700" fill="#334155" font-family="sans-serif">Main Gate</text>
+
+                  <!-- Target Canteen Marker Point (Mockup 1 Pin) -->
+                  <circle cx="180" cy="85" r="24" fill="rgba(4, 120, 87, 0.15)" />
+                  <circle cx="180" cy="85" r="14" fill="rgba(4, 120, 87, 0.3)" />
+                  <path d="M180 62 C172 62 166 68 166 76 C166 86 180 102 180 102 C180 102 194 86 194 76 C194 68 188 62 180 62 Z" fill="#047857" />
+                  <circle cx="180" cy="74" r="4.5" fill="#FFFFFF" />
+
+                  <!-- Pin Label -->
+                  <text x="180" y="118" font-size="11" font-weight="800" fill="#0F172A" text-anchor="middle" font-family="sans-serif">
+                    {{ canteenName.trim() || 'ABC College' }}
+                  </text>
+
+                  <!-- Map Controls -->
+                  <rect x="305" y="15" width="22" height="48" rx="4" fill="#FFFFFF" stroke="#CBD5E1" />
+                  <text x="312" y="32" font-size="14" font-weight="700" fill="#64748B">+</text>
+                  <line x1="305" y1="39" x2="327" y2="39" stroke="#E2E8F0" />
+                  <text x="314" y="54" font-size="14" font-weight="700" fill="#64748B">−</text>
+                </svg>
+              </div>
+
+              <!-- Location Details Card Below Map (Matching Mockup 1) -->
+              <div class="map-location-notice">
+                <div class="map-pin-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                </div>
+                <div class="map-notice-text">
+                  <span class="notice-title">
+                    {{ addressLine1.trim() ? (addressLine1 + (city ? ', ' + city : '')) : 'Preview will appear here' }}
+                  </span>
+                  <span class="notice-desc">The map will show your canteen location after you enter the address.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- STEP 3: STORE HOURS (Matching User Mockup 2 Exactly) -->
+      @if (currentStep() === 3) {
+        <div class="step-form-card store-hours-container">
+          <div class="form-header-with-actions">
+            <div>
+              <h2 class="form-title">Store Hours</h2>
+              <p class="form-subtitle">Select whether or not your store is open on that day and the hours that it will be open.</p>
+            </div>
+            <!-- Mockup 2: Copy to All Button -->
+            <button type="button" class="btn-copy-hours" (click)="copyToAllHours()" title="Apply Monday's operational hours to all open days">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="13" height="13" x="9" y="9" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              <span>Copy to All</span>
+            </button>
+          </div>
+
+          <!-- Schedule Rows (Monday to Sunday) -->
+          <div class="hours-schedule-list">
+            @for (sched of operatingHours; track sched.day) {
+              <div class="schedule-day-row" [class.closed-day]="!sched.isOpen">
+                <!-- Toggle Switch -->
+                <label class="switch-toggle" [title]="sched.isOpen ? 'Click to close on ' + sched.day : 'Click to open on ' + sched.day">
+                  <input type="checkbox" [checked]="sched.isOpen" (change)="toggleDay(sched)" />
+                  <span class="switch-slider"></span>
+                </label>
+
+                <!-- Day Name -->
+                <span class="day-name-label">{{ sched.day }}</span>
+
+                <!-- Time Range Inputs -->
+                <div class="day-time-inputs">
+                  <div class="time-field-box" [class.clickable]="sched.isOpen" (click)="openTimePicker(sched, 'open', $event)">
+                    <input
+                      type="text"
+                      [(ngModel)]="sched.openTime"
+                      [disabled]="!sched.isOpen"
+                      placeholder="08:00 AM" />
+                    <button type="button" class="btn-time-watch" [disabled]="!sched.isOpen" (click)="openTimePicker(sched, 'open', $event)" title="Click to open Watch Set Time">
+                      <svg class="time-clock-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <span class="time-range-separator">-</span>
+
+                  <div class="time-field-box" [class.clickable]="sched.isOpen" (click)="openTimePicker(sched, 'close', $event)">
+                    <input
+                      type="text"
+                      [(ngModel)]="sched.closeTime"
+                      [disabled]="!sched.isOpen"
+                      placeholder="08:00 PM" />
+                    <button type="button" class="btn-time-watch" [disabled]="!sched.isOpen" (click)="openTimePicker(sched, 'close', $event)" title="Click to open Watch Set Time">
+                      <svg class="time-clock-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Status Tag -->
+                <div class="day-status-col">
+                  @if (!sched.isOpen) {
+                    <span class="closed-label">Closed</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Interactive "Watch Set Time" Modal Picker -->
+          @if (activePicker()) {
+            <div class="time-picker-backdrop" (click)="closeTimePicker()">
+              <div class="time-picker-dialog" (click)="$event.stopPropagation()">
+                <!-- Header -->
+                <div class="picker-header">
+                  <div class="picker-title-group">
+                    <span class="picker-subtitle">{{ activePicker()?.schedule?.day }}</span>
+                    <h3 class="picker-title">
+                      Set {{ activePicker()?.field === 'open' ? 'Opening' : 'Closing' }} Time
+                    </h3>
+                  </div>
+                  <button type="button" class="btn-picker-close" (click)="closeTimePicker()" title="Close Time Picker">✕</button>
+                </div>
+
+                <div class="picker-body">
+                  <!-- Left: Interactive Watch / Clock Face & Big Digital Display -->
+                  <div class="watch-display-panel">
+                    <div class="watch-analog-wrapper">
+                      <svg class="watch-analog-face" width="120" height="120" viewBox="0 0 120 120">
+                        <!-- Watch Case Outer Ring -->
+                        <circle cx="60" cy="60" r="56" fill="var(--bg-card-subtle)" stroke="var(--border-strong)" stroke-width="3" />
+                        <!-- Subtle Bezel -->
+                        <circle cx="60" cy="60" r="50" fill="var(--bg-card)" stroke="var(--border-color)" stroke-width="1.5" />
+                        <!-- 12 Hour Tick marks -->
+                        <line x1="60" y1="13" x2="60" y2="20" stroke="var(--text-primary)" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="107" y1="60" x2="100" y2="60" stroke="var(--text-primary)" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="60" y1="107" x2="60" y2="100" stroke="var(--text-primary)" stroke-width="2.5" stroke-linecap="round" />
+                        <line x1="13" y1="60" x2="20" y2="60" stroke="var(--text-primary)" stroke-width="2.5" stroke-linecap="round" />
+                        <!-- Hour Hand (dynamic rotation) -->
+                        <line x1="60" y1="60" x2="60" y2="34" stroke="var(--text-primary)" stroke-width="3.5" stroke-linecap="round"
+                              [style.transform]="'rotate(' + watchHourRotation + 'deg)'" style="transform-origin: 60px 60px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);" />
+                        <!-- Minute Hand (dynamic rotation) -->
+                        <line x1="60" y1="60" x2="60" y2="22" stroke="var(--primary-green)" stroke-width="2.5" stroke-linecap="round"
+                              [style.transform]="'rotate(' + watchMinuteRotation + 'deg)'" style="transform-origin: 60px 60px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);" />
+                        <!-- Center Pin -->
+                        <circle cx="60" cy="60" r="4" fill="var(--primary-green)" />
+                        <circle cx="60" cy="60" r="1.5" fill="#FFFFFF" />
+                      </svg>
+                    </div>
+
+                    <!-- Digital Time Pill -->
+                    <div class="digital-time-readout">
+                      <span class="digital-time-val">{{ formattedPickerTime }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Right: Controls Grid (Hour, Minute, AM/PM, Presets) -->
+                  <div class="picker-controls-panel">
+                    <!-- Period Toggle (AM / PM) -->
+                    <div class="period-toggle-group">
+                      <button type="button" class="btn-period" [class.active]="selectedPeriod() === 'AM'" (click)="setPeriod('AM')">AM</button>
+                      <button type="button" class="btn-period" [class.active]="selectedPeriod() === 'PM'" (click)="setPeriod('PM')">PM</button>
+                    </div>
+
+                    <!-- Hour Selection Grid -->
+                    <div class="picker-section">
+                      <span class="picker-section-label">Select Hour</span>
+                      <div class="hours-grid">
+                        @for (h of availableHours; track h) {
+                          <button type="button" class="pill-btn" [class.active]="selectedHour() === h" (click)="setHour(h)">
+                            {{ h }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Minute Selection Grid -->
+                    <div class="picker-section">
+                      <span class="picker-section-label">Select Minute</span>
+                      <div class="minutes-grid">
+                        @for (m of availableMinutes; track m) {
+                          <button type="button" class="pill-btn minute-pill" [class.active]="selectedMinute() === m" (click)="setMinute(m)">
+                            :{{ m }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Common Quick Presets -->
+                    <div class="picker-section">
+                      <span class="picker-section-label">Popular Presets</span>
+                      <div class="presets-row">
+                        @if (activePicker()?.field === 'open') {
+                          @for (preset of openPresets; track preset) {
+                            <button type="button" class="preset-chip" (click)="applyPreset(preset)">{{ preset }}</button>
+                          }
+                        } @else {
+                          @for (preset of closePresets; track preset) {
+                            <button type="button" class="preset-chip" (click)="applyPreset(preset)">{{ preset }}</button>
+                          }
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="picker-footer">
+                  <button type="button" class="btn-picker-cancel" (click)="closeTimePicker()">Cancel</button>
+                  <button type="button" class="btn-picker-apply" (click)="applyTimePicker()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span>Set Time</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- STEP 4: REVIEW & CREATE (Matching User Mockup 3 Exactly) -->
+      @if (currentStep() === 4) {
+        <div class="review-page-grid">
+          <!-- Left Column: 3 Summary Cards -->
+          <div class="review-left-column">
+            <!-- Card 1: Canteen Details -->
+            <div class="review-card">
+              <div class="review-card-header">
+                <h3 class="review-card-title">Canteen Details</h3>
+                <button type="button" class="btn-edit-link" (click)="goToStep(1)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  </svg>
+                  <span>Edit</span>
+                </button>
+              </div>
+
+              <div class="review-table-stack">
+                <div class="review-item-row">
+                  <span class="item-label">
+                    <svg class="row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    </svg>
+                    Canteen Name
+                  </span>
+                  <strong class="item-value">{{ canteenName }}</strong>
+                </div>
+
+                <div class="review-item-row">
+                  <span class="item-label">
+                    <svg class="row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+                      <path d="M7 2v20" />
+                    </svg>
+                    Canteen Type
+                  </span>
+                  <span class="item-value">{{ canteenType }}</span>
+                </div>
+
+                <div class="review-item-row">
+                  <span class="item-label">
+                    <svg class="row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    </svg>
+                    Description
+                  </span>
+                  <span class="item-value">{{ description || 'No description provided' }}</span>
+                </div>
+
+                <div class="review-item-row">
+                  <span class="item-label">
+                    <svg class="row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                    </svg>
+                    Contact Phone
+                  </span>
+                  <span class="item-value">{{ phone }}</span>
+                </div>
+
+                @if (email) {
+                  <div class="review-item-row">
+                    <span class="item-label">
+                      <svg class="row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                      Contact Email
+                    </span>
+                    <span class="item-value">{{ email }}</span>
+                  </div>
+                }
+
+                <div class="review-item-row">
+                  <span class="item-label">
+                    <svg class="row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                      <circle cx="9" cy="9" r="2"/>
+                      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                    </svg>
+                    Canteen Photo
+                  </span>
+                  <span class="item-value">
+                    @if (canteenImage()) {
+                      <span class="photo-uploaded-tag">✓ Custom Photo Uploaded</span>
+                    } @else {
+                      <span class="photo-default-tag">Standard Photo</span>
+                    }
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Address Details -->
+            <div class="review-card">
+              <div class="review-card-header">
+                <h3 class="review-card-title">Address Details</h3>
+                <button type="button" class="btn-edit-link" (click)="goToStep(2)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  </svg>
+                  <span>Edit</span>
+                </button>
+              </div>
+
+              <div class="review-table-stack">
+                <div class="review-item-row">
+                  <span class="item-label">
+                    <svg class="row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    </svg>
+                    Address Line 1
+                  </span>
+                  <strong class="item-value">{{ addressLine1 }}</strong>
+                </div>
+
+                @if (addressLine2) {
+                  <div class="review-item-row">
+                    <span class="item-label">Address Line 2</span>
+                    <span class="item-value">{{ addressLine2 }}</span>
+                  </div>
+                }
+
+                <div class="review-item-row">
+                  <span class="item-label">City</span>
+                  <span class="item-value">{{ city }}</span>
+                </div>
+
+                <div class="review-item-row">
+                  <span class="item-label">State</span>
+                  <span class="item-value">{{ state }}</span>
+                </div>
+
+                <div class="review-item-row">
+                  <span class="item-label">Postal Code</span>
+                  <span class="item-value">{{ postalCode }}</span>
+                </div>
+
+                <div class="review-item-row">
+                  <span class="item-label">Country</span>
+                  <span class="item-value">{{ country }}</span>
+                </div>
+
+                @if (landmark) {
+                  <div class="review-item-row">
+                    <span class="item-label">Landmark</span>
+                    <span class="item-value">{{ landmark }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Card 3: Operating Hours Table (Mockup 3) -->
+            <div class="review-card">
+              <div class="review-card-header">
+                <h3 class="review-card-title">Operating Hours</h3>
+                <button type="button" class="btn-edit-link" (click)="goToStep(3)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  </svg>
+                  <span>Edit</span>
+                </button>
+              </div>
+
+              <table class="review-hours-table">
+                <thead>
+                  <tr>
+                    <th>Day</th>
+                    <th>Opening Time</th>
+                    <th>Closing Time</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (h of operatingHours; track h.day) {
+                    <tr>
+                      <td class="day-cell">{{ h.day }}</td>
+                      <td>{{ h.isOpen ? h.openTime : '–' }}</td>
+                      <td>{{ h.isOpen ? h.closeTime : '–' }}</td>
+                      <td>
+                        @if (h.isOpen) {
+                          <span class="status-open-pill">● Open</span>
+                        } @else {
+                          <span class="status-closed-pill">● Closed</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Right Column: Live Canteen Preview (Mockup 3) -->
+          <div class="review-right-column">
+            <div class="canteen-preview-widget">
+              <div class="preview-card-header-clean">
+                <h3 class="widget-title">Canteen Preview</h3>
+              </div>
+
+              <!-- Cafeteria Banner Graphic (Photo matching Reference Mockup 3) -->
+              <div class="canteen-hero-graphic">
+                <img [src]="displayImage()" alt="Canteen dining hall" class="canteen-hero-img" />
+
+                <!-- Quick Change / Upload Photo Overlay Button -->
+                <div class="canteen-hero-overlay">
+                  <button type="button" class="btn-change-hero-photo" (click)="step4FileInput.click()" [title]="canteenImage() ? 'Change canteen photo' : 'Upload custom canteen photo'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <span>{{ canteenImage() ? 'Change Photo' : 'Upload Photo' }}</span>
+                  </button>
+                  <input #step4FileInput type="file" (change)="onImageFileChange($event)" accept="image/*" class="visually-hidden" />
+                </div>
+              </div>
+
+              <!-- Canteen Details Body -->
+              <div class="canteen-preview-details">
+                <h4 class="preview-brand-title">{{ canteenName }}</h4>
+
+                <div class="preview-type-tag">
+                  <span>🍽️</span>
+                  <span>{{ canteenType }}</span>
+                </div>
+
+                <p class="preview-body-desc">{{ description || 'Main canteen for engineering college. Provides breakfast, lunch, snacks and beverages.' }}</p>
+
+                <div class="preview-info-list">
+                  <div class="preview-info-row">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                    </svg>
+                    <span>{{ phone }}</span>
+                  </div>
+
+                  @if (email) {
+                    <div class="preview-info-row">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                      <span>{{ email }}</span>
+                    </div>
+                  }
+
+                  <div class="preview-info-row">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    <span>{{ formattedLocation }}</span>
+                  </div>
+                </div>
+
+                <div class="preview-divider"></div>
+
+                <!-- Operating Hours Summary Row -->
+                <div class="preview-hours-summary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <div class="hours-summary-content">
+                    <span class="hours-label">Operating Hours</span>
+                    <span class="hours-text">{{ operatingHoursSummary }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- STEP 5: CELEBRATION SUCCESS -->
+      @if (currentStep() === 5) {
+        <div class="success-congrats-card">
+          <div class="success-icon-animation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+          </div>
+          <h2 class="success-headline">Canteen Registered Successfully! 🎉</h2>
+          <p class="success-subtext">
+            Your canteen <strong>"{{ canteenName }}"</strong> is now active and permanently recorded in the database.
+          </p>
+          <div class="success-actions-row" style="display: flex; gap: 14px; justify-content: center; margin-top: 24px;">
+            <button type="button" class="btn-setup-primary" (click)="goToDashboard()" style="padding: 12px 24px; display: inline-flex; align-items: center; gap: 8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <rect width="7" height="9" x="3" y="3" rx="1" />
+                <rect width="7" height="5" x="14" y="3" rx="1" />
+                <rect width="7" height="9" x="14" y="12" rx="1" />
+                <rect width="7" height="5" x="3" y="16" rx="1" />
+              </svg>
+              <span>Go to Dashboard</span>
+            </button>
+            <button type="button" class="btn-setup-secondary" (click)="goToMyCanteens()" style="padding: 12px 24px; display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1.5px solid var(--border-strong); color: var(--text-primary); border-radius: 8px; font-weight: 600; cursor: pointer;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              <span>My Canteens</span>
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Bottom Actions Bar matching all mockups -->
+      @if (currentStep() <= 4) {
+        <div class="wizard-bottom-actions">
+          <!-- Back button on left -->
+          <div class="action-buttons-left">
+            @if (currentStep() === 2) {
+              <button type="button" class="btn-action-back" (click)="prevStep()">
+                <svg class="btn-arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+                <span>Back: Canteen Details</span>
+              </button>
+            } @else if (currentStep() === 3) {
+              <button type="button" class="btn-action-back" (click)="prevStep()">
+                <svg class="btn-arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+                <span>Back: Address Details</span>
+              </button>
+            } @else if (currentStep() === 4) {
+              <button type="button" class="btn-action-back" (click)="prevStep()">
+                <svg class="btn-arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+                <span>Back: Operating Hours</span>
+              </button>
+            }
+          </div>
+
+          <!-- Cancel and Next/Create on right -->
+          <div class="action-buttons-right">
+            <button type="button" class="btn-action-cancel" (click)="cancel()">Cancel</button>
+
+            @if (currentStep() === 1) {
+              <button type="button" class="btn-action-next" (click)="nextStep()">
+                <span>Next: Address Details</span>
+                <svg class="btn-arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </button>
+            }
+
+            @if (currentStep() === 2) {
+              <button type="button" class="btn-action-next" (click)="nextStep()">
+                <span>Next: Operating Hours</span>
+                <svg class="btn-arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </button>
+            }
+
+            @if (currentStep() === 3) {
+              <button type="button" class="btn-action-next" (click)="nextStep()">
+                <span>Next: Review & Create</span>
+                <svg class="btn-arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </button>
+            }
+
+            @if (currentStep() === 4) {
+              <button type="button" class="btn-action-next btn-action-create" (click)="submitSetup()" [disabled]="isSubmitting()">
+                @if (isSubmitting()) {
+                  <span class="spinner-small"></span>
+                  <span>Saving to Database...</span>
+                } @else {
+                  <svg class="btn-check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Create Canteen</span>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      } <!-- End currentStep > 0 block -->
+
+    </main>
+
+  </div>
+
+</div>

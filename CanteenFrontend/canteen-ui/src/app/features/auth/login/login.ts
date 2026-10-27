@@ -1,8 +1,9 @@
 import { Component, ChangeDetectorRef, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 export type AuthViewMode = 'login' | 'register' | 'forgot' | 'reset';
 
@@ -15,12 +16,30 @@ export type AuthViewMode = 'login' | 'register' | 'forgot' | 'reset';
 })
 export class Login implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly cdr = inject(ChangeDetectorRef);
 
+  readonly activeTheme = this.themeService.activeTheme;
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
+
   ngOnInit(): void {
+    const sessionExpired = this.route.snapshot.queryParamMap.get('sessionExpired');
+    if (sessionExpired === 'true') {
+      this.errorMessage.set('Your session has expired. Please sign in again.');
+    }
+
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/dashboard']);
+      const user = this.authService.currentUser();
+      if (user?.canteenId) {
+        this.router.navigate(['/dashboard']);
+      } else {
+        this.router.navigate(['/canteen-setup']);
+      }
     }
   }
 
@@ -125,10 +144,15 @@ export class Login implements OnInit {
     }).subscribe({
       next: (response) => {
         this.loading.set(false);
-        this.successMessage.set(`Welcome back, ${response.fullName}! Redirecting to dashboard...`);
+        const hasCanteen = !!response.canteenId;
+        const targetRoute = hasCanteen ? '/dashboard' : '/canteen-setup';
+        const msg = hasCanteen
+          ? `Welcome back, ${response.fullName}! Redirecting to dashboard...`
+          : `Welcome back, ${response.fullName}! Redirecting to canteen setup...`;
+        this.successMessage.set(msg);
         this.cdr.markForCheck();
         setTimeout(() => {
-          this.router.navigate(['/dashboard']);
+          this.router.navigate([targetRoute]);
         }, 500);
       },
       error: (error: HttpErrorResponse) => {
@@ -195,10 +219,15 @@ export class Login implements OnInit {
     }).subscribe({
       next: (response) => {
         this.loading.set(false);
-        this.successMessage.set(`Welcome, ${response.fullName}! Your canteen owner account was created successfully. Redirecting to dashboard...`);
+        const hasCanteen = !!response.canteenId;
+        const targetRoute = hasCanteen ? '/dashboard' : '/canteen-setup';
+        const msg = hasCanteen
+          ? `Welcome, ${response.fullName}! Your canteen owner account was created successfully. Redirecting to dashboard...`
+          : `Welcome, ${response.fullName}! Your canteen owner account was created successfully. Let's set up your canteen...`;
+        this.successMessage.set(msg);
         this.cdr.markForCheck();
         setTimeout(() => {
-          this.router.navigate(['/dashboard']);
+          this.router.navigate([targetRoute]);
         }, 600);
       },
       error: (error: HttpErrorResponse) => {

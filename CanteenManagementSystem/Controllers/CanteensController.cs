@@ -26,6 +26,20 @@ public class CanteensController : ControllerBase
     public async Task<IActionResult> GetAll()
         => Ok(await _service.GetAllAsync());
 
+    /// <summary>Get all canteens owned by the authenticated owner with live summary metrics.</summary>
+    [HttpGet("my")]
+    [Authorize(Roles = "CanteenOwner")]
+    [ProducesResponseType(typeof(IEnumerable<CanteenSummaryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetMyCanteens()
+    {
+        var ownerId = User.GetOwnerId();
+        if (!ownerId.HasValue) return Unauthorized();
+
+        var summaries = await _service.GetOwnerCanteensAsync(ownerId.Value);
+        return Ok(summaries);
+    }
+
     /// <summary>Get a canteen by ID.</summary>
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(CanteenDto), StatusCodes.Status200OK)]
@@ -71,8 +85,11 @@ public class CanteensController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateCanteenDto dto)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null || ownerCanteenId.Value != id)
+        var ownerId = User.GetOwnerId();
+        if (!ownerId.HasValue) return Unauthorized();
+
+        var isAuthorized = await _service.IsOwnerAuthorizedAsync(ownerId.Value, id);
+        if (!isAuthorized)
         {
             return Forbid();
         }
@@ -90,8 +107,11 @@ public class CanteensController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Delete(int id)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null || ownerCanteenId.Value != id)
+        var ownerId = User.GetOwnerId();
+        if (!ownerId.HasValue) return Unauthorized();
+
+        var isAuthorized = await _service.IsOwnerAuthorizedAsync(ownerId.Value, id);
+        if (!isAuthorized)
         {
             return Forbid();
         }

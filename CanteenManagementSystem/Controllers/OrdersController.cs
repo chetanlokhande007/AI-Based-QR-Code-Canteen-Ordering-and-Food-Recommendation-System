@@ -16,10 +16,29 @@ namespace CanteenManagementSystem.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly IOrderService _orderService;
+    private readonly ICanteenService _canteenService;
 
-    public OrdersController(IOrderService orderService)
+    public OrdersController(IOrderService orderService, ICanteenService canteenService)
     {
         _orderService = orderService;
+        _canteenService = canteenService;
+    }
+
+    private async Task<bool> IsAuthorizedAsync(int canteenId)
+    {
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId.HasValue && ownerCanteenId.Value == canteenId)
+        {
+            return true;
+        }
+
+        var ownerId = User.GetOwnerId();
+        if (ownerId.HasValue && await _canteenService.IsOwnerAuthorizedAsync(ownerId.Value, canteenId))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>Create a new customer order using a table QR token.</summary>
@@ -83,8 +102,7 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAllByCanteen(int canteenId)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        if (!await IsAuthorizedAsync(canteenId))
         {
             return Forbid();
         }
@@ -101,8 +119,7 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int canteenId, int orderId)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        if (!await IsAuthorizedAsync(canteenId))
         {
             return Forbid();
         }
@@ -123,8 +140,7 @@ public class OrdersController : ControllerBase
         int orderId,
         [FromBody] UpdateOrderStatusDto dto)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        if (!await IsAuthorizedAsync(canteenId))
         {
             return Forbid();
         }

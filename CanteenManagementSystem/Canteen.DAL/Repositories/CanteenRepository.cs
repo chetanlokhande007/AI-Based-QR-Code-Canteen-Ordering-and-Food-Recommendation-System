@@ -49,4 +49,23 @@ public class CanteenRepository : ICanteenRepository
 
     public async Task<bool> ExistsAsync(int id)
         => await _context.Canteens.AnyAsync(c => c.CanteenId == id);
+
+    public async Task<IEnumerable<Model.Entities.Canteen>> GetByOwnerIdAsync(int ownerId)
+    {
+        return await _context.Canteens
+            .AsNoTracking()
+            .Where(c => c.OwnerId == ownerId ||
+                        (c.OwnerId == null && _context.Owners.Any(o => o.OwnerId == ownerId && o.CanteenId == c.CanteenId)))
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<bool> IsOwnerAuthorizedAsync(int ownerId, int canteenId)
+    {
+        return await _context.Canteens
+            .AsNoTracking()
+            .AnyAsync(c => c.CanteenId == canteenId &&
+                           (c.OwnerId == ownerId ||
+                            (c.OwnerId == null && _context.Owners.Any(o => o.OwnerId == ownerId && o.CanteenId == canteenId))));
+    }
 }

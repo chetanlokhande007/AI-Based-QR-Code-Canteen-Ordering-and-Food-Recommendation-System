@@ -10,4 +10,6 @@ public interface ICanteenRepository
     Task<Model.Entities.Canteen> UpdateAsync(Model.Entities.Canteen canteen);
     Task<bool> DeleteAsync(int id);
     Task<bool> ExistsAsync(int id);
+    Task<IEnumerable<Model.Entities.Canteen>> GetByOwnerIdAsync(int ownerId);
+    Task<bool> IsOwnerAuthorizedAsync(int ownerId, int canteenId);
 }

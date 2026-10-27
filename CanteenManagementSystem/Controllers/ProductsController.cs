@@ -12,10 +12,32 @@ namespace CanteenManagementSystem.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _service;
+    private readonly ICanteenService _canteenService;
 
-    public ProductsController(IProductService service)
+    public ProductsController(IProductService service, ICanteenService canteenService)
     {
         _service = service;
+        _canteenService = canteenService;
+    }
+
+    private async Task<int?> GetAuthorizedCanteenIdAsync(int? requestedCanteenId = null)
+    {
+        var ownerCanteenId = User.GetCanteenId();
+        var targetCanteenId = requestedCanteenId ?? ownerCanteenId;
+        if (!targetCanteenId.HasValue) return null;
+
+        if (ownerCanteenId.HasValue && ownerCanteenId.Value == targetCanteenId.Value)
+        {
+            return targetCanteenId.Value;
+        }
+
+        var ownerId = User.GetOwnerId();
+        if (ownerId.HasValue && await _canteenService.IsOwnerAuthorizedAsync(ownerId.Value, targetCanteenId.Value))
+        {
+            return targetCanteenId.Value;
+        }
+
+        return null;
     }
 
     /// <summary>Get all products for a canteen.</summary>
@@ -47,19 +69,20 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Create([FromBody] CreateProductDto dto)
+    public async Task<IActionResult> Create([FromBody] CreateProductDto dto, [FromQuery] int? canteenId = null)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null)
+        var targetId = dto.CanteenId > 0 ? dto.CanteenId : canteenId;
+        var authorizedCanteenId = await GetAuthorizedCanteenIdAsync(targetId);
+        if (authorizedCanteenId == null)
         {
             return Forbid();
         }
 
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        dto.CanteenId = ownerCanteenId.Value;
+        dto.CanteenId = authorizedCanteenId.Value;
         try
         {
-            var created = await _service.CreateAsync(ownerCanteenId.Value, dto);
+            var created = await _service.CreateAsync(authorizedCanteenId.Value, dto);
             return CreatedAtAction(nameof(GetById), new { id = created.ProductId }, created);
         }
         catch (ArgumentException ex)
@@ -76,10 +99,10 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDto dto, [FromQuery] int? canteenId = null)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null)
+        var authorizedCanteenId = await GetAuthorizedCanteenIdAsync(canteenId);
+        if (authorizedCanteenId == null)
         {
             return Forbid();
         }
@@ -88,7 +111,7 @@ public class ProductsController : ControllerBase
 
         try
         {
-            var updated = await _service.UpdateAsync(ownerCanteenId.Value, id, dto);
+            var updated = await _service.UpdateAsync(authorizedCanteenId.Value, id, dto);
             return updated is null ? NotFound() : Ok(updated);
         }
         catch (ArgumentException ex)
@@ -104,15 +127,15 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, [FromQuery] int? canteenId = null)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null)
+        var authorizedCanteenId = await GetAuthorizedCanteenIdAsync(canteenId);
+        if (authorizedCanteenId == null)
         {
             return Forbid();
         }
 
-        var deleted = await _service.DeleteAsync(ownerCanteenId.Value, id);
+        var deleted = await _service.DeleteAsync(authorizedCanteenId.Value, id);
         return deleted ? NoContent() : NotFound();
     }
 }

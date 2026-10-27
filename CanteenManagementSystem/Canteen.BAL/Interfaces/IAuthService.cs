@@ -10,4 +10,5 @@ public interface IAuthService
     Task<string?> GenerateTokenForOwnerAsync(int ownerId);
     Task<ForgotPasswordResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto dto, bool isDevelopment);
     Task<bool> ResetPasswordAsync(ResetPasswordRequestDto dto);
+    Task<AuthResponseDto?> SwitchCanteenAsync(int ownerId, int canteenId);
 }

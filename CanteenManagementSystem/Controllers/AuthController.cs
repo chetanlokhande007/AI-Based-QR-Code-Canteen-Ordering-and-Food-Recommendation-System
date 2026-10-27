@@ -87,6 +87,51 @@ public class AuthController : ControllerBase
         return Ok(response);
     }
 
+    /// <summary>Get the authenticated owner's current profile and canteen association from the database.</summary>
+    [HttpGet("me")]
+    [Authorize]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetProfile()
+    {
+        var ownerId = User.GetOwnerId();
+        if (!ownerId.HasValue)
+        {
+            return Unauthorized();
+        }
+
+        var response = await _authService.RefreshTokenAsync(ownerId.Value);
+        if (response == null)
+        {
+            return Unauthorized();
+        }
+
+        return Ok(response);
+    }
+
+    /// <summary>Switch active canteen context for the authenticated owner.</summary>
+    [HttpPost("switch-canteen/{canteenId:int}")]
+    [Authorize(Roles = "CanteenOwner")]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> SwitchCanteen(int canteenId)
+    {
+        var ownerId = User.GetOwnerId();
+        if (!ownerId.HasValue)
+        {
+            return Unauthorized();
+        }
+
+        var response = await _authService.SwitchCanteenAsync(ownerId.Value, canteenId);
+        if (response == null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = "You are not authorized to access this canteen." });
+        }
+
+        return Ok(response);
+    }
+
     /// <summary>Request a password reset token.</summary>
     [HttpPost("forgot-password")]
     [AllowAnonymous]

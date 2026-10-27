@@ -9,4 +9,6 @@ public interface ICanteenService
     Task<CanteenDto> CreateAsync(CreateCanteenDto dto, int? ownerId = null);
     Task<CanteenDto?> UpdateAsync(int id, UpdateCanteenDto dto);
     Task<bool> DeleteAsync(int id);
+    Task<IEnumerable<CanteenSummaryDto>> GetOwnerCanteensAsync(int ownerId);
+    Task<bool> IsOwnerAuthorizedAsync(int ownerId, int canteenId);
 }

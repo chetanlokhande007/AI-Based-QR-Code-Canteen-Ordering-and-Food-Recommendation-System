@@ -170,6 +170,8 @@ public class SecurityDefectTests
         public Task<Canteen.Model.Entities.Canteen> UpdateAsync(Canteen.Model.Entities.Canteen canteen) => Task.FromResult(canteen);
         public Task<bool> DeleteAsync(int id) => Task.FromResult(true);
         public Task<bool> ExistsAsync(int id) => Task.FromResult(false);
+        public Task<IEnumerable<Canteen.Model.Entities.Canteen>> GetByOwnerIdAsync(int ownerId) => Task.FromResult<IEnumerable<Canteen.Model.Entities.Canteen>>(new List<Canteen.Model.Entities.Canteen>());
+        public Task<bool> IsOwnerAuthorizedAsync(int ownerId, int canteenId) => Task.FromResult(true);
     }
 
     private class FakeCategoryRepository : ICategoryRepository

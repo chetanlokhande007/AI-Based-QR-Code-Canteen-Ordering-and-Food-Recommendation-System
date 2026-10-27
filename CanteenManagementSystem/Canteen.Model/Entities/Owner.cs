@@ -22,6 +22,9 @@ public class Owner
 
     public DateTime? PasswordResetTokenExpiry { get; set; }
 
-    // Navigation property
+    // Navigation property for current / active canteen
     public Canteen? Canteen { get; set; }
+
+    // All canteens owned by this owner
+    public ICollection<Canteen> Canteens { get; set; } = new List<Canteen>();
 }

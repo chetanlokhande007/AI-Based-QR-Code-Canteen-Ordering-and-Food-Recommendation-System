@@ -123,6 +123,38 @@ public class AuthService : IAuthService
         return GenerateJwtToken(owner);
     }
 
+    public async Task<AuthResponseDto?> SwitchCanteenAsync(int ownerId, int canteenId)
+    {
+        var isAuthorized = await _canteenRepository.IsOwnerAuthorizedAsync(ownerId, canteenId);
+        if (!isAuthorized)
+        {
+            return null;
+        }
+
+        var owner = await _ownerRepository.GetByIdAsync(ownerId);
+        if (owner == null)
+        {
+            return null;
+        }
+
+        owner.CanteenId = canteenId;
+        await _ownerRepository.UpdateAsync(owner);
+
+        var token = GenerateJwtToken(owner);
+        var expiryMinutes = int.TryParse(_configuration["Jwt:ExpiryMinutes"], out var exp) ? exp : 30;
+
+        return new AuthResponseDto
+        {
+            Token = token,
+            OwnerId = owner.OwnerId,
+            FullName = owner.FullName,
+            Email = owner.Email,
+            Role = owner.Role,
+            CanteenId = owner.CanteenId,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
+        };
+    }
+
     public async Task<ForgotPasswordResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto dto, bool isDevelopment)
     {
         var response = new ForgotPasswordResponseDto

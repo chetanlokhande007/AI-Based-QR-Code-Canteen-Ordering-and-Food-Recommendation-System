@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import {
   AuthResponse,
   ForgotPasswordRequest,
@@ -15,7 +16,7 @@ import {
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5151/api/auth';
+  private readonly baseUrl = `${environment.apiUrl}/auth`;
   private readonly storageKey = 'canteen_auth_user';
 
   readonly currentUser = signal<AuthResponse | null>(this.getStoredUser());
@@ -42,6 +43,38 @@ export class AuthService {
 
   resetPassword(payload: ResetPasswordRequest): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.baseUrl}/reset-password`, payload);
+  }
+
+  getProfile(): Observable<AuthResponse> {
+    return this.http.get<AuthResponse>(`${this.baseUrl}/me`).pipe(
+      tap((response) => {
+        this.saveAuth(response);
+      })
+    );
+  }
+
+  updateSession(user: AuthResponse): void {
+    this.saveAuth(user);
+  }
+
+  switchCanteen(canteenId: number): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/switch-canteen/${canteenId}`, {}).pipe(
+      tap((response) => {
+        this.saveAuth(response);
+      })
+    );
+  }
+
+  updateCanteen(canteenId: number, newToken?: string): void {
+    const current = this.currentUser();
+    if (current) {
+      const updated: AuthResponse = {
+        ...current,
+        canteenId: canteenId,
+        token: newToken || current.token
+      };
+      this.saveAuth(updated);
+    }
   }
 
   logout(): void {

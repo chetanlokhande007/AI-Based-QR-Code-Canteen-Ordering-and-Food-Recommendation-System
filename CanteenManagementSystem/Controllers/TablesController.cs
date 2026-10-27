@@ -13,13 +13,33 @@ public class TablesController : ControllerBase
 {
     private readonly ICanteenTableService _service;
     private readonly IQrCodeService _qrCodeService;
+    private readonly ICanteenService _canteenService;
 
     public TablesController(
         ICanteenTableService service,
-        IQrCodeService qrCodeService)
+        IQrCodeService qrCodeService,
+        ICanteenService canteenService)
     {
         _service = service;
         _qrCodeService = qrCodeService;
+        _canteenService = canteenService;
+    }
+
+    private async Task<bool> IsAuthorizedAsync(int canteenId)
+    {
+        var ownerCanteenId = User.GetCanteenId();
+        if (ownerCanteenId.HasValue && ownerCanteenId.Value == canteenId)
+        {
+            return true;
+        }
+
+        var ownerId = User.GetOwnerId();
+        if (ownerId.HasValue && await _canteenService.IsOwnerAuthorizedAsync(ownerId.Value, canteenId))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>Get all tables for a canteen.</summary>
@@ -62,8 +82,7 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Create(int canteenId, [FromBody] CreateCanteenTableDto dto)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        if (!await IsAuthorizedAsync(canteenId))
         {
             return Forbid();
         }
@@ -92,8 +111,7 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update(int canteenId, int tableId, [FromBody] UpdateCanteenTableDto dto)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        if (!await IsAuthorizedAsync(canteenId))
         {
             return Forbid();
         }
@@ -120,8 +138,7 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Delete(int canteenId, int tableId)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        if (!await IsAuthorizedAsync(canteenId))
         {
             return Forbid();
         }
@@ -179,8 +196,7 @@ public class TablesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RegenerateQr(int canteenId, int tableId)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        if (!await IsAuthorizedAsync(canteenId))
         {
             return Forbid();
         }
