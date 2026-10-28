@@ -8,6 +8,7 @@ using Canteen.DAL.Interfaces;
 using Canteen.DAL.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using CanteenManagementSystem.Hubs;
@@ -17,9 +18,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ─── Database ────────────────────────────────────────────────────────────────
 builder.Services.AddDbContext<CanteenDbContext>(options =>
+{
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        npgsqlOptions => npgsqlOptions.MigrationsAssembly("Canteen.DAL")));
+        npgsqlOptions => npgsqlOptions.MigrationsAssembly("Canteen.DAL"));
+    options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+});
 
 // ─── DAL – Repositories ──────────────────────────────────────────────────────
 builder.Services.AddScoped<ICanteenRepository, CanteenRepository>();
