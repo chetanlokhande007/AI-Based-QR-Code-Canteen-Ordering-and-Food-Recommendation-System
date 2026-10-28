@@ -816,16 +816,83 @@
                 class="form-textarea-control"></textarea>
             </div>
 
-            <!-- Image URL -->
+            <!-- Dish Photo (Upload & Preview) -->
             <div class="form-group">
-              <label for="fImg">Image URL (Optional)</label>
-              <input
-                id="fImg"
-                name="fImg"
-                type="url"
-                [(ngModel)]="formImageUrl"
-                placeholder="https://example.com/dishes/paneer.jpg"
-                class="form-input-control" />
+              <label class="form-label-with-hint">
+                <span>Dish Photo (Optional)</span>
+                <span class="label-hint">JPG, PNG, WebP up to 5MB</span>
+              </label>
+
+              @if (imageUploadError()) {
+                <div class="alert-box alert-error upload-error-banner">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  <span>{{ imageUploadError() }}</span>
+                </div>
+              }
+
+              @if (!formImageUrl) {
+                <!-- Drag and Drop Upload Zone -->
+                <div
+                  class="upload-dropzone"
+                  [class.dragging]="isDraggingImage()"
+                  (dragover)="onImageDragOver($event)"
+                  (dragleave)="onImageDragLeave($event)"
+                  (drop)="onImageDrop($event)"
+                  (click)="foodFileInput.click()">
+                  <div class="upload-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                  </div>
+                  <div class="dropzone-text-group">
+                    <p class="dropzone-main-text">
+                      <span class="upload-link-text">Click to upload</span> or drag and drop
+                    </p>
+                    <p class="dropzone-sub-text">PNG, JPG, or WebP (max 5MB, auto-optimized for fast loading)</p>
+                  </div>
+                  <button type="button" class="btn-browse-photo" (click)="$event.stopPropagation(); foodFileInput.click()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="17 8 12 3 7 8"/>
+                      <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <span>Choose Photo</span>
+                  </button>
+                  <input #foodFileInput type="file" (change)="onImageFileChange($event)" accept="image/png,image/jpeg,image/webp" class="visually-hidden" />
+                </div>
+              } @else {
+                <!-- Active Image Preview Card -->
+                <div class="uploaded-image-card">
+                  <img [src]="formImageUrl" alt="Dish photo preview" class="uploaded-thumbnail" (error)="removeImage()" />
+                  <div class="uploaded-meta-col">
+                    <span class="uploaded-file-name">{{ imageFileName() || 'dish-photo.jpg' }}</span>
+                    <span class="uploaded-status-badge">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      Stored properly in database
+                    </span>
+                  </div>
+                  <div class="uploaded-actions-row">
+                    <button type="button" class="btn-change-image" (click)="changeFileInput.click()" title="Change photo">
+                      Change
+                    </button>
+                    <button type="button" class="btn-remove-image" (click)="removeImage()" title="Remove photo">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </div>
+                  <input #changeFileInput type="file" (change)="onImageFileChange($event)" accept="image/png,image/jpeg,image/webp" class="visually-hidden" />
+                </div>
+              }
             </div>
 
             <!-- Error Banner -->

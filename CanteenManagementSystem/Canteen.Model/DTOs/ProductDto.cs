@@ -44,8 +44,6 @@ namespace Canteen.Model.DTOs
         [RegularExpression("^(Veg|NonVeg|Non-Veg)$", ErrorMessage = "FoodType must be 'Veg' or 'NonVeg'.")]
         public string FoodType { get; set; } = "Veg";
 
-        [Url(ErrorMessage = "ImageUrl must be a valid URL.")]
-        [StringLength(1000, ErrorMessage = "ImageUrl cannot exceed 1000 characters.")]
         public string? ImageUrl { get; set; }
     }
 
@@ -73,8 +71,6 @@ namespace Canteen.Model.DTOs
         [RegularExpression("^(Veg|NonVeg|Non-Veg)$", ErrorMessage = "FoodType must be 'Veg' or 'NonVeg'.")]
         public string? FoodType { get; set; }
 
-        [Url(ErrorMessage = "ImageUrl must be a valid URL.")]
-        [StringLength(1000, ErrorMessage = "ImageUrl cannot exceed 1000 characters.")]
         public string? ImageUrl { get; set; }
     }
 }

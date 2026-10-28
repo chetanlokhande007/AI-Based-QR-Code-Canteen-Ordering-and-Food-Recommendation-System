@@ -80,6 +80,11 @@ export class FoodItems implements OnInit, OnDestroy {
   formDescription = '';
   formImageUrl = '';
 
+  // Dish Photo Upload State
+  readonly imageFileName = signal<string>('');
+  readonly isDraggingImage = signal<boolean>(false);
+  readonly imageUploadError = signal<string | null>(null);
+
   readonly modalSaving = signal<boolean>(false);
   readonly modalError = signal<string>('');
   readonly modalSuccess = signal<string>('');
@@ -562,6 +567,8 @@ export class FoodItems implements OnInit, OnDestroy {
     this.formIsAvailable = true;
     this.formDescription = '';
     this.formImageUrl = '';
+    this.imageFileName.set('');
+    this.imageUploadError.set(null);
     this.modalError.set('');
     this.modalSuccess.set('');
     this.showModal.set(true);
@@ -578,6 +585,8 @@ export class FoodItems implements OnInit, OnDestroy {
     this.formIsAvailable = product.isAvailable;
     this.formDescription = product.description || '';
     this.formImageUrl = product.imageUrl || '';
+    this.imageFileName.set(product.imageUrl ? (product.name + '-photo.jpg') : '');
+    this.imageUploadError.set(null);
     this.modalError.set('');
     this.modalSuccess.set('');
     this.showModal.set(true);
@@ -586,8 +595,111 @@ export class FoodItems implements OnInit, OnDestroy {
 
   closeModal(): void {
     this.showModal.set(false);
+    this.imageUploadError.set(null);
     this.modalError.set('');
     this.modalSuccess.set('');
+    this.cdr.markForCheck();
+  }
+
+  // Dish Photo Upload Handlers
+  onImageFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.processImageFile(input.files[0]);
+    }
+  }
+
+  onImageDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingImage.set(true);
+  }
+
+  onImageDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingImage.set(false);
+  }
+
+  onImageDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingImage.set(false);
+    if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+      this.processImageFile(event.dataTransfer.files[0]);
+    }
+  }
+
+  processImageFile(file: File): void {
+    this.imageUploadError.set(null);
+
+    if (!file.type.startsWith('image/')) {
+      this.imageUploadError.set('Please select a valid image file (JPG, PNG, WebP).');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.imageUploadError.set('Image file exceeds the 5MB size limit. Please choose a smaller photo.');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const rawDataUrl = e.target?.result as string;
+      if (!rawDataUrl) return;
+
+      const img = new Image();
+      img.onload = () => {
+        const maxWidth = 800;
+        const maxHeight = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width / height > maxWidth / maxHeight) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          this.formImageUrl = compressedDataUrl;
+          this.imageFileName.set(file.name);
+        } else {
+          this.formImageUrl = rawDataUrl;
+          this.imageFileName.set(file.name);
+        }
+        this.cdr.markForCheck();
+      };
+      img.onerror = () => {
+        this.formImageUrl = rawDataUrl;
+        this.imageFileName.set(file.name);
+        this.cdr.markForCheck();
+      };
+      img.src = rawDataUrl;
+    };
+    reader.onerror = () => {
+      this.imageUploadError.set('Failed to read image file. Please try again.');
+      this.cdr.markForCheck();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeImage(): void {
+    this.formImageUrl = '';
+    this.imageFileName.set('');
+    this.imageUploadError.set(null);
     this.cdr.markForCheck();
   }
 
