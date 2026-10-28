@@ -26,6 +26,14 @@ namespace Canteen.DAL.Migrations
                 nullable: false,
                 defaultValue: "Draft");
 
+            migrationBuilder.AddColumn<string>(
+                name: "FoodType",
+                table: "Products",
+                type: "character varying(20)",
+                maxLength: 20,
+                nullable: false,
+                defaultValue: "Veg");
+
             // Backfill existing canteens: mark as Completed only if address details and tables or products exist
             migrationBuilder.Sql(@"
                 UPDATE ""Canteens""
@@ -41,6 +49,10 @@ namespace Canteen.DAL.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropColumn(
+                name: "FoodType",
+                table: "Products");
+
             migrationBuilder.DropColumn(
                 name: "SetupStatus",
                 table: "Canteens");
