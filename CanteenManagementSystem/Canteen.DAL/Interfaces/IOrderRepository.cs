@@ -17,4 +17,6 @@ public interface IOrderRepository
     Task<Order?> GetByTrackingTokenAsync(string trackingToken, bool asNoTracking = true);
 
     Task<bool> OrderNumberExistsAsync(int canteenId, string orderNumber);
+
+    Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> operation);
 }

@@ -19,6 +19,14 @@ export class OrderService {
     return this.http.get<OrderDto>(`${this.baseUrl}/canteens/${canteenId}/orders/${orderId}`);
   }
 
+  createOrder(qrToken: string, payload: { tableId: number; items: { productId: number; quantity: number }[] }): Observable<OrderDto> {
+    return this.http.post<OrderDto>(`${this.baseUrl}/orders?qrToken=${encodeURIComponent(qrToken)}`, payload);
+  }
+
+  trackOrder(trackingToken: string): Observable<OrderDto> {
+    return this.http.get<OrderDto>(`${this.baseUrl}/orders/track/${encodeURIComponent(trackingToken)}`);
+  }
+
   updateOrderStatus(canteenId: number, orderId: number, status: string): Observable<OrderDto> {
     return this.http.patch<OrderDto>(`${this.baseUrl}/canteens/${canteenId}/orders/${orderId}/status`, { status });
   }

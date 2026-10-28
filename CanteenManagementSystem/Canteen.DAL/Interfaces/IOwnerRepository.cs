@@ -9,4 +9,5 @@ public interface IOwnerRepository
     Task<Owner> AddAsync(Owner owner);
     Task<Owner> UpdateAsync(Owner owner);
     Task<bool> EmailExistsAsync(string email);
+    Task<int> GetTotalCountAsync();
 }

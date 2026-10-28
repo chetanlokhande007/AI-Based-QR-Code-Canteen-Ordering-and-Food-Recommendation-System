@@ -52,7 +52,7 @@
       </a>
 
       <!-- Food Items -->
-      <a class="nav-item" (click)="openMenuModal('products')">
+      <a class="nav-item" routerLink="/food-items">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
           <path d="M7 2v20" />
@@ -62,7 +62,7 @@
       </a>
 
       <!-- Categories -->
-      <a class="nav-item" (click)="openMenuModal('categories')">
+      <a class="nav-item" routerLink="/categories">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
         </svg>
@@ -70,7 +70,7 @@
       </a>
 
       <!-- Tables & QR Codes -->
-      <a class="nav-item" (click)="openMenuModal('categories')">
+      <a class="nav-item" (click)="openMenuModal('tables')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect width="5" height="5" x="3" y="3" rx="1" />
           <rect width="5" height="5" x="16" y="3" rx="1" />
@@ -87,7 +87,7 @@
       </a>
 
       <!-- Orders -->
-      <a class="nav-item">
+      <a class="nav-item" (click)="scrollToOrders()">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
           <rect width="8" height="4" x="8" y="2" rx="1" />
@@ -96,7 +96,7 @@
       </a>
 
       <!-- Kitchen Display -->
-      <a class="nav-item">
+      <a class="nav-item" (click)="scrollToOrders()">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="m13 2-2 2.5h3L12 7" />
           <path d="M10 14v4" />
@@ -397,7 +397,7 @@
               @if (canteen.contactEmail) {
                 <span class="canteen-contact-tag">✉️ {{ canteen.contactEmail }}</span>
               }
-              <button type="button" class="btn-manage-catalog-shortcut" (click)="openMenuModal('categories')">
+              <button type="button" class="btn-manage-catalog-shortcut" routerLink="/categories">
                 <span>📁 Manage Menu Catalog</span>
               </button>
             </div>
@@ -498,7 +498,7 @@
         </div>
 
         <!-- Card 4: Catalog Menu Items -->
-        <div class="metric-card clickable-metric-card" (click)="openMenuModal('products')" title="Click to view and manage food items">
+        <div class="metric-card clickable-metric-card" routerLink="/food-items" title="Click to view and manage food items">
           <div class="metric-card-top">
             <span class="metric-card-title">Catalog Menu Items</span>
             <div class="metric-icon-box ai">
@@ -518,6 +518,61 @@
 
       </section>
 
+      <!-- Popular Menu Items Section (Canteen-Specific Isolated Data matching Reference) -->
+      @if (canteenDetails()) {
+        <section class="popular-items-section">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Popular Menu Items ({{ currentCanteenName() }} only)</h2>
+              <p class="section-subtitle">Top customer-ordered dishes isolated to this canteen branch</p>
+            </div>
+            <button type="button" class="btn-view-all-link" routerLink="/food-items">
+              <span>View All</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          @if (popularProducts().length > 0) {
+            <div class="popular-dishes-grid">
+              @for (prod of popularProducts(); track prod.productId) {
+                <div class="dish-card" routerLink="/food-items">
+                  <div class="dish-card-media">
+                    <img [src]="'/canteen-preview.jpg'" [alt]="prod.name" class="dish-card-img" />
+                    <span class="dish-badge-pill">{{ getCategoryName(prod.categoryId) }}</span>
+                  </div>
+                  <div class="dish-card-body">
+                    <div class="dish-header-row">
+                      <h4 class="dish-name">{{ prod.name }}</h4>
+                      <span class="dish-price">₹{{ prod.price }}</span>
+                    </div>
+                    @if (prod.description) {
+                      <p class="dish-desc">{{ prod.description }}</p>
+                    }
+                    <div class="dish-card-footer">
+                      <span class="stock-tag" [class.in-stock]="prod.isAvailable" [class.out-stock]="!prod.isAvailable">
+                        {{ prod.isAvailable ? '● Available' : '○ Out of stock' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-dishes-box">
+              <div class="empty-icon">🍽️</div>
+              <h4>No dishes in {{ currentCanteenName() }} yet</h4>
+              <p>Add menu items to publish them to this canteen's digital QR ordering menu.</p>
+              <button type="button" class="btn-primary-action" routerLink="/food-items">
+                + Add Food Item
+              </button>
+            </div>
+          }
+        </section>
+      }
+
       <!-- Quick Access Operations Modules Grid -->
       <section class="modules-section">
         <div class="section-header">
@@ -529,7 +584,7 @@
 
         <div class="modules-grid">
           <!-- QR Menu & Table Management -->
-          <div class="module-card interactive-module-card" (click)="openMenuModal('categories')">
+          <div class="module-card interactive-module-card" (click)="openMenuModal('tables')">
             <div class="module-icon-box icon-qr">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect width="5" height="5" x="3" y="3" rx="1" />
@@ -545,14 +600,30 @@
               </svg>
             </div>
             <div class="module-content">
-              <h3>QR Codes & Digital Menu</h3>
-              <p>Configure food categories, edit item pricing, add new dishes, and toggle stock availability in real time.</p>
-              <span class="module-link">Manage Categories & Food Items →</span>
+              <h3>Tables & QR Codes</h3>
+              <p>Generate digital dining table QR codes, manage seating capacity, and download print-ready QR codes.</p>
+              <span class="module-link">Manage Tables & QR Codes →</span>
+            </div>
+          </div>
+
+          <!-- Food Catalog -->
+          <div class="module-card interactive-module-card" routerLink="/food-items">
+            <div class="module-icon-box icon-ai">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+                <path d="M7 2v20" />
+                <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+              </svg>
+            </div>
+            <div class="module-content">
+              <h3>Food Items & Menu</h3>
+              <p>Configure food categories, item pricing, new dishes, and toggle stock availability in real time.</p>
+              <span class="module-link">Manage Menu Catalog →</span>
             </div>
           </div>
 
           <!-- Kitchen Display System (KDS) -->
-          <div class="module-card">
+          <div class="module-card interactive-module-card" (click)="scrollToOrders()">
             <div class="module-icon-box icon-kds">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
@@ -561,21 +632,7 @@
             <div class="module-content">
               <h3>Kitchen Display System (KDS)</h3>
               <p>Real-time order ticket routing powered by SignalR. Track cooking queues, expedite orders, and notify table pickup.</p>
-              <span class="module-link">Open KDS Screen →</span>
-            </div>
-          </div>
-
-          <!-- AI Recommendations -->
-          <div class="module-card">
-            <div class="module-icon-box icon-ai">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-              </svg>
-            </div>
-            <div class="module-content">
-              <h3>AI Recommendation Engine</h3>
-              <p>Configure cross-sell item pairings, trending dish boosts, and smart cart suggestions to maximize average order value.</p>
-              <span class="module-link">View Recommendation Stats →</span>
+              <span class="module-link">View Live Cooking Queue →</span>
             </div>
           </div>
 
@@ -590,14 +647,14 @@
             <div class="module-content">
               <h3>Razorpay Payments & Payouts</h3>
               <p>Verify live UPI / card payment captures, track settlement reports, and review multi-tenant payment records.</p>
-              <span class="module-link">View Settlements →</span>
+              <span class="module-link">Verified Test Integration ✓</span>
             </div>
           </div>
         </div>
       </section>
 
       <!-- Live Kitchen Feed (Real API Data) -->
-      <section class="live-orders-section">
+      <section class="live-orders-section" id="live-orders-section">
         <div class="section-header">
           <div>
             <h2 class="section-title">Live Kitchen Feed</h2>
@@ -670,343 +727,52 @@
   </div>
 
   <!-- ========================================================================
-       Menu & Food Catalog Management Modal (Categories & Food Items)
+       QR Code View & Print Modal
        ======================================================================== -->
-  @if (showMenuModal()) {
-    <div class="modal-backdrop" (click)="closeMenuModal()">
-      <div class="menu-modal-card" (click)="$event.stopPropagation()">
-
-        <!-- Modal Top Bar -->
-        <div class="modal-header">
+  @if (showQrModal() && selectedQrTable(); as tbl) {
+    <div class="modal-backdrop" (click)="closeQrModal()">
+      <div class="qr-modal-card" (click)="$event.stopPropagation()">
+        <div class="qr-modal-header">
           <div>
-            <span class="modal-badge">MENU & CATALOG MANAGEMENT</span>
-            <h3 class="modal-title">{{ canteenDetails()?.name || 'Canteen' }} Menu Catalog</h3>
+            <span class="modal-badge">{{ currentCanteenName() }}</span>
+            <h3 class="modal-title">Table {{ tbl.tableNumber }} QR Code</h3>
           </div>
-          <button type="button" class="modal-close-btn" (click)="closeMenuModal()" aria-label="Close modal">✕</button>
+          <button type="button" class="modal-close-btn" (click)="closeQrModal()" aria-label="Close modal">✕</button>
         </div>
 
-        <!-- Tab Switcher (Categories / Food Items) -->
-        <div class="modal-tab-switcher">
-          <button type="button"
-            class="modal-tab-btn"
-            [class.active]="menuModalTab() === 'categories'"
-            (click)="switchMenuModalTab('categories')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-              <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
-            </svg>
-            <span>Food Categories ({{ totalCategoriesCount() }})</span>
-          </button>
-          <button type="button"
-            class="modal-tab-btn"
-            [class.active]="menuModalTab() === 'products'"
-            (click)="switchMenuModalTab('products')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-              <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
-              <path d="M7 2v20" />
-              <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
-            </svg>
-            <span>Food Items / Dishes ({{ totalProductsCount() }})</span>
-          </button>
-        </div>
-
-        <!-- ==================================================================
-             TAB 1: Categories Management
-             ================================================================== -->
-        @if (menuModalTab() === 'categories') {
-          <div class="modal-body-scrollable">
-
-            <!-- Add Category Inline Form -->
-            <div class="inline-creation-box">
-              <h4 class="creation-box-title">+ Create Food Category</h4>
-              <p class="creation-box-subtitle">Organize dishes into customer-facing categories (e.g. Breakfast, Beverages, Rice Bowls).</p>
-
-              <form (ngSubmit)="saveCategory()" class="category-form-grid" novalidate>
-                <div class="form-field-group">
-                  <label for="catName">Category Name <span class="required-star">*</span></label>
-                  <input id="catName"
-                    name="catName"
-                    type="text"
-                    [(ngModel)]="newCategoryName"
-                    placeholder="e.g. Beverages & Chai"
-                    required
-                    minlength="2"
-                    class="form-input" />
-                </div>
-
-                <div class="form-field-group">
-                  <label for="catDesc">Description (Optional)</label>
-                  <input id="catDesc"
-                    name="catDesc"
-                    type="text"
-                    [(ngModel)]="newCategoryDesc"
-                    placeholder="e.g. Fresh hot and iced refreshments"
-                    class="form-input" />
-                </div>
-
-                <div class="form-btn-col">
-                  <button type="submit"
-                    class="btn-primary-action"
-                    [disabled]="categorySaving() || !newCategoryName.trim()">
-                    @if (categorySaving()) {
-                      <span class="spinner-loader"></span>
-                      <span>Saving...</span>
-                    } @else {
-                      <span>Add Category</span>
-                    }
-                  </button>
-                </div>
-              </form>
-
-              @if (categoryError()) {
-                <div class="alert-box alert-error">
-                  <span>{{ categoryError() }}</span>
-                </div>
-              }
-
-              @if (categorySuccess()) {
-                <div class="alert-box alert-success">
-                  <span>{{ categorySuccess() }}</span>
-                </div>
-              }
-            </div>
-
-            <!-- Existing Categories List -->
-            <div class="catalog-list-section">
-              <h4 class="section-subheading">Existing Categories ({{ categories().length }})</h4>
-
-              @if (categories().length > 0) {
-                <div class="categories-cards-grid">
-                  @for (cat of categories(); track cat.categoryId) {
-                    <div class="category-card">
-                      <div class="category-card-header">
-                        <div class="cat-icon-tag">📂</div>
-                        <div class="cat-info">
-                          <h5 class="cat-name">{{ cat.name }}</h5>
-                          <span class="cat-item-count">{{ getCategoryItemCount(cat.categoryId) }} food items</span>
-                        </div>
-                        <button type="button" class="btn-delete-item" (click)="deleteCategory(cat.categoryId)" title="Delete category">
-                          🗑️
-                        </button>
-                      </div>
-                      @if (cat.description) {
-                        <p class="cat-desc">{{ cat.description }}</p>
-                      }
-                      <button type="button" class="btn-view-category-items" (click)="setCategoryFilter(cat.categoryId); switchMenuModalTab('products')">
-                        <span>View Items →</span>
-                      </button>
-                    </div>
-                  }
-                </div>
-              } @else {
-                <div class="empty-catalog-state">
-                  <div class="empty-catalog-icon">📂</div>
-                  <h5>No Categories Created Yet</h5>
-                  <p>Create your first food category above (e.g. "Breakfast", "Snacks", "Beverages") to start organizing your menu.</p>
-                </div>
-              }
-            </div>
-
+        <div class="qr-modal-body">
+          <div class="qr-image-wrapper">
+            <img [src]="getTableQrImageUrl(tbl)" [alt]="'QR Code for Table ' + tbl.tableNumber" class="qr-preview-img" />
           </div>
-        }
 
-        <!-- ==================================================================
-             TAB 2: Food Items Management
-             ================================================================== -->
-        @if (menuModalTab() === 'products') {
-          <div class="modal-body-scrollable">
+          <div class="qr-info-block">
+            <h4 class="qr-table-title">Scan to Order · Table #{{ tbl.tableNumber }}</h4>
+            <p class="qr-explanation">
+              Customers scan this QR code with their mobile phone camera to browse the live menu and place orders directly to Table #{{ tbl.tableNumber }}.
+            </p>
 
-            <!-- Category Filter Bar -->
-            @if (categories().length > 0) {
-              <div class="category-filter-bar">
-                <span class="filter-label">Filter Category:</span>
-                <button type="button"
-                  class="filter-chip"
-                  [class.active]="selectedCategoryFilter() === 'all'"
-                  (click)="setCategoryFilter('all')">
-                  All ({{ products().length }})
-                </button>
-                @for (cat of categories(); track cat.categoryId) {
-                  <button type="button"
-                    class="filter-chip"
-                    [class.active]="selectedCategoryFilter() === cat.categoryId"
-                    (click)="setCategoryFilter(cat.categoryId)">
-                    {{ cat.name }} ({{ getCategoryItemCount(cat.categoryId) }})
-                  </button>
-                }
-              </div>
-            }
-
-            <!-- Add Food Item Form Box -->
-            <div class="inline-creation-box">
-              <h4 class="creation-box-title">+ Add New Food Item / Dish</h4>
-              <p class="creation-box-subtitle">Publish a dish to your customer table QR digital menu.</p>
-
-              @if (categories().length === 0) {
-                <div class="alert-box alert-warning">
-                  <span>Please create at least one Food Category first before adding dishes.</span>
-                  <button type="button" class="link-btn" (click)="switchMenuModalTab('categories')">Go to Categories →</button>
-                </div>
-              } @else {
-                <form (ngSubmit)="saveProduct()" class="product-form-grid" novalidate>
-                  <div class="form-field-group">
-                    <label for="pName">Dish / Item Name <span class="required-star">*</span></label>
-                    <input id="pName"
-                      name="pName"
-                      type="text"
-                      [(ngModel)]="newProductName"
-                      placeholder="e.g. Masala Chai"
-                      required
-                      minlength="2"
-                      class="form-input" />
-                  </div>
-
-                  <div class="form-field-group">
-                    <label for="pCat">Category <span class="required-star">*</span></label>
-                    <select id="pCat"
-                      name="pCat"
-                      [(ngModel)]="newProductCategoryId"
-                      required
-                      class="form-input">
-                      <option [ngValue]="null">Select Category</option>
-                      @for (cat of categories(); track cat.categoryId) {
-                        <option [ngValue]="cat.categoryId">{{ cat.name }}</option>
-                      }
-                    </select>
-                  </div>
-
-                  <div class="form-field-group">
-                    <label for="pPrice">Price (₹) <span class="required-star">*</span></label>
-                    <input id="pPrice"
-                      name="pPrice"
-                      type="number"
-                      min="1"
-                      step="1"
-                      [(ngModel)]="newProductPrice"
-                      placeholder="e.g. 25"
-                      required
-                      class="form-input" />
-                  </div>
-
-                  <div class="form-field-group">
-                    <label for="pStock">Initial Stock Qty</label>
-                    <input id="pStock"
-                      name="pStock"
-                      type="number"
-                      min="0"
-                      [(ngModel)]="newProductStock"
-                      placeholder="50"
-                      class="form-input" />
-                  </div>
-
-                  <div class="form-field-group full-width">
-                    <label for="pDesc">Description (Optional)</label>
-                    <input id="pDesc"
-                      name="pDesc"
-                      type="text"
-                      [(ngModel)]="newProductDesc"
-                      placeholder="e.g. Freshly brewed with ginger and cardamom"
-                      class="form-input" />
-                  </div>
-
-                  <div class="form-btn-col full-width">
-                    <button type="submit"
-                      class="btn-primary-action"
-                      [disabled]="productSaving() || !newProductName.trim() || !newProductCategoryId || !newProductPrice">
-                      @if (productSaving()) {
-                        <span class="spinner-loader"></span>
-                        <span>Publishing Item...</span>
-                      } @else {
-                        <span>+ Publish Food Item</span>
-                      }
-                    </button>
-                  </div>
-                </form>
-              }
-
-              @if (productError()) {
-                <div class="alert-box alert-error">
-                  <span>{{ productError() }}</span>
-                </div>
-              }
-
-              @if (productSuccess()) {
-                <div class="alert-box alert-success">
-                  <span>{{ productSuccess() }}</span>
-                </div>
-              }
+            <div class="qr-direct-link-box">
+              <span class="link-label">Direct Table URL:</span>
+              <a [href]="getTableMenuUrl(tbl)" target="_blank" class="table-direct-link">
+                {{ getTableMenuUrl(tbl) }} ↗
+              </a>
             </div>
 
-            <!-- Existing Products List -->
-            <div class="catalog-list-section">
-              <h4 class="section-subheading">Menu Items ({{ filteredProducts().length }})</h4>
-
-              @if (filteredProducts().length > 0) {
-                <div class="products-table-wrapper">
-                  <table class="catalog-table">
-                    <thead>
-                      <tr>
-                        <th>Dish Name</th>
-                        <th>Category</th>
-                        <th>Price</th>
-                        <th>Stock</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (prod of filteredProducts(); track prod.productId) {
-                        <tr>
-                          <td class="prod-name-cell">
-                            <strong>{{ prod.name }}</strong>
-                            @if (prod.description) {
-                              <span class="prod-desc-subtext">{{ prod.description }}</span>
-                            }
-                          </td>
-                          <td class="prod-cat-cell">
-                            <span class="cat-pill-tag">{{ getCategoryName(prod.categoryId) }}</span>
-                          </td>
-                          <td class="prod-price-cell">₹{{ prod.price }}</td>
-                          <td class="prod-stock-cell">{{ prod.stockQuantity }} units</td>
-                          <td>
-                            <button type="button"
-                              class="stock-toggle-pill"
-                              [class.in-stock]="prod.isAvailable"
-                              [class.out-of-stock]="!prod.isAvailable"
-                              (click)="toggleProductAvailability(prod)"
-                              title="Click to toggle availability">
-                              <span class="indicator-dot"></span>
-                              <span>{{ prod.isAvailable ? 'In Stock' : 'Out of Stock' }}</span>
-                            </button>
-                          </td>
-                          <td>
-                            <button type="button" class="btn-delete-item" (click)="deleteProduct(prod.productId)" title="Delete food item">
-                              🗑️
-                            </button>
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              } @else {
-                <div class="empty-catalog-state">
-                  <div class="empty-catalog-icon">🍽️</div>
-                  <h5>No Food Items Found</h5>
-                  <p>Add food items above to publish delicious dishes to your digital table ordering menu.</p>
-                </div>
-              }
+            <div class="qr-modal-actions">
+              <a [href]="getTableQrImageUrl(tbl)" [download]="currentCanteenName() + '-Table-' + tbl.tableNumber + '-QR.png'" class="btn-primary-action">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span>Download QR PNG</span>
+              </a>
+              <button type="button" class="btn-secondary-action" (click)="closeQrModal()">
+                Close
+              </button>
             </div>
-
           </div>
-        }
-
-        <!-- Modal Bottom Actions -->
-        <div class="modal-footer-actions">
-          <button type="button" class="btn-done" (click)="closeMenuModal()">
-            Done & Return to Dashboard
-          </button>
         </div>
-
       </div>
     </div>
   }

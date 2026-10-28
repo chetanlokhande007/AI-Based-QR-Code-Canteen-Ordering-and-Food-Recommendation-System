@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Canteen.Model.Enums;
 
 namespace Canteen.Model.DTOs
 {
@@ -26,9 +27,27 @@ namespace Canteen.Model.DTOs
         public string? ImageUrl { get; set; }
 
         public bool IsActive { get; set; }
+        public TenantStatus TenantStatus { get; set; } = TenantStatus.Active;
+        public SetupStatus SetupStatus { get; set; } = SetupStatus.Draft;
         public DateTime CreatedAt { get; set; }
         public string? Token { get; set; }
         public int? OwnerId { get; set; }
+    }
+
+    public class PublicCanteenDto
+    {
+        public int CanteenId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public string? CanteenType { get; set; }
+        public string? Description { get; set; }
+        public string? AddressLine1 { get; set; }
+        public string? City { get; set; }
+        public string? State { get; set; }
+        public string? PostalCode { get; set; }
+        public string? OperatingHoursJson { get; set; }
+        public string? ImageUrl { get; set; }
+        public bool IsActive { get; set; }
     }
 
     public class CanteenSummaryDto
@@ -43,6 +62,8 @@ namespace Canteen.Model.DTOs
         public int TablesCount { get; set; }
         public int TodayOrdersCount { get; set; }
         public bool IsActive { get; set; }
+        public TenantStatus TenantStatus { get; set; } = TenantStatus.Active;
+        public SetupStatus SetupStatus { get; set; } = SetupStatus.Draft;
         public bool IsSetupComplete { get; set; }
         public DateTime CreatedAt { get; set; }
     }

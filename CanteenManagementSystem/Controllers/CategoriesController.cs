@@ -23,26 +23,30 @@ public class CategoriesController : ControllerBase
 
     private async Task<bool> IsAuthorizedAsync(int canteenId)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId.HasValue && ownerCanteenId.Value == canteenId)
-        {
-            return true;
-        }
-
         var ownerId = User.GetOwnerId();
-        if (ownerId.HasValue && await _canteenService.IsOwnerAuthorizedAsync(ownerId.Value, canteenId))
+        if (!ownerId.HasValue) return false;
+
+        var activeCanteenId = User.GetCanteenId();
+        if (!activeCanteenId.HasValue || activeCanteenId.Value != canteenId)
         {
-            return true;
+            return false;
         }
 
-        return false;
+        return await _canteenService.IsOwnerAuthorizedAndActiveAsync(ownerId.Value, canteenId);
     }
 
     /// <summary>Get all categories for a canteen.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<CategoryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAll(int canteenId)
-        => Ok(await _service.GetAllByCanteenAsync(canteenId));
+    {
+        if (!await _canteenService.IsCanteenActiveAsync(canteenId))
+        {
+            return NotFound(new { message = "Canteen is inactive, suspended, or does not exist." });
+        }
+        return Ok(await _service.GetAllByCanteenAsync(canteenId));
+    }
 
     /// <summary>Get a category by ID.</summary>
     [HttpGet("{categoryId:int}")]
@@ -50,6 +54,10 @@ public class CategoriesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int canteenId, int categoryId)
     {
+        if (!await _canteenService.IsCanteenActiveAsync(canteenId))
+        {
+            return NotFound(new { message = "Canteen is inactive, suspended, or does not exist." });
+        }
         var dto = await _service.GetByIdAsync(canteenId, categoryId);
         return dto is null ? NotFound() : Ok(dto);
     }

@@ -1,5 +1,6 @@
 using Canteen.BAL.Interfaces;
 using Canteen.Model.DTOs;
+using Canteen.Model.Enums;
 using CanteenManagementSystem.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,11 +21,44 @@ public class CanteensController : ControllerBase
         _authService = authService;
     }
 
-    /// <summary>Get all canteens.</summary>
+    /// <summary>Get all canteens (Platform Admin only).</summary>
     [HttpGet]
+    [Authorize(Roles = "PlatformAdmin")]
     [ProducesResponseType(typeof(IEnumerable<CanteenDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetAll()
         => Ok(await _service.GetAllAsync());
+
+    /// <summary>Get public display information for a canteen (Customer access).</summary>
+    [HttpGet("{id:int}/public-info")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(PublicCanteenDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPublicInfo(int id)
+    {
+        var dto = await _service.GetByIdAsync(id);
+        if (dto is null || !dto.IsActive || dto.TenantStatus != TenantStatus.Active)
+        {
+            return NotFound();
+        }
+
+        return Ok(new PublicCanteenDto
+        {
+            CanteenId = dto.CanteenId,
+            Name = dto.Name,
+            Location = dto.Location,
+            CanteenType = dto.CanteenType,
+            Description = dto.Description,
+            AddressLine1 = dto.AddressLine1,
+            City = dto.City,
+            State = dto.State,
+            PostalCode = dto.PostalCode,
+            OperatingHoursJson = dto.OperatingHoursJson,
+            ImageUrl = dto.ImageUrl,
+            IsActive = dto.IsActive
+        });
+    }
 
     /// <summary>Get all canteens owned by the authenticated owner with live summary metrics.</summary>
     [HttpGet("my")]
@@ -47,7 +81,14 @@ public class CanteensController : ControllerBase
     public async Task<IActionResult> GetById(int id)
     {
         var dto = await _service.GetByIdAsync(id);
-        return dto is null ? NotFound() : Ok(dto);
+        if (dto is null) return NotFound();
+
+        if (!User.IsInRole("PlatformAdmin") && dto.TenantStatus != TenantStatus.Active)
+        {
+            return NotFound();
+        }
+
+        return Ok(dto);
     }
 
     /// <summary>Create a new canteen (Owner only).</summary>
@@ -88,7 +129,7 @@ public class CanteensController : ControllerBase
         var ownerId = User.GetOwnerId();
         if (!ownerId.HasValue) return Unauthorized();
 
-        var isAuthorized = await _service.IsOwnerAuthorizedAsync(ownerId.Value, id);
+        var isAuthorized = await _service.IsOwnerAuthorizedAndActiveAsync(ownerId.Value, id);
         if (!isAuthorized)
         {
             return Forbid();
@@ -110,7 +151,7 @@ public class CanteensController : ControllerBase
         var ownerId = User.GetOwnerId();
         if (!ownerId.HasValue) return Unauthorized();
 
-        var isAuthorized = await _service.IsOwnerAuthorizedAsync(ownerId.Value, id);
+        var isAuthorized = await _service.IsOwnerAuthorizedAndActiveAsync(ownerId.Value, id);
         if (!isAuthorized)
         {
             return Forbid();

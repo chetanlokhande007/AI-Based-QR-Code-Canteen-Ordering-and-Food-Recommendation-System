@@ -23,8 +23,25 @@ export interface CanteenDto {
   operatingHoursJson?: string;
   imageUrl?: string;
   isActive: boolean;
+  tenantStatus?: 'Active' | 'Suspended' | 'TrialExpired';
+  setupStatus?: 'Draft' | 'Completed';
   createdAt: string;
   token?: string;
+}
+
+export interface PublicCanteenDto {
+  canteenId: number;
+  name: string;
+  location: string;
+  canteenType?: string;
+  description?: string;
+  addressLine1?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  operatingHoursJson?: string;
+  imageUrl?: string;
+  isActive: boolean;
 }
 
 export interface CanteenSummaryDto {
@@ -38,6 +55,8 @@ export interface CanteenSummaryDto {
   tablesCount: number;
   todayOrdersCount: number;
   isActive: boolean;
+  tenantStatus?: 'Active' | 'Suspended' | 'TrialExpired';
+  setupStatus?: 'Draft' | 'Completed';
   isSetupComplete: boolean;
   createdAt: string;
 }

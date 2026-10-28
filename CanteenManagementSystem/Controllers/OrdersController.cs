@@ -26,19 +26,16 @@ public class OrdersController : ControllerBase
 
     private async Task<bool> IsAuthorizedAsync(int canteenId)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId.HasValue && ownerCanteenId.Value == canteenId)
-        {
-            return true;
-        }
-
         var ownerId = User.GetOwnerId();
-        if (ownerId.HasValue && await _canteenService.IsOwnerAuthorizedAsync(ownerId.Value, canteenId))
+        if (!ownerId.HasValue) return false;
+
+        var activeCanteenId = User.GetCanteenId();
+        if (!activeCanteenId.HasValue || activeCanteenId.Value != canteenId)
         {
-            return true;
+            return false;
         }
 
-        return false;
+        return await _canteenService.IsOwnerAuthorizedAndActiveAsync(ownerId.Value, canteenId);
     }
 
     /// <summary>Create a new customer order using a table QR token.</summary>

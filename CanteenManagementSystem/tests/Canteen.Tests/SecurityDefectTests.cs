@@ -160,6 +160,7 @@ public class SecurityDefectTests
         }
         public Task<Owner> UpdateAsync(Owner owner) => Task.FromResult(owner);
         public Task<bool> EmailExistsAsync(string email) => Task.FromResult(Owners.Any(o => o.Email == email));
+        public Task<int> GetTotalCountAsync() => Task.FromResult(Owners.Count);
     }
 
     private class FakeCanteenRepository : ICanteenRepository
@@ -172,6 +173,9 @@ public class SecurityDefectTests
         public Task<bool> ExistsAsync(int id) => Task.FromResult(false);
         public Task<IEnumerable<Canteen.Model.Entities.Canteen>> GetByOwnerIdAsync(int ownerId) => Task.FromResult<IEnumerable<Canteen.Model.Entities.Canteen>>(new List<Canteen.Model.Entities.Canteen>());
         public Task<bool> IsOwnerAuthorizedAsync(int ownerId, int canteenId) => Task.FromResult(true);
+        public Task<bool> IsOwnerAuthorizedAndActiveAsync(int ownerId, int canteenId) => Task.FromResult(true);
+        public Task<bool> IsCanteenActiveAsync(int canteenId) => Task.FromResult(true);
+        public Task<IEnumerable<Canteen.Model.Entities.Canteen>> GetAdminListAsync() => Task.FromResult<IEnumerable<Canteen.Model.Entities.Canteen>>(new List<Canteen.Model.Entities.Canteen>());
     }
 
     private class FakeCategoryRepository : ICategoryRepository

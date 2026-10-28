@@ -23,15 +23,28 @@ public class OrderService : IOrderService
     private readonly ICanteenTableRepository _tableRepo;
     private readonly IOrderNotificationService _notificationService;
 
+    private readonly ICanteenRepository? _canteenRepo;
+
     public OrderService(
         IOrderRepository orderRepo,
         IProductRepository productRepo,
         ICanteenTableRepository tableRepo,
         IOrderNotificationService notificationService)
+        : this(orderRepo, productRepo, tableRepo, null, notificationService)
+    {
+    }
+
+    public OrderService(
+        IOrderRepository orderRepo,
+        IProductRepository productRepo,
+        ICanteenTableRepository tableRepo,
+        ICanteenRepository? canteenRepo,
+        IOrderNotificationService notificationService)
     {
         _orderRepo = orderRepo;
         _productRepo = productRepo;
         _tableRepo = tableRepo;
+        _canteenRepo = canteenRepo;
         _notificationService = notificationService;
     }
 
@@ -71,6 +84,12 @@ public class OrderService : IOrderService
 
         int canteenId = table.CanteenId;
 
+        // Validate that the canteen exists and is active for customer orders
+        if (_canteenRepo != null && !await _canteenRepo.IsCanteenActiveAsync(canteenId))
+        {
+            throw new InvalidOrderException("This canteen is currently inactive or suspended for orders.");
+        }
+
         // 2. Fetch and validate each product (Anti-BOLA check: must belong strictly to this canteen)
         var products = new Dictionary<int, Product>();
         foreach (var item in consolidatedItems)
@@ -89,74 +108,77 @@ public class OrderService : IOrderService
             products[item.ProductId] = product;
         }
 
-        // 3. Atomically reserve stock item-by-item; rollback on any failure
-        var deducted = new List<(int ProductId, int Quantity)>();
-        foreach (var item in consolidatedItems)
+        // 3–6. Atomically reserve stock and persist order inside a database transaction
+        var created = await _orderRepo.ExecuteInTransactionAsync(async () =>
         {
-            var success = await _productRepo.DeductStockAsync(canteenId, item.ProductId, item.Quantity);
-            if (!success)
+            var deducted = new List<(int ProductId, int Quantity)>();
+            foreach (var item in consolidatedItems)
             {
-                // Rollback previously deducted items in this order
-                foreach (var (pId, qty) in deducted)
+                var success = await _productRepo.DeductStockAsync(canteenId, item.ProductId, item.Quantity);
+                if (!success)
                 {
-                    await _productRepo.RestoreStockAsync(canteenId, pId, qty);
+                    // Rollback previously deducted items in this order
+                    foreach (var (pId, qty) in deducted)
+                    {
+                        await _productRepo.RestoreStockAsync(canteenId, pId, qty);
+                    }
+
+                    var failedProduct = products[item.ProductId];
+                    throw new InsufficientStockException(
+                        failedProduct.ProductId,
+                        failedProduct.Name,
+                        item.Quantity,
+                        failedProduct.StockQuantity);
                 }
 
-                var failedProduct = products[item.ProductId];
-                throw new InsufficientStockException(
-                    failedProduct.ProductId,
-                    failedProduct.Name,
-                    item.Quantity,
-                    failedProduct.StockQuantity);
+                deducted.Add((item.ProductId, item.Quantity));
             }
 
-            deducted.Add((item.ProductId, item.Quantity));
-        }
-
-        // 4. Calculate prices strictly on the server (zero client trust)
-        decimal totalAmount = 0;
-        var orderItems = new List<OrderItem>();
-        foreach (var item in consolidatedItems)
-        {
-            var product = products[item.ProductId];
-            decimal unitPrice = product.Price;
-            totalAmount += unitPrice * item.Quantity;
-
-            orderItems.Add(new OrderItem
+            // 4. Calculate prices strictly on the server (zero client trust)
+            decimal totalAmount = 0;
+            var orderItems = new List<OrderItem>();
+            foreach (var item in consolidatedItems)
             {
-                ProductId = item.ProductId,
-                Quantity = item.Quantity,
-                UnitPrice = unitPrice
-            });
-        }
+                var product = products[item.ProductId];
+                decimal unitPrice = product.Price;
+                totalAmount += unitPrice * item.Quantity;
 
-        // 5. Generate human-friendly unique order number and cryptographically random tracking token
-        string orderNumber;
-        int attempts = 0;
-        do
-        {
-            orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
-            attempts++;
-        }
-        while (await _orderRepo.OrderNumberExistsAsync(canteenId, orderNumber) && attempts < 10);
+                orderItems.Add(new OrderItem
+                {
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    UnitPrice = unitPrice
+                });
+            }
 
-        var trackingToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
+            // 5. Generate human-friendly unique order number and cryptographically random tracking token
+            string orderNumber;
+            int attempts = 0;
+            do
+            {
+                orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
+                attempts++;
+            }
+            while (await _orderRepo.OrderNumberExistsAsync(canteenId, orderNumber) && attempts < 10);
 
-        // 6. Persist order
-        var order = new Order
-        {
-            CanteenId = canteenId,
-            TableId = table.TableId,
-            OrderNumber = orderNumber,
-            Status = "Pending",
-            PaymentStatus = "Pending",
-            TotalAmount = totalAmount,
-            TrackingToken = trackingToken,
-            CreatedAt = DateTime.UtcNow,
-            Items = orderItems
-        };
+            var trackingToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
 
-        var created = await _orderRepo.AddAsync(order);
+            // 6. Persist order
+            var order = new Order
+            {
+                CanteenId = canteenId,
+                TableId = table.TableId,
+                OrderNumber = orderNumber,
+                Status = "Pending",
+                PaymentStatus = "Pending",
+                TotalAmount = totalAmount,
+                TrackingToken = trackingToken,
+                CreatedAt = DateTime.UtcNow,
+                Items = orderItems
+            };
+
+            return await _orderRepo.AddAsync(order);
+        });
 
         // Populate navigation names for the DTO
         foreach (var item in created.Items)

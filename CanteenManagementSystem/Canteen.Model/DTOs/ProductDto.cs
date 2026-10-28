@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Canteen.Model.DTOs
@@ -12,6 +13,7 @@ namespace Canteen.Model.DTOs
         public decimal Price { get; set; }
         public int StockQuantity { get; set; }
         public bool IsAvailable { get; set; }
+        public string FoodType { get; set; } = "Veg";
         public string? ImageUrl { get; set; }
         public DateTime CreatedAt { get; set; }
     }
@@ -38,6 +40,10 @@ namespace Canteen.Model.DTOs
         [Range(0, 100000, ErrorMessage = "Stock quantity cannot be negative.")]
         public int StockQuantity { get; set; }
 
+        [Required(ErrorMessage = "FoodType is required.")]
+        [RegularExpression("^(Veg|NonVeg|Non-Veg)$", ErrorMessage = "FoodType must be 'Veg' or 'NonVeg'.")]
+        public string FoodType { get; set; } = "Veg";
+
         [Url(ErrorMessage = "ImageUrl must be a valid URL.")]
         [StringLength(1000, ErrorMessage = "ImageUrl cannot exceed 1000 characters.")]
         public string? ImageUrl { get; set; }
@@ -63,6 +69,9 @@ namespace Canteen.Model.DTOs
         public int StockQuantity { get; set; }
 
         public bool IsAvailable { get; set; }
+
+        [RegularExpression("^(Veg|NonVeg|Non-Veg)$", ErrorMessage = "FoodType must be 'Veg' or 'NonVeg'.")]
+        public string? FoodType { get; set; }
 
         [Url(ErrorMessage = "ImageUrl must be a valid URL.")]
         [StringLength(1000, ErrorMessage = "ImageUrl cannot exceed 1000 characters.")]

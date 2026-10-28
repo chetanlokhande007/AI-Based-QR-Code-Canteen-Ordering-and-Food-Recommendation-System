@@ -12,4 +12,7 @@ public interface ICanteenRepository
     Task<bool> ExistsAsync(int id);
     Task<IEnumerable<Model.Entities.Canteen>> GetByOwnerIdAsync(int ownerId);
     Task<bool> IsOwnerAuthorizedAsync(int ownerId, int canteenId);
+    Task<bool> IsOwnerAuthorizedAndActiveAsync(int ownerId, int canteenId);
+    Task<bool> IsCanteenActiveAsync(int canteenId);
+    Task<IEnumerable<Model.Entities.Canteen>> GetAdminListAsync();
 }

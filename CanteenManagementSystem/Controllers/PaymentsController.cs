@@ -17,10 +17,26 @@ namespace CanteenManagementSystem.Controllers;
 public class PaymentsController : ControllerBase
 {
     private readonly IPaymentService _paymentService;
+    private readonly ICanteenService _canteenService;
 
-    public PaymentsController(IPaymentService paymentService)
+    public PaymentsController(IPaymentService paymentService, ICanteenService canteenService)
     {
         _paymentService = paymentService;
+        _canteenService = canteenService;
+    }
+
+    private async Task<bool> IsAuthorizedAsync(int canteenId)
+    {
+        var ownerId = User.GetOwnerId();
+        if (!ownerId.HasValue) return false;
+
+        var activeCanteenId = User.GetCanteenId();
+        if (!activeCanteenId.HasValue || activeCanteenId.Value != canteenId)
+        {
+            return false;
+        }
+
+        return await _canteenService.IsOwnerAuthorizedAndActiveAsync(ownerId.Value, canteenId);
     }
 
     /// <summary>
@@ -126,8 +142,7 @@ public class PaymentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetPayment(int canteenId, int orderId)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        if (ownerCanteenId == null || ownerCanteenId.Value != canteenId)
+        if (!await IsAuthorizedAsync(canteenId))
         {
             return Forbid();
         }

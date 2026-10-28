@@ -106,4 +106,25 @@ public class OrderRepository : IOrderRepository
         return await _context.Orders
             .AnyAsync(o => o.CanteenId == canteenId && o.OrderNumber == orderNumber);
     }
+
+    public async Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> operation)
+    {
+        if (!_context.Database.IsRelational() || _context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory")
+        {
+            return await operation();
+        }
+
+        await using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
+        try
+        {
+            var result = await operation();
+            await transaction.CommitAsync();
+            return result;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
 }

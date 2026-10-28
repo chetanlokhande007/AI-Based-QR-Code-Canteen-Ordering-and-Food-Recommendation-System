@@ -20,6 +20,8 @@ namespace Canteen.Model.Entities
 
         public bool IsAvailable { get; set; } = true;
 
+        public string FoodType { get; set; } = "Veg";
+
         public string? ImageUrl { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

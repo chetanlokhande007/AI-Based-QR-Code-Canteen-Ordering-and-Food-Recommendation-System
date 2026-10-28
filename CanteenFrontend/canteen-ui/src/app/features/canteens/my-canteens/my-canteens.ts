@@ -151,7 +151,7 @@ export class MyCanteens implements OnInit {
     }
 
     if (canteen.canteenId === this.currentUser()?.canteenId) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/dashboard'], { queryParams: { canteenId: canteen.canteenId } });
       return;
     }
 
@@ -159,7 +159,7 @@ export class MyCanteens implements OnInit {
     this.authService.switchCanteen(canteen.canteenId).subscribe({
       next: () => {
         this.isSwitching.set(false);
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/dashboard'], { queryParams: { canteenId: canteen.canteenId } });
       },
       error: (err) => {
         this.isSwitching.set(false);
@@ -175,7 +175,7 @@ export class MyCanteens implements OnInit {
     }
 
     if (canteen.canteenId === this.currentUser()?.canteenId) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/dashboard'], { queryParams: { canteenId: canteen.canteenId } });
       return;
     }
 
@@ -183,7 +183,7 @@ export class MyCanteens implements OnInit {
     this.authService.switchCanteen(canteen.canteenId).subscribe({
       next: () => {
         this.isSwitching.set(false);
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/dashboard'], { queryParams: { canteenId: canteen.canteenId } });
       },
       error: (err) => {
         this.isSwitching.set(false);
@@ -199,7 +199,7 @@ export class MyCanteens implements OnInit {
     }
 
     if (canteen.canteenId === this.currentUser()?.canteenId) {
-      this.router.navigate(['/dashboard'], { queryParams: { openMenu: 'products' } });
+      this.router.navigate(['/dashboard'], { queryParams: { canteenId: canteen.canteenId, openMenu: 'products' } });
       return;
     }
 
@@ -207,7 +207,7 @@ export class MyCanteens implements OnInit {
     this.authService.switchCanteen(canteen.canteenId).subscribe({
       next: () => {
         this.isSwitching.set(false);
-        this.router.navigate(['/dashboard'], { queryParams: { openMenu: 'products' } });
+        this.router.navigate(['/dashboard'], { queryParams: { canteenId: canteen.canteenId, openMenu: 'products' } });
       },
       error: (err) => {
         this.isSwitching.set(false);

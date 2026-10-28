@@ -12,6 +12,7 @@ export interface ProductDto {
 }
 
 export interface CreateProductRequest {
+  canteenId?: number;
   categoryId: number;
   name: string;
   description?: string;
@@ -21,6 +22,7 @@ export interface CreateProductRequest {
 }
 
 export interface UpdateProductRequest {
+  canteenId?: number;
   categoryId?: number;
   name: string;
   description?: string;

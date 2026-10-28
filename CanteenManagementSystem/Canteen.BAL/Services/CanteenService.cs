@@ -6,6 +6,7 @@ using Canteen.BAL.Interfaces;
 using Canteen.DAL.Interfaces;
 using Canteen.Model.DTOs;
 using Canteen.Model.Entities;
+using Canteen.Model.Enums;
 
 namespace Canteen.BAL.Services;
 
@@ -69,7 +70,9 @@ public class CanteenService : ICanteenService
             Landmark = dto.Landmark,
             OperatingHoursJson = dto.OperatingHoursJson,
             ImageUrl = dto.ImageUrl,
-            IsActive = true
+            IsActive = true,
+            TenantStatus = TenantStatus.Active,
+            SetupStatus = SetupStatus.Draft
         };
         var created = await _repo.AddAsync(entity);
 
@@ -105,6 +108,17 @@ public class CanteenService : ICanteenService
         entity.ImageUrl = dto.ImageUrl ?? entity.ImageUrl;
         entity.IsActive = dto.IsActive;
 
+        // If in Draft and address details + products/tables exist, advance to Completed
+        if (entity.SetupStatus == SetupStatus.Draft && !string.IsNullOrWhiteSpace(entity.AddressLine1))
+        {
+            var tables = await _tableRepo.GetAllByCanteenAsync(id);
+            var products = await _productRepo.GetAllByCanteenAsync(id);
+            if (tables.Any() || products.Any())
+            {
+                entity.SetupStatus = SetupStatus.Completed;
+            }
+        }
+
         var updated = await _repo.UpdateAsync(entity);
         return ToDto(updated);
     }
@@ -128,10 +142,19 @@ public class CanteenService : ICanteenService
             var tablesCount = tables.Count();
             var todayOrdersCount = orders.Count(o => o.CreatedAt.Date == todayUtc);
 
-            var isSetupComplete = !string.IsNullOrWhiteSpace(c.AddressLine1) && (tablesCount > 0 || menuItemsCount > 0);
+            var isSetupComplete = c.SetupStatus == SetupStatus.Completed ||
+                (!string.IsNullOrWhiteSpace(c.AddressLine1) && (tablesCount > 0 || menuItemsCount > 0));
 
             string status;
-            if (!c.IsActive)
+            if (c.TenantStatus == TenantStatus.Suspended)
+            {
+                status = "Suspended";
+            }
+            else if (c.TenantStatus == TenantStatus.TrialExpired)
+            {
+                status = "Trial Expired";
+            }
+            else if (!c.IsActive)
             {
                 status = "Inactive";
             }
@@ -162,6 +185,8 @@ public class CanteenService : ICanteenService
                 TablesCount = tablesCount,
                 TodayOrdersCount = todayOrdersCount,
                 IsActive = c.IsActive,
+                TenantStatus = c.TenantStatus,
+                SetupStatus = isSetupComplete ? SetupStatus.Completed : c.SetupStatus,
                 IsSetupComplete = isSetupComplete,
                 CreatedAt = c.CreatedAt
             });
@@ -172,6 +197,104 @@ public class CanteenService : ICanteenService
 
     public async Task<bool> IsOwnerAuthorizedAsync(int ownerId, int canteenId)
         => await _repo.IsOwnerAuthorizedAsync(ownerId, canteenId);
+
+    public async Task<bool> IsOwnerAuthorizedAndActiveAsync(int ownerId, int canteenId)
+        => await _repo.IsOwnerAuthorizedAndActiveAsync(ownerId, canteenId);
+
+    public async Task<bool> IsCanteenActiveAsync(int canteenId)
+        => await _repo.IsCanteenActiveAsync(canteenId);
+
+    public async Task<PlatformAdminMetricsDto> GetPlatformMetricsAsync()
+    {
+        var allCanteens = (await _repo.GetAdminListAsync()).ToList();
+        var totalOwners = await _ownerRepo.GetTotalCountAsync();
+
+        var activeCount = allCanteens.Count(c => c.TenantStatus == TenantStatus.Active && c.IsActive);
+        var suspendedCount = allCanteens.Count(c => c.TenantStatus == TenantStatus.Suspended);
+
+        var recent = allCanteens.Take(5).Select(c => new AdminCanteenItemDto
+        {
+            CanteenId = c.CanteenId,
+            Name = c.Name,
+            Location = c.Location,
+            CanteenType = c.CanteenType,
+            OwnerId = c.OwnerId,
+            OwnerName = c.Owner?.FullName ?? "Unassigned",
+            OwnerEmail = c.Owner?.Email ?? "N/A",
+            IsActive = c.IsActive,
+            TenantStatus = c.TenantStatus,
+            SetupStatus = c.SetupStatus,
+            MenuItemsCount = c.Products?.Count ?? 0,
+            TablesCount = c.Tables?.Count ?? 0,
+            CreatedAt = c.CreatedAt
+        });
+
+        return new PlatformAdminMetricsDto
+        {
+            TotalCanteens = allCanteens.Count,
+            ActiveCanteens = activeCount,
+            SuspendedCanteens = suspendedCount,
+            TotalOwners = totalOwners,
+            RecentCanteens = recent
+        };
+    }
+
+    public async Task<IEnumerable<AdminCanteenItemDto>> GetAdminCanteensAsync()
+    {
+        var allCanteens = await _repo.GetAdminListAsync();
+        return allCanteens.Select(c => new AdminCanteenItemDto
+        {
+            CanteenId = c.CanteenId,
+            Name = c.Name,
+            Location = c.Location,
+            CanteenType = c.CanteenType,
+            OwnerId = c.OwnerId,
+            OwnerName = c.Owner?.FullName ?? "Unassigned",
+            OwnerEmail = c.Owner?.Email ?? "N/A",
+            IsActive = c.IsActive,
+            TenantStatus = c.TenantStatus,
+            SetupStatus = c.SetupStatus,
+            MenuItemsCount = c.Products?.Count ?? 0,
+            TablesCount = c.Tables?.Count ?? 0,
+            CreatedAt = c.CreatedAt
+        });
+    }
+
+    public async Task<bool> UpdateCanteenStatusAsync(int canteenId, bool isActive)
+    {
+        return await UpdateCanteenStatusAsync(canteenId, isActive, isActive ? TenantStatus.Active : TenantStatus.Suspended);
+    }
+
+    public async Task<bool> UpdateCanteenStatusAsync(int canteenId, bool? isActive, TenantStatus? tenantStatus)
+    {
+        var canteen = await _repo.GetByIdAsync(canteenId);
+        if (canteen == null) return false;
+
+        if (tenantStatus.HasValue)
+        {
+            canteen.TenantStatus = tenantStatus.Value;
+            if (tenantStatus.Value == TenantStatus.Suspended)
+            {
+                canteen.IsActive = false;
+            }
+            else if (tenantStatus.Value == TenantStatus.Active && isActive != false)
+            {
+                canteen.IsActive = true;
+            }
+        }
+
+        if (isActive.HasValue)
+        {
+            canteen.IsActive = isActive.Value;
+            if (!tenantStatus.HasValue)
+            {
+                canteen.TenantStatus = isActive.Value ? TenantStatus.Active : TenantStatus.Suspended;
+            }
+        }
+
+        await _repo.UpdateAsync(canteen);
+        return true;
+    }
 
     private static CanteenDto ToDto(Model.Entities.Canteen c) => new()
     {
@@ -192,6 +315,8 @@ public class CanteenService : ICanteenService
         OperatingHoursJson = c.OperatingHoursJson,
         ImageUrl = c.ImageUrl,
         IsActive = c.IsActive,
+        TenantStatus = c.TenantStatus,
+        SetupStatus = c.SetupStatus,
         CreatedAt = c.CreatedAt,
         OwnerId = c.OwnerId
     };

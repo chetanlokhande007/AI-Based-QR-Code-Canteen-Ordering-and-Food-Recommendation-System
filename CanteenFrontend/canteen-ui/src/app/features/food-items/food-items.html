@@ -1,0 +1,861 @@
+<div class="food-items-layout" (click)="closeFilterDropdowns(); closeCanteenSelector()">
+
+  <!-- Left Sidebar (Dark Forest-Green Navigation matching Reference) -->
+  <aside class="sidebar-container" (click)="$event.stopPropagation()">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M18 2h-3a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h3" />
+            <path d="M6 2v14a3 3 0 0 0 3 3h3" />
+            <line x1="6" y1="6" x2="12" y2="6" />
+            <line x1="6" y1="10" x2="12" y2="10" />
+          </svg>
+        </div>
+        <div class="brand-text-block">
+          <span class="brand-title">CanteenHub</span>
+          <span class="brand-subtitle">SMART CANTEEN OS</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Overview -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span class="nav-label">Overview</span>
+      </a>
+
+      <!-- My Canteens -->
+      <a class="nav-item" routerLink="/my-canteens">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span class="nav-label">My Canteens</span>
+      </a>
+
+      <!-- Dashboard -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="7" height="9" x="3" y="3" rx="1" />
+          <rect width="7" height="5" x="14" y="3" rx="1" />
+          <rect width="7" height="9" x="14" y="12" rx="1" />
+          <rect width="7" height="5" x="3" y="16" rx="1" />
+        </svg>
+        <span class="nav-label">Dashboard</span>
+      </a>
+
+      <!-- Food Items (Active) -->
+      <a class="nav-item active" routerLink="/food-items">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+          <path d="M7 2v20" />
+          <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+        </svg>
+        <span class="nav-label">Food Items</span>
+      </a>
+
+      <!-- Categories -->
+      <a class="nav-item" routerLink="/categories">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+        </svg>
+        <span class="nav-label">Categories</span>
+      </a>
+
+      <!-- Tables & QR Codes -->
+      <a class="nav-item" routerLink="/dashboard" [queryParams]="{ openMenu: 'tables' }">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="5" height="5" x="3" y="3" rx="1" />
+          <rect width="5" height="5" x="16" y="3" rx="1" />
+          <rect width="5" height="5" x="3" y="16" rx="1" />
+          <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+        </svg>
+        <span class="nav-label">Tables & QR Codes</span>
+      </a>
+
+      <!-- Orders -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <rect width="8" height="4" x="8" y="2" rx="1" />
+        </svg>
+        <span class="nav-label">Orders</span>
+      </a>
+
+      <!-- Kitchen Display -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m13 2-2 2.5h3L12 7" />
+          <path d="M10 14v4" />
+          <path d="M14 14v4" />
+          <path d="M11 4h2" />
+          <rect width="18" height="12" x="3" y="8" rx="2" />
+        </svg>
+        <span class="nav-label">Kitchen Display</span>
+      </a>
+
+      <!-- Payments -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="20" height="14" x="2" y="5" rx="2" />
+          <line x1="2" y1="10" x2="22" y2="10" />
+        </svg>
+        <span class="nav-label">Payments</span>
+      </a>
+
+      <!-- Reports -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 3v18h18" />
+          <path d="m19 9-5 5-4-4-3 3" />
+        </svg>
+        <span class="nav-label">Reports</span>
+      </a>
+
+      <!-- Staff Management -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        <span class="nav-label">Staff Management</span>
+      </a>
+
+      <!-- Inventory -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+          <path d="m3.3 7 8.7 5 8.7-5" />
+          <path d="M12 22V12" />
+        </svg>
+        <span class="nav-label">Inventory</span>
+      </a>
+
+      <!-- Settings -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+        <span class="nav-label">Settings</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Right Main Viewport -->
+  <div class="main-viewport">
+
+    <!-- Top Navigation Bar -->
+    <header class="top-nav-bar" (click)="$event.stopPropagation()">
+      <div class="top-nav-left">
+        <div class="brand-badge-box">
+          <div class="brand-square-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M18 2h-3a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h3" />
+              <path d="M6 2v14a3 3 0 0 0 3 3h3" />
+              <line x1="6" y1="6" x2="12" y2="6" />
+              <line x1="6" y1="10" x2="12" y2="10" />
+            </svg>
+          </div>
+          <div class="brand-text-block-top">
+            <span class="top-brand-name">CanteenHub</span>
+            <span class="top-brand-sub">SMART CANTEEN OS</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-nav-right">
+        <!-- Current Canteen Selector Dropdown -->
+        <div class="canteen-selector-wrapper">
+          <button type="button" class="btn-canteen-selector" (click)="toggleCanteenSelector($event)" title="Switch Active Canteen">
+            <div class="selector-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            </div>
+            <div class="selector-text-col">
+              <span class="selector-prefix">Current canteen:</span>
+              <span class="selector-active-name">{{ currentCanteenName() }}</span>
+            </div>
+            <svg class="chevron-icon" [class.rotated]="isCanteenSelectorOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          <!-- Dropdown Menu -->
+          @if (isCanteenSelectorOpen()) {
+            <div class="canteen-dropdown-popover" (click)="$event.stopPropagation()">
+              <div class="dropdown-header-row">
+                <span class="dropdown-title">Your Canteens</span>
+                <span class="dropdown-count">{{ canteens().length }} total</span>
+              </div>
+
+              <div class="dropdown-items-scroll">
+                @for (c of canteens(); track c.canteenId) {
+                  <button type="button" class="canteen-dropdown-item" [class.selected]="c.canteenId === currentUser()?.canteenId" (click)="switchActiveCanteen(c)">
+                    <div class="item-store-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                      </svg>
+                    </div>
+                    <div class="item-meta">
+                      <div class="item-name-row">
+                        <span class="item-name">{{ c.name }}</span>
+                        @if (c.canteenId === currentUser()?.canteenId) {
+                          <span class="current-badge">Active</span>
+                        }
+                      </div>
+                      <span class="item-loc">{{ c.location }}</span>
+                    </div>
+                    <span class="item-status-pill" [class.status-active]="c.status === 'Active'" [class.status-pending]="c.status === 'Setup Pending'">
+                      {{ c.status }}
+                    </span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Theme Toggle -->
+        <button type="button" class="top-nav-icon-btn" (click)="toggleTheme()" [title]="activeTheme() === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
+          @if (activeTheme() === 'light') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2" />
+              <path d="M12 20v2" />
+              <path d="m4.93 4.93 1.41 1.41" />
+              <path d="m17.66 17.66 1.41 1.41" />
+              <path d="M2 12h2" />
+              <path d="M20 12h2" />
+              <path d="m6.34 17.66-1.41 1.41" />
+              <path d="m19.07 4.93-1.41 1.41" />
+            </svg>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+            </svg>
+          }
+        </button>
+
+        <!-- Notification Bell -->
+        <button type="button" class="top-nav-icon-btn notification-btn" title="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+          </svg>
+          <span class="bell-dot"></span>
+        </button>
+
+        <!-- User Profile Pill -->
+        <div class="user-pill-container">
+          <div class="user-avatar-circle">
+            {{ ownerInitials }}
+          </div>
+          <div class="user-text-col">
+            <span class="user-full-name">{{ currentUser()?.fullName || 'Canteen Owner' }}</span>
+            <span class="user-role-label">Owner Account</span>
+          </div>
+          <button type="button" class="btn-signout" (click)="logout()" title="Sign Out">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Page Content -->
+    <main class="page-content">
+
+      <!-- Breadcrumb Bar -->
+      <nav class="breadcrumb-nav">
+        <a routerLink="/dashboard" class="crumb-link">Dashboard</a>
+        <span class="crumb-separator">›</span>
+        <span class="crumb-current">Food Items</span>
+      </nav>
+
+      <!-- Page Header Row -->
+      <div class="page-header-row">
+        <div class="page-title-group">
+          <h1 class="page-title">Food Items / Dishes</h1>
+          <p class="page-desc">Manage your menu items and prices.</p>
+        </div>
+
+        <button type="button" class="btn-add-food" (click)="openAddModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>Add Food Item</span>
+        </button>
+      </div>
+
+      <!-- Search and Filters Bar matching Reference -->
+      <div class="filter-controls-bar">
+        <!-- Search Input -->
+        <div class="search-input-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Search food items by name..." />
+          @if (searchTerm) {
+            <button type="button" class="btn-clear-search" (click)="searchTerm = ''" title="Clear Search">✕</button>
+          }
+        </div>
+
+        <!-- Filter Dropdowns Row -->
+        <div class="filter-dropdowns-row">
+          <!-- Category Dropdown -->
+          <div class="dropdown-anchor" (click)="$event.stopPropagation()">
+            <button type="button" class="btn-dropdown-filter" (click)="toggleCategoryDropdown($event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+              </svg>
+              <span>{{ selectedCategory() === 'all' ? 'All Categories' : getCategoryName(+selectedCategory()) }}</span>
+              <svg class="chevron-icon" [class.rotated]="isCategoryDropdownOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            @if (isCategoryDropdownOpen()) {
+              <div class="dropdown-popover">
+                <button type="button" class="dropdown-opt" [class.active]="selectedCategory() === 'all'" (click)="selectCategoryFilter('all')">
+                  All Categories
+                </button>
+                @for (cat of categories(); track cat.categoryId) {
+                  <button type="button" class="dropdown-opt" [class.active]="selectedCategory() === cat.categoryId" (click)="selectCategoryFilter(cat.categoryId)">
+                    {{ cat.name }} ({{ getCategoryProductCount(cat.categoryId) }})
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Type Dropdown (Veg / Non-Veg) -->
+          <div class="dropdown-anchor" (click)="$event.stopPropagation()">
+            <button type="button" class="btn-dropdown-filter" (click)="toggleTypeDropdown($event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12C2 6.5 6.5 2 12 2Z" />
+                <path d="M12 6v12" />
+              </svg>
+              <span>{{ selectedType() === 'all' ? 'All Types' : (selectedType() === 'veg' ? '🌱 Veg' : '🍗 Non-Veg') }}</span>
+              <svg class="chevron-icon" [class.rotated]="isTypeDropdownOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            @if (isTypeDropdownOpen()) {
+              <div class="dropdown-popover">
+                <button type="button" class="dropdown-opt" [class.active]="selectedType() === 'all'" (click)="selectTypeFilter('all')">
+                  All Types
+                </button>
+                <button type="button" class="dropdown-opt" [class.active]="selectedType() === 'veg'" (click)="selectTypeFilter('veg')">
+                  🌱 Veg ({{ vegCount() }})
+                </button>
+                <button type="button" class="dropdown-opt" [class.active]="selectedType() === 'non-veg'" (click)="selectTypeFilter('non-veg')">
+                  🍗 Non-Veg ({{ nonVegCount() }})
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- Status Dropdown -->
+          <div class="dropdown-anchor" (click)="$event.stopPropagation()">
+            <button type="button" class="btn-dropdown-filter" (click)="toggleStatusDropdown($event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>{{ selectedStatus() === 'all' ? 'All Status' : (selectedStatus() === 'active' ? 'Active' : 'Inactive') }}</span>
+              <svg class="chevron-icon" [class.rotated]="isStatusDropdownOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            @if (isStatusDropdownOpen()) {
+              <div class="dropdown-popover">
+                <button type="button" class="dropdown-opt" [class.active]="selectedStatus() === 'all'" (click)="selectStatusFilter('all')">
+                  All Status
+                </button>
+                <button type="button" class="dropdown-opt" [class.active]="selectedStatus() === 'active'" (click)="selectStatusFilter('active')">
+                  ● Active (Available)
+                </button>
+                <button type="button" class="dropdown-opt" [class.active]="selectedStatus() === 'inactive'" (click)="selectStatusFilter('inactive')">
+                  ○ Inactive (Out of Stock)
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Filter Pills matching Reference UI -->
+      <div class="quick-pills-row">
+        <!-- All Items -->
+        <button type="button"
+          class="quick-pill-btn"
+          [class.active]="activeQuickPill() === 'all'"
+          (click)="setQuickPill('all')">
+          <span>All Items ({{ totalCount() }})</span>
+        </button>
+
+        <!-- Veg -->
+        <button type="button"
+          class="quick-pill-btn pill-veg"
+          [class.active]="activeQuickPill() === 'veg'"
+          (click)="setQuickPill('veg')">
+          <span class="pill-dot veg-dot"></span>
+          <span>Veg ({{ vegCount() }})</span>
+        </button>
+
+        <!-- Non-Veg -->
+        <button type="button"
+          class="quick-pill-btn pill-nonveg"
+          [class.active]="activeQuickPill() === 'non-veg'"
+          (click)="setQuickPill('non-veg')">
+          <span class="pill-dot nonveg-dot"></span>
+          <span>Non-Veg ({{ nonVegCount() }})</span>
+        </button>
+
+        <!-- Per Category Pills -->
+        @for (cat of categories(); track cat.categoryId) {
+          <button type="button"
+            class="quick-pill-btn pill-category"
+            [class.active]="activeQuickPill() === 'cat_' + cat.categoryId"
+            (click)="setQuickPill('cat_' + cat.categoryId)">
+            <span>{{ getCategoryIcon(cat.name) }} {{ cat.name }} ({{ getCategoryProductCount(cat.categoryId) }})</span>
+          </button>
+        }
+      </div>
+
+      <!-- Error Banner -->
+      @if (errorMessage()) {
+        <div class="alert-banner alert-error" role="alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span>{{ errorMessage() }}</span>
+          <button type="button" class="btn-retry" (click)="loadCanteenFoodData()">Retry</button>
+        </div>
+      }
+
+      <!-- Table Container -->
+      <div class="table-card-container">
+        @if (loading()) {
+          <div class="table-loading-skeleton">
+            <div class="skeleton-row"></div>
+            <div class="skeleton-row"></div>
+            <div class="skeleton-row"></div>
+            <div class="skeleton-row"></div>
+            <div class="skeleton-row"></div>
+          </div>
+        } @else if (filteredProducts().length > 0) {
+          <div class="table-responsive-wrapper">
+            <table class="food-items-table">
+              <thead>
+                <tr>
+                  <th class="th-checkbox">
+                    <input
+                      type="checkbox"
+                      [checked]="isAllSelected()"
+                      (change)="toggleSelectAll($any($event.target).checked)"
+                      aria-label="Select all food items" />
+                  </th>
+                  <th class="th-sortable" (click)="toggleSort('name')">
+                    <div class="th-content">
+                      <span>Food Item</span>
+                      <svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 15 12 20 17 15" />
+                        <polyline points="7 9 12 4 17 9" />
+                      </svg>
+                    </div>
+                  </th>
+                  <th class="th-sortable" (click)="toggleSort('category')">
+                    <div class="th-content">
+                      <span>Category</span>
+                      <svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 15 12 20 17 15" />
+                        <polyline points="7 9 12 4 17 9" />
+                      </svg>
+                    </div>
+                  </th>
+                  <th class="th-sortable" (click)="toggleSort('type')">
+                    <div class="th-content">
+                      <span>Type</span>
+                      <svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 15 12 20 17 15" />
+                        <polyline points="7 9 12 4 17 9" />
+                      </svg>
+                    </div>
+                  </th>
+                  <th class="th-sortable" (click)="toggleSort('price')">
+                    <div class="th-content">
+                      <span>Price (₹)</span>
+                      <svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 15 12 20 17 15" />
+                        <polyline points="7 9 12 4 17 9" />
+                      </svg>
+                    </div>
+                  </th>
+                  <th class="th-sortable" (click)="toggleSort('status')">
+                    <div class="th-content">
+                      <span>Status</span>
+                      <svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 15 12 20 17 15" />
+                        <polyline points="7 9 12 4 17 9" />
+                      </svg>
+                    </div>
+                  </th>
+                  <th class="th-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (prod of paginatedProducts(); track prod.productId) {
+                  <tr class="food-item-row" [class.selected]="isProductSelected(prod.productId)">
+                    <!-- Checkbox -->
+                    <td class="td-checkbox">
+                      <input
+                        type="checkbox"
+                        [checked]="isProductSelected(prod.productId)"
+                        (change)="toggleSelectProduct(prod.productId, $any($event.target).checked)"
+                        aria-label="Select item" />
+                    </td>
+
+                    <!-- Food Item (Thumbnail & Titles) -->
+                    <td class="td-food-item">
+                      <div class="food-item-cell">
+                        <div class="food-thumbnail-box">
+                          @if (prod.imageUrl) {
+                            <img [src]="prod.imageUrl" [alt]="prod.name" class="food-img" (error)="onImageError($event)" />
+                          } @else {
+                            <img src="/canteen-preview.jpg" [alt]="prod.name" class="food-img" />
+                          }
+                        </div>
+                        <div class="food-meta-col">
+                          <span class="food-title">{{ prod.name }}</span>
+                          <span class="food-desc">{{ prod.description || 'Delicious freshly prepared canteen specialty.' }}</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Category Pill Badge -->
+                    <td class="td-category">
+                      <span [class]="'category-badge-pill ' + getCategoryBadgeClass(prod.categoryId)">
+                        {{ getCategoryName(prod.categoryId) }}
+                      </span>
+                    </td>
+
+                    <!-- Type (Veg / Non-Veg) -->
+                    <td class="td-type">
+                      @if (isVeg(prod)) {
+                        <span class="type-badge-pill veg">
+                          <span class="veg-icon">🌱</span>
+                          <span>Veg</span>
+                        </span>
+                      } @else {
+                        <span class="type-badge-pill nonveg">
+                          <span class="nonveg-icon">🍗</span>
+                          <span>Non-Veg</span>
+                        </span>
+                      }
+                    </td>
+
+                    <!-- Price -->
+                    <td class="td-price">
+                      <span class="price-amount">₹{{ prod.price }}</span>
+                    </td>
+
+                    <!-- Status with Animated Toggle Switch -->
+                    <td class="td-status">
+                      <div class="status-cell">
+                        <span class="status-text" [class.active]="prod.isAvailable">
+                          {{ prod.isAvailable ? 'Active' : 'Inactive' }}
+                        </span>
+                        <label class="toggle-switch" (click)="$event.stopPropagation()">
+                          <input
+                            type="checkbox"
+                            [checked]="prod.isAvailable"
+                            (change)="toggleAvailability(prod)"
+                            aria-label="Toggle availability" />
+                          <span class="slider"></span>
+                        </label>
+                      </div>
+                    </td>
+
+                    <!-- Actions Buttons -->
+                    <td class="td-actions">
+                      <div class="action-buttons-group">
+                        <button type="button" class="btn-action btn-edit" (click)="openEditModal(prod)" title="Edit food item">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                        <button type="button" class="btn-action btn-delete" (click)="deleteProduct(prod)" title="Delete food item">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            <line x1="10" y1="11" x2="10" y2="17" />
+                            <line x1="14" y1="11" x2="14" y2="17" />
+                          </svg>
+                        </button>
+                        <button type="button" class="btn-action btn-more" (click)="openEditModal(prod)" title="More options">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                            <circle cx="12" cy="12" r="1" />
+                            <circle cx="12" cy="5" r="1" />
+                            <circle cx="12" cy="19" r="1" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Footer -->
+          <div class="table-pagination-footer">
+            <div class="pagination-info">
+              <span>Showing {{ showingStart() }} to {{ showingEnd() }} of {{ filteredProducts().length }} items</span>
+            </div>
+
+            <div class="pagination-controls">
+              <!-- Prev button -->
+              <button
+                type="button"
+                class="btn-page-nav"
+                [disabled]="currentPage() === 1"
+                (click)="goToPage(currentPage() - 1)"
+                title="Previous Page">
+                ‹
+              </button>
+
+              <!-- Page Number button -->
+              <button type="button" class="btn-page-num active">
+                {{ currentPage() }}
+              </button>
+
+              <!-- Next button -->
+              <button
+                type="button"
+                class="btn-page-nav"
+                [disabled]="currentPage() === totalPages()"
+                (click)="goToPage(currentPage() + 1)"
+                title="Next Page">
+                ›
+              </button>
+
+              <!-- Page Size Selector -->
+              <div class="page-size-anchor" (click)="$event.stopPropagation()">
+                <button type="button" class="btn-page-size" (click)="togglePageSizeDropdown($event)">
+                  <span>{{ pageSize() }} per page</span>
+                  <svg class="chevron-icon" [class.rotated]="isPageSizeDropdownOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+
+                @if (isPageSizeDropdownOpen()) {
+                  <div class="page-size-dropdown">
+                    <button type="button" class="size-opt" [class.active]="pageSize() === 5" (click)="setPageSize(5)">5 per page</button>
+                    <button type="button" class="size-opt" [class.active]="pageSize() === 10" (click)="setPageSize(10)">10 per page</button>
+                    <button type="button" class="size-opt" [class.active]="pageSize() === 20" (click)="setPageSize(20)">20 per page</button>
+                    <button type="button" class="size-opt" [class.active]="pageSize() === 50" (click)="setPageSize(50)">50 per page</button>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        } @else {
+          <!-- Empty State -->
+          <div class="empty-food-state">
+            <div class="empty-state-icon">🍽️</div>
+            <h3 class="empty-state-title">
+              {{ searchTerm || selectedCategory() !== 'all' || selectedType() !== 'all' ? 'No food items match your filter' : 'No food items added yet' }}
+            </h3>
+            <p class="empty-state-desc">
+              {{ searchTerm || selectedCategory() !== 'all' || selectedType() !== 'all' ? 'Try adjusting your search query or filters to find other dishes.' : 'Start adding delicious items to publish on your digital QR canteen menu.' }}
+            </p>
+            @if (searchTerm || selectedCategory() !== 'all' || selectedType() !== 'all') {
+              <button type="button" class="btn-primary-action" (click)="searchTerm = ''; selectedCategory.set('all'); selectedType.set('all'); activeQuickPill.set('all')">
+                Reset Filters
+              </button>
+            } @else {
+              <button type="button" class="btn-primary-action" (click)="openAddModal()">
+                + Add First Food Item
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ========================================================================
+       Add / Edit Food Item Modal Form
+       ======================================================================== -->
+  @if (showModal()) {
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div class="food-modal-card" (click)="$event.stopPropagation()">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <div>
+            <span class="modal-eyebrow">{{ currentCanteenName() }}</span>
+            <h3 class="modal-title">{{ isEditMode() ? 'Edit Food Item' : 'Add New Food Item' }}</h3>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="closeModal()" aria-label="Close modal">✕</button>
+        </div>
+
+        <!-- Modal Body Form -->
+        <form (ngSubmit)="saveProduct()" class="modal-form-content" novalidate>
+          <div class="form-body-scroll">
+
+            <!-- Item Name -->
+            <div class="form-group">
+              <label for="fName">Food Item Name <span class="required-star">*</span></label>
+              <input
+                id="fName"
+                name="fName"
+                type="text"
+                [(ngModel)]="formName"
+                placeholder="e.g. Paneer Butter Masala"
+                required
+                minlength="2"
+                class="form-input-control" />
+            </div>
+
+            <!-- Category & Price Row -->
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label for="fCat">Category <span class="required-star">*</span></label>
+                <select
+                  id="fCat"
+                  name="fCat"
+                  [(ngModel)]="formCategoryId"
+                  required
+                  class="form-select-control">
+                  <option [ngValue]="null">Select Category</option>
+                  @for (cat of categories(); track cat.categoryId) {
+                    <option [ngValue]="cat.categoryId">{{ cat.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="fPrice">Price (₹) <span class="required-star">*</span></label>
+                <input
+                  id="fPrice"
+                  name="fPrice"
+                  type="number"
+                  min="1"
+                  step="1"
+                  [(ngModel)]="formPrice"
+                  placeholder="e.g. 120"
+                  required
+                  class="form-input-control" />
+              </div>
+            </div>
+
+            <!-- Stock & Availability Row -->
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label for="fStock">Stock Quantity</label>
+                <input
+                  id="fStock"
+                  name="fStock"
+                  type="number"
+                  min="0"
+                  [(ngModel)]="formStock"
+                  placeholder="50"
+                  class="form-input-control" />
+              </div>
+
+              <div class="form-group">
+                <label>Menu Availability</label>
+                <div class="availability-toggle-box">
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      name="fAvail"
+                      [(ngModel)]="formIsAvailable" />
+                    <span class="slider"></span>
+                  </label>
+                  <span class="avail-label">{{ formIsAvailable ? 'Active (In Stock)' : 'Inactive (Out of Stock)' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+              <label for="fDesc">Description (Optional)</label>
+              <textarea
+                id="fDesc"
+                name="fDesc"
+                rows="3"
+                [(ngModel)]="formDescription"
+                placeholder="Rich and creamy paneer curry with aromatic spices."
+                class="form-textarea-control"></textarea>
+            </div>
+
+            <!-- Image URL -->
+            <div class="form-group">
+              <label for="fImg">Image URL (Optional)</label>
+              <input
+                id="fImg"
+                name="fImg"
+                type="url"
+                [(ngModel)]="formImageUrl"
+                placeholder="https://example.com/dishes/paneer.jpg"
+                class="form-input-control" />
+            </div>
+
+            <!-- Error Banner -->
+            @if (modalError()) {
+              <div class="alert-box alert-error">
+                <span>{{ modalError() }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Modal Footer Actions -->
+          <div class="modal-footer-row">
+            <button type="button" class="btn-cancel" (click)="closeModal()">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn-save-food"
+              [disabled]="modalSaving() || !formName.trim() || !formCategoryId || !formPrice">
+              @if (modalSaving()) {
+                <span class="spinner-loader"></span>
+                <span>Saving...</span>
+              } @else {
+                <span>{{ isEditMode() ? 'Save Changes' : '+ Add Food Item' }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+</div>

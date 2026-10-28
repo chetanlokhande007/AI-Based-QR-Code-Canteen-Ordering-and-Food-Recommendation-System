@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
+import { CanteenService } from '../../../core/services/canteen.service';
 import { ThemeService } from '../../../core/services/theme.service';
 
 export type AuthViewMode = 'login' | 'register' | 'forgot' | 'reset';
@@ -16,6 +17,7 @@ export type AuthViewMode = 'login' | 'register' | 'forgot' | 'reset';
 })
 export class Login implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly canteenService = inject(CanteenService);
   private readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -35,6 +37,10 @@ export class Login implements OnInit {
 
     if (this.authService.isLoggedIn()) {
       const user = this.authService.currentUser();
+      if (user?.role === 'PlatformAdmin') {
+        this.router.navigate(['/admin/dashboard']);
+        return;
+      }
       if (user?.canteenId) {
         this.router.navigate(['/dashboard']);
       } else {
@@ -144,16 +150,57 @@ export class Login implements OnInit {
     }).subscribe({
       next: (response) => {
         this.loading.set(false);
-        const hasCanteen = !!response.canteenId;
-        const targetRoute = hasCanteen ? '/dashboard' : '/canteen-setup';
-        const msg = hasCanteen
-          ? `Welcome back, ${response.fullName}! Redirecting to dashboard...`
-          : `Welcome back, ${response.fullName}! Redirecting to canteen setup...`;
-        this.successMessage.set(msg);
-        this.cdr.markForCheck();
-        setTimeout(() => {
-          this.router.navigate([targetRoute]);
-        }, 500);
+
+        // ─── 1. Platform Admin Redirection ───────────────────────────────────
+        if (response.role === 'PlatformAdmin') {
+          this.successMessage.set(`Welcome Platform Administrator, ${response.fullName}! Opening platform dashboard...`);
+          this.cdr.markForCheck();
+          setTimeout(() => {
+            this.router.navigate(['/admin/dashboard']);
+          }, 400);
+          return;
+        }
+
+        // ─── 2. Canteen Owner Redirection (Resolves authorized canteens) ─────
+        this.canteenService.getMyCanteens().subscribe({
+          next: (canteens) => {
+            if (!canteens || canteens.length === 0) {
+              // No canteens yet -> Onboarding / Canteen Setup
+              this.successMessage.set(`Welcome back, ${response.fullName}! Redirecting to canteen setup...`);
+              this.cdr.markForCheck();
+              setTimeout(() => {
+                this.router.navigate(['/canteen-setup']);
+              }, 400);
+            } else if (canteens.length === 1) {
+              // Exactly 1 Canteen -> auto-select and open dashboard
+              const onlyCanteen = canteens[0];
+              this.successMessage.set(`Welcome back, ${response.fullName}! Opening ${onlyCanteen.name}...`);
+              this.cdr.markForCheck();
+              if (response.canteenId !== onlyCanteen.canteenId) {
+                this.authService.switchCanteen(onlyCanteen.canteenId).subscribe({
+                  next: () => { this.router.navigate(['/dashboard']); },
+                  error: () => { this.router.navigate(['/dashboard']); }
+                });
+              } else {
+                setTimeout(() => {
+                  this.router.navigate(['/dashboard']);
+                }, 400);
+              }
+            } else {
+              // Multiple Canteens -> /my-canteens selector
+              this.successMessage.set(`Welcome back, ${response.fullName}! Opening your canteens...`);
+              this.cdr.markForCheck();
+              setTimeout(() => {
+                this.router.navigate(['/my-canteens']);
+              }, 400);
+            }
+          },
+          error: () => {
+            // Fallback in case of network issue
+            const targetRoute = response.canteenId ? '/dashboard' : '/canteen-setup';
+            this.router.navigate([targetRoute]);
+          }
+        });
       },
       error: (error: HttpErrorResponse) => {
         this.loading.set(false);

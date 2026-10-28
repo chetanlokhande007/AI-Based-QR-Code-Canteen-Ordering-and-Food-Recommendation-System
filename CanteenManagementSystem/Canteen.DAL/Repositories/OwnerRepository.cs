@@ -48,4 +48,9 @@ public class OwnerRepository : IOwnerRepository
         var normalizedEmail = email.Trim().ToLower();
         return await _context.Owners.AnyAsync(o => o.Email.ToLower() == normalizedEmail);
     }
+
+    public async Task<int> GetTotalCountAsync()
+    {
+        return await _context.Owners.CountAsync();
+    }
 }

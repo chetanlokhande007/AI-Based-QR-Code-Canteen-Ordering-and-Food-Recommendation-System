@@ -27,15 +27,21 @@ export class ProductService {
     return this.http.get<ProductDto>(`${this.baseUrl}/${id}`);
   }
 
-  create(payload: CreateProductRequest): Observable<ProductDto> {
-    return this.http.post<ProductDto>(this.baseUrl, payload);
+  create(payload: CreateProductRequest, canteenId?: number): Observable<ProductDto> {
+    const params: Record<string, string> = {};
+    if (canteenId) params['canteenId'] = canteenId.toString();
+    return this.http.post<ProductDto>(this.baseUrl, payload, { params });
   }
 
-  update(id: number, payload: UpdateProductRequest): Observable<ProductDto> {
-    return this.http.put<ProductDto>(`${this.baseUrl}/${id}`, payload);
+  update(id: number, payload: UpdateProductRequest, canteenId?: number): Observable<ProductDto> {
+    const params: Record<string, string> = {};
+    if (canteenId) params['canteenId'] = canteenId.toString();
+    return this.http.put<ProductDto>(`${this.baseUrl}/${id}`, payload, { params });
   }
 
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  delete(id: number, canteenId?: number): Observable<void> {
+    const params: Record<string, string> = {};
+    if (canteenId) params['canteenId'] = canteenId.toString();
+    return this.http.delete<void>(`${this.baseUrl}/${id}`, { params });
   }
 }

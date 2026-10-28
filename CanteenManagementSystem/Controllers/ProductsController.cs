@@ -22,35 +22,47 @@ public class ProductsController : ControllerBase
 
     private async Task<int?> GetAuthorizedCanteenIdAsync(int? requestedCanteenId = null)
     {
-        var ownerCanteenId = User.GetCanteenId();
-        var targetCanteenId = requestedCanteenId ?? ownerCanteenId;
-        if (!targetCanteenId.HasValue) return null;
-
-        if (ownerCanteenId.HasValue && ownerCanteenId.Value == targetCanteenId.Value)
-        {
-            return targetCanteenId.Value;
-        }
-
         var ownerId = User.GetOwnerId();
-        if (ownerId.HasValue && await _canteenService.IsOwnerAuthorizedAsync(ownerId.Value, targetCanteenId.Value))
+        if (!ownerId.HasValue) return null;
+
+        var activeCanteenId = User.GetCanteenId();
+        if (!activeCanteenId.HasValue) return null;
+
+        // If client requested a specific canteen, it must match active token context
+        if (requestedCanteenId.HasValue && requestedCanteenId.Value != activeCanteenId.Value)
         {
-            return targetCanteenId.Value;
+            return null; // Cross-canteen parameter tampering blocked
         }
 
-        return null;
+        var isAuthorizedAndActive = await _canteenService.IsOwnerAuthorizedAndActiveAsync(ownerId.Value, activeCanteenId.Value);
+        return isAuthorizedAndActive ? activeCanteenId.Value : null;
     }
 
     /// <summary>Get all products for a canteen.</summary>
     [HttpGet("canteen/{canteenId:int}")]
     [ProducesResponseType(typeof(IEnumerable<ProductDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByCanteen(int canteenId, [FromQuery] bool availableOnly = false)
-        => Ok(await _service.GetAllByCanteenAsync(canteenId, availableOnly));
+    {
+        if (!await _canteenService.IsCanteenActiveAsync(canteenId))
+        {
+            return NotFound(new { message = "Canteen is inactive, suspended, or does not exist." });
+        }
+        return Ok(await _service.GetAllByCanteenAsync(canteenId, availableOnly));
+    }
 
     /// <summary>Get all products for a specific category within a canteen.</summary>
     [HttpGet("canteen/{canteenId:int}/category/{categoryId:int}")]
     [ProducesResponseType(typeof(IEnumerable<ProductDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByCategory(int canteenId, int categoryId, [FromQuery] bool availableOnly = false)
-        => Ok(await _service.GetByCategoryAsync(canteenId, categoryId, availableOnly));
+    {
+        if (!await _canteenService.IsCanteenActiveAsync(canteenId))
+        {
+            return NotFound(new { message = "Canteen is inactive, suspended, or does not exist." });
+        }
+        return Ok(await _service.GetByCategoryAsync(canteenId, categoryId, availableOnly));
+    }
 
     /// <summary>Get a product by ID.</summary>
     [HttpGet("{id:int}")]
@@ -59,7 +71,11 @@ public class ProductsController : ControllerBase
     public async Task<IActionResult> GetById(int id)
     {
         var dto = await _service.GetByIdAsync(id);
-        return dto is null ? NotFound() : Ok(dto);
+        if (dto is null || !await _canteenService.IsCanteenActiveAsync(dto.CanteenId))
+        {
+            return NotFound();
+        }
+        return Ok(dto);
     }
 
     /// <summary>Create a new product (Owner only).</summary>

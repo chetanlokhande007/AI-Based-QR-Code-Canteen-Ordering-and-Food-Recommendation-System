@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Canteen.Model.Enums;
 
 namespace Canteen.Model.Entities
 {
@@ -33,6 +34,10 @@ namespace Canteen.Model.Entities
         public string? ImageUrl { get; set; }
 
         public bool IsActive { get; set; } = true;
+
+        public TenantStatus TenantStatus { get; set; } = TenantStatus.Active;
+
+        public SetupStatus SetupStatus { get; set; } = SetupStatus.Draft;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

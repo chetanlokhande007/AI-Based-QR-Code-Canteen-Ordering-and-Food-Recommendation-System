@@ -85,6 +85,34 @@ export class SignalRService {
       });
   }
 
+  startTrackingConnection(orderId: number, trackingToken: string): Promise<void> {
+    if (this.hubConnection && this.hubConnection.state === signalR.HubConnectionState.Connected) {
+      return this.hubConnection.invoke('JoinOrderTrackingGroup', orderId, trackingToken).catch((err) => {
+        console.warn('Could not join order tracking group:', err);
+      });
+    }
+
+    this.hubConnection = new signalR.HubConnectionBuilder()
+      .withUrl(`${environment.hubUrl}/orders`, {
+        accessTokenFactory: () => this.authService.getToken() || '',
+        transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling
+      })
+      .withAutomaticReconnect()
+      .configureLogging(signalR.LogLevel.Warning)
+      .build();
+
+    this.registerHandlers();
+
+    return this.hubConnection
+      .start()
+      .then(() => {
+        return this.hubConnection?.invoke('JoinOrderTrackingGroup', orderId, trackingToken);
+      })
+      .catch((err) => {
+        console.warn('Customer tracking connection error:', err?.message || err);
+      });
+  }
+
   stopConnection(): Promise<void> {
     if (this.hubConnection) {
       const conn = this.hubConnection;

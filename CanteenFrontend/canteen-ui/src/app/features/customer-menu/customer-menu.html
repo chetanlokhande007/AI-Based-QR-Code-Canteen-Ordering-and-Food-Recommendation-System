@@ -1,0 +1,328 @@
+<div class="customer-menu-layout">
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p class="loading-text">Loading delicious menu items...</p>
+    </div>
+  }
+
+  <!-- Error State (Invalid QR or Load Failed) -->
+  @else if (errorMessage()) {
+    <div class="error-view-container">
+      <div class="error-card">
+        <div class="error-icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        </div>
+        <h2 class="error-title">Menu Unavailable</h2>
+        <p class="error-desc">{{ errorMessage() }}</p>
+        <button class="btn-retry" (click)="loadMenuData(canteenId())">
+          Try Again
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Active Order Placed & Live Tracking View -->
+  @else if (activeOrder(); as order) {
+    <div class="tracking-container">
+      <div class="tracking-card">
+        <div class="tracking-header">
+          <div class="success-icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h2 class="tracking-title">Order Placed Successfully!</h2>
+          <p class="tracking-order-num">Order #{{ order.orderNumber }}</p>
+          <div class="table-pill">Table #{{ tableId() || order.tableId }}</div>
+        </div>
+
+        <!-- Real-Time Status Tracker -->
+        <div class="status-tracker-box">
+          <div class="status-header-row">
+            <span class="live-pulse-badge">
+              <span class="pulse-dot"></span> LIVE STATUS
+            </span>
+            <span class="current-status-tag" [ngClass]="order.status.toLowerCase()">
+              {{ order.status }}
+            </span>
+          </div>
+
+          <div class="progress-bar-container">
+            <div class="progress-step" [class.active]="true" [class.completed]="order.status !== 'Pending'">
+              <div class="step-circle">1</div>
+              <span class="step-label">Received</span>
+            </div>
+            <div class="progress-line" [class.filled]="order.status === 'InPreparation' || order.status === 'Ready' || order.status === 'Completed'"></div>
+            <div class="progress-step" [class.active]="order.status === 'InPreparation'" [class.completed]="order.status === 'Ready' || order.status === 'Completed'">
+              <div class="step-circle">2</div>
+              <span class="step-label">Preparing</span>
+            </div>
+            <div class="progress-line" [class.filled]="order.status === 'Ready' || order.status === 'Completed'"></div>
+            <div class="progress-step" [class.active]="order.status === 'Ready'" [class.completed]="order.status === 'Completed'">
+              <div class="step-circle">3</div>
+              <span class="step-label">Ready</span>
+            </div>
+          </div>
+
+          @if (order.status === 'Pending') {
+            <p class="status-message">The kitchen has received your order and will start preparing shortly.</p>
+          } @else if (order.status === 'InPreparation') {
+            <p class="status-message preparing">Your food is currently being cooked fresh in the kitchen! 🍳</p>
+          } @else if (order.status === 'Ready') {
+            <p class="status-message ready">Your order is ready! Please collect it from the counter or wait for table service. 🔔</p>
+          } @else if (order.status === 'Completed') {
+            <p class="status-message completed">Order completed. Thank you and enjoy your meal! ⭐</p>
+          }
+        </div>
+
+        <!-- Order Items Summary -->
+        <div class="order-receipt-box">
+          <h4 class="receipt-heading">Items Ordered</h4>
+          <div class="receipt-items-list">
+            @for (item of order.items; track item.productId) {
+              <div class="receipt-item-row">
+                <span class="receipt-qty">{{ item.quantity }}x</span>
+                <span class="receipt-name">{{ item.productName || 'Product #' + item.productId }}</span>
+                <span class="receipt-price">₹{{ item.subtotal | number:'1.2-2' }}</span>
+              </div>
+            }
+          </div>
+          <div class="receipt-divider"></div>
+          <div class="receipt-total-row">
+            <span>Total Amount</span>
+            <span class="total-value">₹{{ order.totalAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="payment-status-row">
+            <span>Payment Status:</span>
+            <span class="payment-badge" [class.paid]="order.paymentStatus === 'Paid'">
+              {{ order.paymentStatus }}
+            </span>
+          </div>
+        </div>
+
+        <button class="btn-new-order" (click)="placeNewOrder()">
+          Order More Items
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Main Menu View -->
+  @else {
+    <!-- Sticky Top Header -->
+    <header class="menu-header">
+      <div class="header-inner">
+        <div class="brand-block">
+          @if (canteen()?.imageUrl) {
+            <img class="canteen-avatar" [src]="canteen()?.imageUrl" alt="Canteen Logo" />
+          } @else {
+            <div class="canteen-avatar-fallback">
+              {{ (canteen()?.name || 'C')[0] }}
+            </div>
+          }
+          <div class="brand-info">
+            <h1 class="canteen-name">{{ canteen()?.name || 'Smart Canteen' }}</h1>
+            <p class="canteen-loc">{{ canteen()?.location }}</p>
+          </div>
+        </div>
+
+        <div class="table-badge-header">
+          <span class="table-label">Table</span>
+          <span class="table-num">{{ tableId() }}</span>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-bar-wrapper">
+        <div class="search-input-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search snacks, meals, drinks..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          />
+        </div>
+      </div>
+
+      <!-- Horizontal Category Pills Scroll -->
+      <div class="categories-scroll-wrapper">
+        <button
+          class="cat-pill"
+          [class.active]="selectedCategory() === 'all'"
+          (click)="selectCategory('all')"
+        >
+          All Items ({{ products().length }})
+        </button>
+
+        @for (cat of categories(); track cat.categoryId) {
+          <button
+            class="cat-pill"
+            [class.active]="selectedCategory() === cat.categoryId"
+            (click)="selectCategory(cat.categoryId)"
+          >
+            {{ cat.name }}
+          </button>
+        }
+      </div>
+    </header>
+
+    <!-- Product Catalog Grid -->
+    <main class="menu-main">
+      <div class="catalog-section">
+        @if (filteredProducts().length === 0) {
+          <div class="no-items-box">
+            <p class="no-items-text">No items found matching your selection.</p>
+          </div>
+        } @else {
+          <div class="products-grid">
+            @for (product of filteredProducts(); track product.productId) {
+              <div class="product-card" [class.sold-out]="!product.isAvailable || product.stockQuantity <= 0">
+                <div class="product-image-container">
+                  @if (product.imageUrl) {
+                    <img class="product-img" [src]="product.imageUrl" [alt]="product.name" />
+                  } @else {
+                    <div class="product-img-placeholder">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+                        <path d="M7 2v20" />
+                        <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+                      </svg>
+                    </div>
+                  }
+                  @if (!product.isAvailable || product.stockQuantity <= 0) {
+                    <div class="sold-out-overlay">Sold Out</div>
+                  }
+                </div>
+
+                <div class="product-details">
+                  <div class="product-title-row">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                  </div>
+                  @if (product.description) {
+                    <p class="product-desc">{{ product.description }}</p>
+                  }
+                  <div class="product-footer">
+                    <span class="product-price">₹{{ product.price | number:'1.2-2' }}</span>
+
+                    @if (product.isAvailable && product.stockQuantity > 0) {
+                      @if (getItemQuantityInCart(product.productId) > 0) {
+                        <div class="stepper-btn-group">
+                          <button class="step-btn" (click)="removeFromCart(product.productId)">-</button>
+                          <span class="step-count">{{ getItemQuantityInCart(product.productId) }}</span>
+                          <button class="step-btn" (click)="addToCart(product)">+</button>
+                        </div>
+                      } @else {
+                        <button class="btn-add-cart" (click)="addToCart(product)">
+                          + Add
+                        </button>
+                      }
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </main>
+
+    <!-- Floating Cart Bar (Appears when items are in cart) -->
+    @if (totalCartItems() > 0) {
+      <div class="floating-cart-bar">
+        <div class="cart-summary-text">
+          <span class="cart-count-badge">{{ totalCartItems() }} {{ totalCartItems() === 1 ? 'item' : 'items' }}</span>
+          <span class="cart-total-price">₹{{ totalCartAmount() | number:'1.2-2' }}</span>
+        </div>
+        <button class="btn-view-cart" (click)="openCartDrawer()">
+          View Cart & Checkout
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="arrow-icon">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
+    }
+
+    <!-- Slide-Over Cart Drawer / Modal -->
+    @if (isCartDrawerOpen()) {
+      <div class="drawer-backdrop" (click)="closeCartDrawer()">
+        <div class="drawer-panel" (click)="$event.stopPropagation()">
+          <div class="drawer-header">
+            <div class="drawer-title-block">
+              <h2 class="drawer-title">Your Order Cart</h2>
+              <span class="drawer-subtitle">Table #{{ tableId() }} • {{ canteen()?.name }}</span>
+            </div>
+            <button class="btn-close-drawer" (click)="closeCartDrawer()">✕</button>
+          </div>
+
+          @if (orderError()) {
+            <div class="cart-error-banner">
+              {{ orderError() }}
+            </div>
+          }
+
+          <div class="drawer-body">
+            @for (item of cart(); track item.product.productId) {
+              <div class="cart-item-card">
+                <div class="cart-item-info">
+                  <h4 class="cart-item-name">{{ item.product.name }}</h4>
+                  <span class="cart-item-unit-price">₹{{ item.product.price | number:'1.2-2' }} each</span>
+                </div>
+                <div class="cart-item-actions">
+                  <div class="stepper-btn-group">
+                    <button class="step-btn" (click)="removeFromCart(item.product.productId)">-</button>
+                    <span class="step-count">{{ item.quantity }}</span>
+                    <button class="step-btn" (click)="addToCart(item.product)">+</button>
+                  </div>
+                  <span class="cart-item-subtotal">₹{{ (item.product.price * item.quantity) | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="drawer-footer">
+            <div class="bill-breakdown">
+              <div class="bill-row">
+                <span>Subtotal</span>
+                <span>₹{{ totalCartAmount() | number:'1.2-2' }}</span>
+              </div>
+              <div class="bill-row">
+                <span>Convenience / Taxes</span>
+                <span class="text-free">FREE</span>
+              </div>
+              <div class="bill-divider"></div>
+              <div class="bill-row total">
+                <span>Grand Total</span>
+                <span>₹{{ totalCartAmount() | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <button
+              class="btn-checkout-confirm"
+              [disabled]="isSubmittingOrder()"
+              (click)="submitOrder()"
+            >
+              @if (isSubmittingOrder()) {
+                <span class="spinner-small"></span>
+                Submitting Order...
+              } @else {
+                Confirm & Place Order (₹{{ totalCartAmount() | number:'1.2-2' }})
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

@@ -125,7 +125,7 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto?> SwitchCanteenAsync(int ownerId, int canteenId)
     {
-        var isAuthorized = await _canteenRepository.IsOwnerAuthorizedAsync(ownerId, canteenId);
+        var isAuthorized = await _canteenRepository.IsOwnerAuthorizedAndActiveAsync(ownerId, canteenId);
         if (!isAuthorized)
         {
             return null;

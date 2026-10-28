@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Canteen.BAL.Interfaces;
 using Canteen.DAL.Interfaces;
 using Canteen.Model.DTOs;
@@ -56,6 +60,7 @@ public class ProductService : IProductService
             Description = dto.Description,
             Price = dto.Price,
             StockQuantity = dto.StockQuantity,
+            FoodType = NormalizeFoodType(dto.FoodType),
             ImageUrl = dto.ImageUrl
         };
         var created = await _repo.AddAsync(entity);
@@ -88,6 +93,10 @@ public class ProductService : IProductService
         entity.Price = dto.Price;
         entity.StockQuantity = dto.StockQuantity;
         entity.IsAvailable = dto.IsAvailable;
+        if (!string.IsNullOrWhiteSpace(dto.FoodType))
+        {
+            entity.FoodType = NormalizeFoodType(dto.FoodType);
+        }
         entity.ImageUrl = dto.ImageUrl;
 
         var updated = await _repo.UpdateAsync(entity);
@@ -114,6 +123,10 @@ public class ProductService : IProductService
         entity.Price = dto.Price;
         entity.StockQuantity = dto.StockQuantity;
         entity.IsAvailable = dto.IsAvailable;
+        if (!string.IsNullOrWhiteSpace(dto.FoodType))
+        {
+            entity.FoodType = NormalizeFoodType(dto.FoodType);
+        }
         entity.ImageUrl = dto.ImageUrl;
 
         var updated = await _repo.UpdateAsync(entity);
@@ -146,6 +159,14 @@ public class ProductService : IProductService
         return await _repo.RestoreStockAsync(canteenId, productId, quantity);
     }
 
+    private static string NormalizeFoodType(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return "Veg";
+        var cleaned = input.Trim().Replace("-", "").Replace(" ", "");
+        if (cleaned.Equals("NonVeg", StringComparison.OrdinalIgnoreCase)) return "NonVeg";
+        return "Veg";
+    }
+
     private static ProductDto ToDto(Product p) => new()
     {
         ProductId = p.ProductId,
@@ -156,6 +177,7 @@ public class ProductService : IProductService
         Price = p.Price,
         StockQuantity = p.StockQuantity,
         IsAvailable = p.IsAvailable,
+        FoodType = string.IsNullOrWhiteSpace(p.FoodType) ? "Veg" : p.FoodType,
         ImageUrl = p.ImageUrl,
         CreatedAt = p.CreatedAt
     };

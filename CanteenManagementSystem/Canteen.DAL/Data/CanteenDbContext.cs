@@ -1,6 +1,7 @@
 
 using Canteen.Model.Entities;
 using Microsoft.EntityFrameworkCore;
+using Canteen.Model.Enums;
 
 namespace Canteen.DAL.Data;
 
@@ -95,6 +96,21 @@ public class CanteenDbContext : DbContext
             .HasMaxLength(150)
             .IsRequired();
 
+        // Lifecycle and Tenant Statuses
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .Property(c => c.TenantStatus)
+            .HasConversion<string>()
+            .HasMaxLength(30)
+            .IsRequired()
+            .HasDefaultValue(TenantStatus.Active);
+
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .Property(c => c.SetupStatus)
+            .HasConversion<string>()
+            .HasMaxLength(30)
+            .IsRequired()
+            .HasDefaultValue(SetupStatus.Draft);
+
         // Table numbers must be unique within a canteen.
         modelBuilder.Entity<CanteenTable>()
             .HasIndex(t => new
@@ -113,6 +129,12 @@ public class CanteenDbContext : DbContext
         modelBuilder.Entity<Product>()
             .Property(p => p.Price)
             .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Product>()
+            .Property(p => p.FoodType)
+            .HasMaxLength(20)
+            .IsRequired()
+            .HasDefaultValue("Veg");
 
         // Prevent negative prices (PostgreSQL-compatible syntax – no square brackets).
         modelBuilder.Entity<Product>()

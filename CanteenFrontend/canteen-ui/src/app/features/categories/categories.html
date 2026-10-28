@@ -1,0 +1,375 @@
+<div class="categories-layout" (click)="closeCanteenSelector()">
+
+  <!-- Left Sidebar (Dark Forest-Green Navigation matching Reference) -->
+  <aside class="sidebar-container" (click)="$event.stopPropagation()">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M18 2h-3a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h3" />
+            <path d="M6 2v14a3 3 0 0 0 3 3h3" />
+            <line x1="6" y1="6" x2="12" y2="6" />
+            <line x1="6" y1="10" x2="12" y2="10" />
+          </svg>
+        </div>
+        <div class="brand-text-block">
+          <span class="brand-title">CanteenHub</span>
+          <span class="brand-subtitle">SMART CANTEEN OS</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Overview -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span class="nav-label">Overview</span>
+      </a>
+
+      <!-- My Canteens -->
+      <a class="nav-item" routerLink="/my-canteens">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span class="nav-label">My Canteens</span>
+      </a>
+
+      <!-- Dashboard -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="7" height="9" x="3" y="3" rx="1" />
+          <rect width="7" height="5" x="14" y="3" rx="1" />
+          <rect width="7" height="9" x="14" y="12" rx="1" />
+          <rect width="7" height="5" x="3" y="16" rx="1" />
+        </svg>
+        <span class="nav-label">Dashboard</span>
+      </a>
+
+      <!-- Food Items -->
+      <a class="nav-item" routerLink="/food-items">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+          <path d="M7 2v20" />
+          <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+        </svg>
+        <span class="nav-label">Food Items</span>
+      </a>
+
+      <!-- Categories (Active) -->
+      <a class="nav-item active" routerLink="/categories">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+        </svg>
+        <span class="nav-label">Categories</span>
+      </a>
+
+      <!-- Tables & QR Codes -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="5" height="5" x="3" y="3" rx="1" />
+          <rect width="5" height="5" x="16" y="3" rx="1" />
+          <rect width="5" height="5" x="3" y="16" rx="1" />
+          <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+        </svg>
+        <span class="nav-label">Tables & QR Codes</span>
+      </a>
+
+      <!-- Orders -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <rect width="8" height="4" x="8" y="2" rx="1" />
+        </svg>
+        <span class="nav-label">Orders</span>
+      </a>
+
+      <!-- Settings -->
+      <a class="nav-item" routerLink="/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+        <span class="nav-label">Settings</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Right Main Viewport -->
+  <div class="main-viewport">
+
+    <!-- Top Navigation Bar -->
+    <header class="top-nav-bar" (click)="$event.stopPropagation()">
+      <div class="top-nav-left">
+        <div class="brand-badge-box">
+          <div class="brand-square-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M18 2h-3a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h3" />
+              <path d="M6 2v14a3 3 0 0 0 3 3h3" />
+              <line x1="6" y1="6" x2="12" y2="6" />
+              <line x1="6" y1="10" x2="12" y2="10" />
+            </svg>
+          </div>
+          <div class="brand-text-block-top">
+            <span class="top-brand-name">CanteenHub</span>
+            <span class="top-brand-sub">SMART CANTEEN OS</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-nav-right">
+        <!-- Current Canteen Selector Dropdown -->
+        <div class="canteen-selector-wrapper">
+          <button type="button" class="btn-canteen-selector" (click)="toggleCanteenSelector($event)" title="Switch Active Canteen">
+            <div class="selector-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            </div>
+            <div class="selector-text-col">
+              <span class="selector-prefix">Current canteen:</span>
+              <span class="selector-active-name">{{ currentCanteenName() }}</span>
+            </div>
+            <svg class="chevron-icon" [class.rotated]="isCanteenSelectorOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          <!-- Dropdown Menu -->
+          @if (isCanteenSelectorOpen()) {
+            <div class="canteen-dropdown-popover" (click)="$event.stopPropagation()">
+              <div class="dropdown-header-row">
+                <span class="dropdown-title">Your Canteens</span>
+                <span class="dropdown-count">{{ canteens().length }} total</span>
+              </div>
+
+              <div class="dropdown-items-scroll">
+                @for (c of canteens(); track c.canteenId) {
+                  <button type="button" class="canteen-dropdown-item" [class.selected]="c.canteenId === currentUser()?.canteenId" (click)="switchActiveCanteen(c)">
+                    <div class="item-meta">
+                      <span class="item-name">{{ c.name }}</span>
+                      <span class="item-loc">{{ c.location }}</span>
+                    </div>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Theme Toggle -->
+        <button type="button" class="top-nav-icon-btn" (click)="toggleTheme()" [title]="activeTheme() === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
+          @if (activeTheme() === 'light') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2" />
+              <path d="M12 20v2" />
+              <path d="m4.93 4.93 1.41 1.41" />
+              <path d="m17.66 17.66 1.41 1.41" />
+              <path d="M2 12h2" />
+              <path d="M20 12h2" />
+              <path d="m6.34 17.66-1.41 1.41" />
+              <path d="m19.07 4.93-1.41 1.41" />
+            </svg>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+            </svg>
+          }
+        </button>
+
+        <!-- User Profile Pill -->
+        <div class="user-pill-container">
+          <div class="user-avatar-circle">
+            {{ ownerInitials }}
+          </div>
+          <div class="user-text-col">
+            <span class="user-full-name">{{ currentUser()?.fullName || 'Canteen Owner' }}</span>
+            <span class="user-role-label">Owner Account</span>
+          </div>
+          <button type="button" class="btn-signout" (click)="logout()" title="Sign Out">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="page-content">
+
+      <!-- Breadcrumb Bar -->
+      <nav class="breadcrumb-nav">
+        <a routerLink="/dashboard" class="crumb-link">Dashboard</a>
+        <span class="crumb-separator">›</span>
+        <span class="crumb-current">Food Categories</span>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="page-header-row">
+        <div class="page-title-group">
+          <h1 class="page-title">Food Categories</h1>
+          <p class="page-desc">Organize dishes into customer menu sections (e.g. Breakfast, Beverages, Main Course).</p>
+        </div>
+
+        <button type="button" class="btn-add-primary" (click)="openAddModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>Add Category</span>
+        </button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="filter-controls-bar">
+        <div class="search-input-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Search categories by name..." />
+          @if (searchTerm) {
+            <button type="button" class="btn-clear-search" (click)="searchTerm = ''">✕</button>
+          }
+        </div>
+      </div>
+
+      <!-- Error Banner -->
+      @if (errorMessage()) {
+        <div class="alert-banner alert-error">
+          <span>{{ errorMessage() }}</span>
+          <button type="button" class="btn-retry" (click)="loadCategoriesData()">Retry</button>
+        </div>
+      }
+
+      <!-- Categories Grid Cards -->
+      @if (loading()) {
+        <div class="table-loading-skeleton">
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+        </div>
+      } @else if (filteredCategories().length > 0) {
+        <div class="categories-grid">
+          @for (cat of filteredCategories(); track cat.categoryId) {
+            <div class="category-card">
+              <div class="category-card-top">
+                <div class="category-icon-box">
+                  {{ getCategoryIcon(cat.name) }}
+                </div>
+                <div class="category-actions">
+                  <button type="button" class="btn-card-action" (click)="openEditModal(cat)" title="Edit Category">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
+                  <button type="button" class="btn-card-action delete" (click)="deleteCategory(cat)" title="Delete Category">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <h3 class="category-name">{{ cat.name }}</h3>
+              <p class="category-desc">{{ cat.description || 'Category for menu grouping and display.' }}</p>
+
+              <div class="category-card-bottom">
+                <span class="category-item-count">
+                  {{ getCategoryItemCount(cat.categoryId) }} food items
+                </span>
+                <a routerLink="/food-items" class="link-view-dishes">
+                  <span>View dishes →</span>
+                </a>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state-box">
+          <div class="empty-state-icon">📁</div>
+          <h3>No categories found</h3>
+          <p>Create your first food category to organize dishes on your customer ordering menu.</p>
+          <button type="button" class="btn-add-primary" (click)="openAddModal()">
+            + Add First Category
+          </button>
+        </div>
+      }
+
+    </main>
+  </div>
+
+  <!-- Add / Edit Modal -->
+  @if (showModal()) {
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <span class="modal-eyebrow">{{ currentCanteenName() }}</span>
+            <h3 class="modal-title">{{ isEditMode() ? 'Edit Category' : 'Add Food Category' }}</h3>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="closeModal()">✕</button>
+        </div>
+
+        <form (ngSubmit)="saveCategory()" class="modal-form" novalidate>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="catName">Category Name <span class="required-star">*</span></label>
+              <input
+                id="catName"
+                name="catName"
+                type="text"
+                [(ngModel)]="formName"
+                placeholder="e.g. Beverages & Chai"
+                required
+                minlength="2"
+                class="form-input" />
+            </div>
+
+            <div class="form-group">
+              <label for="catDesc">Description (Optional)</label>
+              <textarea
+                id="catDesc"
+                name="catDesc"
+                rows="3"
+                [(ngModel)]="formDescription"
+                placeholder="Fresh hot and cold drinks, shakes, and filter coffee."
+                class="form-textarea"></textarea>
+            </div>
+
+            @if (modalError()) {
+              <div class="alert-box alert-error">
+                <span>{{ modalError() }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeModal()">Cancel</button>
+            <button
+              type="submit"
+              class="btn-save"
+              [disabled]="modalSaving() || !formName.trim()">
+              {{ modalSaving() ? 'Saving...' : (isEditMode() ? 'Save Changes' : '+ Create Category') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+</div>
+

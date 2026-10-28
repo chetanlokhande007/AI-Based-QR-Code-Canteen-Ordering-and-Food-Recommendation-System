@@ -10,12 +10,14 @@ import { CanteenService } from '../../core/services/canteen.service';
 import { OrderService } from '../../core/services/order.service';
 import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
+import { TableService } from '../../core/services/table.service';
 import { SignalRService } from '../../core/services/signalr.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { CanteenDto, CanteenSummaryDto } from '../../core/models/canteen.models';
 import { OrderDto } from '../../core/models/order.models';
 import { ProductDto, CreateProductRequest } from '../../core/models/product.models';
 import { CategoryDto, CreateCategoryRequest } from '../../core/models/category.models';
+import { CanteenTableDto, CreateTableRequest } from '../../core/models/table.models';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,6 +32,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private readonly orderService = inject(OrderService);
   private readonly productService = inject(ProductService);
   private readonly categoryService = inject(CategoryService);
+  private readonly tableService = inject(TableService);
   private readonly signalRService = inject(SignalRService);
   private readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
@@ -57,6 +60,7 @@ export class Dashboard implements OnInit, OnDestroy {
   readonly orders = signal<OrderDto[]>([]);
   readonly products = signal<ProductDto[]>([]);
   readonly categories = signal<CategoryDto[]>([]);
+  readonly tables = signal<CanteenTableDto[]>([]);
 
   // Multi-Canteen signals
   readonly canteens = signal<CanteenSummaryDto[]>([]);
@@ -68,7 +72,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   // Menu & Food Catalog Modal State
   readonly showMenuModal = signal(false);
-  readonly menuModalTab = signal<'categories' | 'products'>('categories');
+  readonly menuModalTab = signal<'categories' | 'products' | 'tables'>('categories');
 
   // Category form inputs
   newCategoryName = '';
@@ -88,6 +92,15 @@ export class Dashboard implements OnInit, OnDestroy {
   readonly productError = signal('');
   readonly productSuccess = signal('');
   readonly selectedCategoryFilter = signal<number | 'all'>('all');
+
+  // Table & QR form inputs
+  newTableNumber: number | null = null;
+  newTableCapacity: number | null = 4;
+  readonly tableSaving = signal(false);
+  readonly tableError = signal('');
+  readonly tableSuccess = signal('');
+  readonly showQrModal = signal(false);
+  readonly selectedQrTable = signal<CanteenTableDto | null>(null);
 
   // Computed Business Metrics based strictly on real API data
   readonly todayOrdersCount = computed(() => {
@@ -116,10 +129,15 @@ export class Dashboard implements OnInit, OnDestroy {
 
   readonly totalProductsCount = computed(() => this.products().length);
   readonly totalCategoriesCount = computed(() => this.categories().length);
+  readonly totalTablesCount = computed(() => this.tables().length);
   readonly availableProductsCount = computed(() => this.products().filter(p => p.isAvailable).length);
 
   readonly recentOrdersList = computed(() => {
     return this.orders().slice(0, 10);
+  });
+
+  readonly popularProducts = computed(() => {
+    return this.products().slice(0, 4);
   });
 
   readonly filteredProducts = computed(() => {
@@ -142,16 +160,42 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadDashboardData();
     this.loadOwnerCanteensList();
     this.listenToRealtimeEvents();
 
     this.subscriptions.add(
       this.route.queryParams.subscribe(params => {
+        const queryCanteenId = params['canteenId'] ? Number(params['canteenId']) : null;
+        if (queryCanteenId && queryCanteenId !== this.currentUser()?.canteenId) {
+          this.isSwitching.set(true);
+          this.canteenDetails.set(null);
+          this.orders.set([]);
+          this.products.set([]);
+          this.categories.set([]);
+          this.tables.set([]);
+          this.cdr.markForCheck();
+
+          this.authService.switchCanteen(queryCanteenId).subscribe({
+            next: () => {
+              this.isSwitching.set(false);
+              this.loadDashboardData();
+              this.loadOwnerCanteensList();
+            },
+            error: () => {
+              this.isSwitching.set(false);
+              this.loadDashboardData();
+            }
+          });
+        } else {
+          this.loadDashboardData();
+        }
+
         if (params['openMenu'] === 'products') {
           this.openMenuModal('products');
         } else if (params['openMenu'] === 'categories') {
           this.openMenuModal('categories');
+        } else if (params['openMenu'] === 'tables') {
+          this.openMenuModal('tables');
         }
       })
     );
@@ -177,23 +221,26 @@ export class Dashboard implements OnInit, OnDestroy {
           this.orders.set([]);
           this.products.set([]);
           this.categories.set([]);
+          this.tables.set([]);
           this.loading.set(false);
           this.cdr.markForCheck();
           return;
         }
 
-        // 2. Fetch canteen info, orders, products, and categories concurrently via forkJoin
+        // 2. Fetch canteen info, orders, products, categories, and tables concurrently via forkJoin
         forkJoin({
           canteen: this.canteenService.getById(canteenId),
           orders: this.orderService.getOrdersByCanteen(canteenId),
           products: this.productService.getByCanteen(canteenId),
-          categories: this.categoryService.getAllByCanteen(canteenId)
+          categories: this.categoryService.getAllByCanteen(canteenId),
+          tables: this.tableService.getTablesByCanteen(canteenId)
         }).subscribe({
-          next: ({ canteen, orders, products, categories }) => {
+          next: ({ canteen, orders, products, categories, tables }) => {
             this.canteenDetails.set(canteen);
             this.orders.set(orders || []);
             this.products.set(products || []);
             this.categories.set(categories || []);
+            this.tables.set(tables || []);
             this.loading.set(false);
             this.cdr.markForCheck();
 
@@ -267,6 +314,11 @@ export class Dashboard implements OnInit, OnDestroy {
     this.authService.switchCanteen(canteen.canteenId).subscribe({
       next: () => {
         this.isSwitching.set(false);
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { canteenId: canteen.canteenId },
+          queryParamsHandling: 'merge'
+        });
         this.loadDashboardData();
         this.loadOwnerCanteensList();
       },
@@ -290,13 +342,15 @@ export class Dashboard implements OnInit, OnDestroy {
       canteen: this.canteenService.getById(canteenId),
       orders: this.orderService.getOrdersByCanteen(canteenId),
       products: this.productService.getByCanteen(canteenId),
-      categories: this.categoryService.getAllByCanteen(canteenId)
+      categories: this.categoryService.getAllByCanteen(canteenId),
+      tables: this.tableService.getTablesByCanteen(canteenId)
     }).subscribe({
-      next: ({ canteen, orders, products, categories }) => {
+      next: ({ canteen, orders, products, categories, tables }) => {
         this.canteenDetails.set(canteen);
         this.orders.set(orders || []);
         this.products.set(products || []);
         this.categories.set(categories || []);
+        this.tables.set(tables || []);
         this.loading.set(false);
         this.cdr.markForCheck();
         this.signalRService.startConnection();
@@ -383,19 +437,20 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   // Menu Modal controls
-  openMenuModal(tab: 'categories' | 'products' = 'categories'): void {
+  openMenuModal(tab: 'categories' | 'products' | 'tables' = 'categories'): void {
     const canteenId = this.currentUser()?.canteenId;
     if (!canteenId) {
       this.openSetupWizard();
       return;
     }
-    this.menuModalTab.set(tab);
-    this.categoryError.set('');
-    this.categorySuccess.set('');
-    this.productError.set('');
-    this.productSuccess.set('');
-    this.showMenuModal.set(true);
-    this.cdr.markForCheck();
+    if (tab === 'products') {
+      this.router.navigate(['/food-items']);
+      return;
+    }
+    if (tab === 'categories') {
+      this.router.navigate(['/categories']);
+      return;
+    }
   }
 
   closeMenuModal(): void {
@@ -403,12 +458,14 @@ export class Dashboard implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  switchMenuModalTab(tab: 'categories' | 'products'): void {
+  switchMenuModalTab(tab: 'categories' | 'products' | 'tables'): void {
     this.menuModalTab.set(tab);
     this.categoryError.set('');
     this.categorySuccess.set('');
     this.productError.set('');
     this.productSuccess.set('');
+    this.tableError.set('');
+    this.tableSuccess.set('');
     this.cdr.markForCheck();
   }
 
@@ -602,6 +659,94 @@ export class Dashboard implements OnInit, OnDestroy {
       orderDate.getMonth() === today.getMonth() &&
       orderDate.getDate() === today.getDate()
     );
+  }
+
+  // Table Actions & QR Codes
+  saveTable(): void {
+    this.tableError.set('');
+    this.tableSuccess.set('');
+    const canteenId = this.currentUser()?.canteenId;
+    if (!canteenId) return;
+
+    const num = Number(this.newTableNumber);
+    if (!num || isNaN(num) || num <= 0) {
+      this.tableError.set('Please provide a valid table number (e.g. 1, 2, 3...).');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const capacity = Number(this.newTableCapacity) || 4;
+    this.tableSaving.set(true);
+    this.cdr.markForCheck();
+
+    this.tableService.createTable(canteenId, {
+      canteenId,
+      tableNumber: num,
+      capacity
+    }).subscribe({
+      next: (created) => {
+        this.tableSaving.set(false);
+        this.newTableNumber = null;
+        this.newTableCapacity = 4;
+        this.tableSuccess.set(`Table #${created.tableNumber} created successfully!`);
+        this.tables.update(list => [...list, created]);
+        this.cdr.markForCheck();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.tableSaving.set(false);
+        this.tableError.set(err.error?.message || 'Failed to create table.');
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  deleteTable(tableId: number): void {
+    const canteenId = this.currentUser()?.canteenId;
+    if (!canteenId) return;
+
+    if (!confirm('Are you sure you want to delete this table?')) return;
+
+    this.tableService.deleteTable(canteenId, tableId).subscribe({
+      next: () => {
+        this.tables.update(list => list.filter(t => t.tableId !== tableId));
+        this.cdr.markForCheck();
+      },
+      error: (err: HttpErrorResponse) => {
+        alert(err.error?.message || 'Failed to delete table.');
+      }
+    });
+  }
+
+  openTableQr(table: CanteenTableDto): void {
+    this.selectedQrTable.set(table);
+    this.showQrModal.set(true);
+    this.cdr.markForCheck();
+  }
+
+  closeQrModal(): void {
+    this.showQrModal.set(false);
+    this.selectedQrTable.set(null);
+    this.cdr.markForCheck();
+  }
+
+  getTableQrImageUrl(table: CanteenTableDto): string {
+    return this.tableService.getQrImageUrl(table.canteenId, table.tableId);
+  }
+
+  getTableMenuUrl(table: CanteenTableDto): string {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/menu?canteenId=${table.canteenId}&tableId=${table.tableId}&token=${table.qrToken}`;
+    }
+    return `/menu?canteenId=${table.canteenId}&tableId=${table.tableId}&token=${table.qrToken}`;
+  }
+
+  scrollToOrders(): void {
+    if (typeof document !== 'undefined') {
+      const el = document.getElementById('live-orders-section');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   }
 
   logout(): void {

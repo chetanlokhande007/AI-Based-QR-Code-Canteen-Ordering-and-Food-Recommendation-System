@@ -68,4 +68,32 @@ public class CanteenRepository : ICanteenRepository
                            (c.OwnerId == ownerId ||
                             (c.OwnerId == null && _context.Owners.Any(o => o.OwnerId == ownerId && o.CanteenId == canteenId))));
     }
+
+    public async Task<bool> IsOwnerAuthorizedAndActiveAsync(int ownerId, int canteenId)
+    {
+        return await _context.Canteens
+            .AsNoTracking()
+            .AnyAsync(c => c.CanteenId == canteenId &&
+                           c.TenantStatus == Model.Enums.TenantStatus.Active &&
+                           (c.OwnerId == ownerId ||
+                            (c.OwnerId == null && _context.Owners.Any(o => o.OwnerId == ownerId && o.CanteenId == canteenId))));
+    }
+
+    public async Task<bool> IsCanteenActiveAsync(int canteenId)
+    {
+        return await _context.Canteens
+            .AsNoTracking()
+            .AnyAsync(c => c.CanteenId == canteenId && c.TenantStatus == Model.Enums.TenantStatus.Active);
+    }
+
+    public async Task<IEnumerable<Model.Entities.Canteen>> GetAdminListAsync()
+    {
+        return await _context.Canteens
+            .AsNoTracking()
+            .Include(c => c.Owner)
+            .Include(c => c.Products)
+            .Include(c => c.Tables)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+    }
 }

@@ -131,6 +131,24 @@ public class ApiIntegrationTests : IClassFixture<TestWebApplicationFactory>
         // Create Table
         var tableRes = await _client.PostAsJsonAsync("/api/canteens/1/tables", new { TableNumber = 1, Capacity = 4 });
         Assert.Equal(HttpStatusCode.Unauthorized, tableRes.StatusCode);
+
+        // GetAll Canteens must reject unauthenticated requests (Anti-scraping)
+        var allCanteensRes = await _client.GetAsync("/api/canteens");
+        Assert.Equal(HttpStatusCode.Unauthorized, allCanteensRes.StatusCode);
+    }
+
+    [Fact]
+    public async Task PublicCanteenInfo_AnonymousCaller_ReturnsPublicDataOnly()
+    {
+        var (token, canteenId) = await RegisterAndCreateCanteenAsync("pubowner", "Public Canteen");
+
+        var response = await _client.GetAsync($"/api/canteens/{canteenId}/public-info");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var json = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Public Canteen", json);
+        Assert.DoesNotContain("ownerId", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("token", json, StringComparison.OrdinalIgnoreCase);
     }
 
     // ─── 5. Multi-Tenant Isolation: Owner A vs Owner B ────────────────────────
