@@ -27,6 +27,8 @@ public class TablesController : ControllerBase
 
     private async Task<bool> IsAuthorizedAsync(int canteenId)
     {
+        if (User.IsInRole("PlatformAdmin")) return true;
+
         var ownerId = User.GetOwnerId();
         if (!ownerId.HasValue) return false;
 
@@ -42,10 +44,18 @@ public class TablesController : ControllerBase
     /// <summary>Get all tables for a canteen.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<CanteenTableDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAll(int canteenId)
     {
-        if (!await _canteenService.IsCanteenActiveAsync(canteenId))
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            if (!await IsAuthorizedAsync(canteenId))
+            {
+                return Forbid();
+            }
+        }
+        else if (!await _canteenService.IsCanteenActiveAsync(canteenId))
         {
             return NotFound(new { message = "Canteen is inactive, suspended, or does not exist." });
         }
@@ -55,10 +65,18 @@ public class TablesController : ControllerBase
     /// <summary>Get a table by ID.</summary>
     [HttpGet("{tableId:int}")]
     [ProducesResponseType(typeof(CanteenTableDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int canteenId, int tableId)
     {
-        if (!await _canteenService.IsCanteenActiveAsync(canteenId))
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            if (!await IsAuthorizedAsync(canteenId))
+            {
+                return Forbid();
+            }
+        }
+        else if (!await _canteenService.IsCanteenActiveAsync(canteenId))
         {
             return NotFound(new { message = "Canteen is inactive, suspended, or does not exist." });
         }
@@ -162,10 +180,18 @@ public class TablesController : ControllerBase
     /// <summary>Download or view the QR code PNG image for a table.</summary>
     [HttpGet("{tableId:int}/qr-image")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetQrImage(int canteenId, int tableId, [FromQuery] int pixelsPerModule = 10)
     {
-        if (!await _canteenService.IsCanteenActiveAsync(canteenId))
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            if (!await IsAuthorizedAsync(canteenId))
+            {
+                return Forbid();
+            }
+        }
+        else if (!await _canteenService.IsCanteenActiveAsync(canteenId))
         {
             return NotFound(new { message = "Canteen is inactive, suspended, or does not exist." });
         }
@@ -185,10 +211,18 @@ public class TablesController : ControllerBase
     /// <summary>Get the customer menu URL encoded in the table's QR code.</summary>
     [HttpGet("{tableId:int}/qr-url")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetQrUrl(int canteenId, int tableId)
     {
-        if (!await _canteenService.IsCanteenActiveAsync(canteenId))
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            if (!await IsAuthorizedAsync(canteenId))
+            {
+                return Forbid();
+            }
+        }
+        else if (!await _canteenService.IsCanteenActiveAsync(canteenId))
         {
             return NotFound(new { message = "Canteen is inactive, suspended, or does not exist." });
         }

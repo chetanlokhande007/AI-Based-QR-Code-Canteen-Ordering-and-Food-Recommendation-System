@@ -35,10 +35,11 @@ export class CustomerMenu implements OnInit, OnDestroy {
 
   private readonly subscriptions = new Subscription();
 
-  // Query Parameters
+  // Query / Route Parameters
   readonly canteenId = signal<number>(0);
   readonly tableId = signal<number>(0);
   readonly qrToken = signal<string>('');
+  readonly slug = signal<string>('');
 
   // State Signals
   readonly loading = signal<boolean>(true);
@@ -88,24 +89,28 @@ export class CustomerMenu implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    const slugParam = this.route.snapshot.paramMap.get('slug');
     const params = this.route.snapshot.queryParamMap;
     const cId = Number(params.get('canteenId'));
     const tId = Number(params.get('tableId'));
     const token = params.get('token') || '';
 
-    this.canteenId.set(cId);
     this.tableId.set(tId);
     this.qrToken.set(token);
 
-    if (!cId || !token) {
+    if (slugParam) {
+      this.slug.set(slugParam);
+      this.loadMenuDataBySlug(slugParam);
+    } else if (cId) {
+      this.canteenId.set(cId);
+      this.loadMenuData(cId);
+    } else {
       this.errorMessage.set(
         'Invalid or expired QR code. Please scan the official table QR code again.'
       );
       this.loading.set(false);
       return;
     }
-
-    this.loadMenuData(cId);
 
     // Listen to real-time status updates for tracking active order
     this.subscriptions.add(
@@ -126,6 +131,39 @@ export class CustomerMenu implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
     this.signalRService.stopConnection();
+  }
+
+  loadMenuDataBySlug(slug: string): void {
+    this.loading.set(true);
+    this.errorMessage.set(null);
+
+    this.canteenService.getPublicInfoBySlug(slug).subscribe({
+      next: (canteen) => {
+        this.canteen.set(canteen);
+        this.canteenId.set(canteen.canteenId);
+
+        forkJoin({
+          categories: this.categoryService.getAllByCanteen(canteen.canteenId),
+          products: this.productService.getByCanteen(canteen.canteenId, true)
+        }).subscribe({
+          next: ({ categories, products }: { categories: CategoryDto[]; products: ProductDto[] }) => {
+            this.categories.set(categories || []);
+            this.products.set((products || []).filter((p: ProductDto) => p.isAvailable));
+            this.loading.set(false);
+          },
+          error: (err) => {
+            console.error('Failed to load menu data by slug:', err);
+            this.errorMessage.set('Unable to load canteen menu items.');
+            this.loading.set(false);
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Failed to load canteen by slug:', err);
+        this.errorMessage.set('Canteen not found or currently unavailable.');
+        this.loading.set(false);
+      }
+    });
   }
 
   loadMenuData(canteenId: number): void {
@@ -204,7 +242,12 @@ export class CustomerMenu implements OnInit, OnDestroy {
   }
 
   submitOrder(): void {
-    if (this.cart().length === 0 || !this.qrToken()) return;
+    if (this.cart().length === 0) return;
+
+    if (!this.qrToken()) {
+      this.orderError.set('Please scan the QR code physically placed on your dining table to submit an order.');
+      return;
+    }
 
     this.isSubmittingOrder.set(true);
     this.orderError.set(null);
@@ -239,6 +282,10 @@ export class CustomerMenu implements OnInit, OnDestroy {
   placeNewOrder(): void {
     this.activeOrder.set(null);
     this.orderError.set(null);
-    this.loadMenuData(this.canteenId());
+    if (this.slug()) {
+      this.loadMenuDataBySlug(this.slug());
+    } else {
+      this.loadMenuData(this.canteenId());
+    }
   }
 }

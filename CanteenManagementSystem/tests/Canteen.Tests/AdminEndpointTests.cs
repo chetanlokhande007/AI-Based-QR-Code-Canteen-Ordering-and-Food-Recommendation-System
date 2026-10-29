@@ -213,5 +213,132 @@ public class AdminEndpointTests : IClassFixture<TestWebApplicationFactory>
         var pubRes2 = await _client.GetAsync($"/api/canteens/{created.CanteenId}/public-info");
         Assert.Equal(HttpStatusCode.OK, pubRes2.StatusCode);
     }
-}
 
+    [Fact]
+    public async Task PlatformAdmin_Can_View_Any_Canteen_Tables_And_QrImage_Returns200()
+    {
+        // 1. Create owner and canteen with table
+        var (ownerToken, _) = await RegisterOwnerAsync("admin_tbl_owner");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ownerToken);
+
+        var createRes = await _client.PostAsJsonAsync("/api/canteens", new CreateCanteenDto
+        {
+            Name = "Admin Inspectable Canteen",
+            Location = "Block A"
+        });
+        createRes.EnsureSuccessStatusCode();
+        var canteen = await createRes.Content.ReadFromJsonAsync<CanteenDto>(JsonOptions);
+        Assert.NotNull(canteen);
+
+        // Switch canteen to get token with active CanteenId claim
+        var switchRes = await _client.PostAsync($"/api/auth/switch-canteen/{canteen.CanteenId}", null);
+        switchRes.EnsureSuccessStatusCode();
+        var switchData = await switchRes.Content.ReadFromJsonAsync<AuthResponseDto>(JsonOptions);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", switchData!.Token);
+
+        var tableRes = await _client.PostAsJsonAsync($"/api/canteens/{canteen.CanteenId}/tables", new CreateCanteenTableDto
+        {
+            TableNumber = 501,
+            Capacity = 6
+        });
+        tableRes.EnsureSuccessStatusCode();
+        var table = await tableRes.Content.ReadFromJsonAsync<CanteenTableDto>(JsonOptions);
+        Assert.NotNull(table);
+
+        // 2. Platform Admin inspects the tables
+        var adminToken = await CreatePlatformAdminTokenAsync("admin_table_inspector");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+
+        var adminTablesRes = await _client.GetAsync($"/api/admin/canteens/{canteen.CanteenId}/tables");
+        Assert.Equal(HttpStatusCode.OK, adminTablesRes.StatusCode);
+        var tables = await adminTablesRes.Content.ReadFromJsonAsync<List<CanteenTableDto>>(JsonOptions);
+        Assert.NotNull(tables);
+        Assert.Single(tables);
+        Assert.Equal(501, tables[0].TableNumber);
+        Assert.Equal(table.QRToken, tables[0].QRToken); // Preserves exact physical QR token
+
+        // 3. Platform Admin inspects QR image
+        var qrImgRes = await _client.GetAsync($"/api/admin/canteens/{canteen.CanteenId}/tables/{table.TableId}/qr-image");
+        Assert.Equal(HttpStatusCode.OK, qrImgRes.StatusCode);
+        Assert.Equal("image/png", qrImgRes.Content.Headers.ContentType?.MediaType);
+
+        // 4. Platform Admin inspects QR URL
+        var qrUrlRes = await _client.GetAsync($"/api/admin/canteens/{canteen.CanteenId}/tables/{table.TableId}/qr-url");
+        Assert.Equal(HttpStatusCode.OK, qrUrlRes.StatusCode);
+    }
+
+    [Fact]
+    public async Task RegularOwner_Cannot_Access_Admin_Tables_Returns403()
+    {
+        var (ownerToken, _) = await RegisterOwnerAsync("owner_not_admin");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ownerToken);
+
+        var adminTablesRes = await _client.GetAsync("/api/admin/canteens/1/tables");
+        Assert.Equal(HttpStatusCode.Forbidden, adminTablesRes.StatusCode);
+    }
+
+    [Fact]
+    public async Task Admin_Can_Access_CanteenDetails_Payments_AuditLogs_And_Owners()
+    {
+        // 1. Arrange a canteen
+        var (ownerToken, ownerId) = await RegisterOwnerAsync("admin_suite_owner");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ownerToken);
+        var createCanteenRes = await _client.PostAsJsonAsync("/api/canteens", new CreateCanteenDto
+        {
+            Name = "Suite Canteen",
+            Location = "Tech Park, Pune",
+            AddressLine1 = "Tower B Ground Floor",
+            City = "Pune",
+            BankAccountHolder = "Suite Owner",
+            BankName = "HDFC Bank",
+            AccountNumber = "123456789012",
+            IfscCode = "HDFC0001234"
+        });
+        createCanteenRes.EnsureSuccessStatusCode();
+        var canteen = await createCanteenRes.Content.ReadFromJsonAsync<CanteenDto>(JsonOptions);
+        Assert.NotNull(canteen);
+
+        // 2. Platform Admin accesses Canteen Details
+        var adminToken = await CreatePlatformAdminTokenAsync("admin_suite_tester");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+
+        var detailsRes = await _client.GetAsync($"/api/admin/canteens/{canteen.CanteenId}/details");
+        Assert.Equal(HttpStatusCode.OK, detailsRes.StatusCode);
+        var details = await detailsRes.Content.ReadFromJsonAsync<AdminCanteenDetailsDto>(JsonOptions);
+        Assert.NotNull(details);
+        Assert.Equal("Suite Canteen", details.Name);
+        Assert.True(details.BankDetails.IsConfigured);
+        Assert.Contains("9012", details.BankDetails.AccountNumberMasked);
+
+        // 3. Platform Admin accesses Payment Overview and Setup
+        var payOverviewRes = await _client.GetAsync("/api/admin/payments/overview");
+        Assert.Equal(HttpStatusCode.OK, payOverviewRes.StatusCode);
+
+        var paySetupRes = await _client.GetAsync("/api/admin/payments/canteens-setup");
+        Assert.Equal(HttpStatusCode.OK, paySetupRes.StatusCode);
+        var setups = await paySetupRes.Content.ReadFromJsonAsync<List<AdminCanteenPaymentSetupDto>>(JsonOptions);
+        Assert.NotNull(setups);
+        Assert.Contains(setups, s => s.CanteenId == canteen.CanteenId && s.IsConfigured);
+
+        // 4. Platform Admin accesses Audit Logs
+        var auditRes = await _client.GetAsync("/api/admin/audit-logs");
+        Assert.Equal(HttpStatusCode.OK, auditRes.StatusCode);
+        var logs = await auditRes.Content.ReadFromJsonAsync<List<AdminAuditLogDto>>(JsonOptions);
+        Assert.NotNull(logs);
+        Assert.NotEmpty(logs);
+
+        // 5. Platform Admin accesses Owners List and Owner Details
+        var ownersRes = await _client.GetAsync("/api/admin/owners");
+        Assert.Equal(HttpStatusCode.OK, ownersRes.StatusCode);
+        var owners = await ownersRes.Content.ReadFromJsonAsync<List<AdminOwnerItemDto>>(JsonOptions);
+        Assert.NotNull(owners);
+        Assert.Contains(owners, o => o.OwnerId == ownerId);
+
+        var ownerDetailsRes = await _client.GetAsync($"/api/admin/owners/{ownerId}");
+        Assert.Equal(HttpStatusCode.OK, ownerDetailsRes.StatusCode);
+        var ownerDetails = await ownerDetailsRes.Content.ReadFromJsonAsync<AdminOwnerDetailsDto>(JsonOptions);
+        Assert.NotNull(ownerDetails);
+        Assert.Equal(ownerId, ownerDetails.OwnerId);
+        Assert.Contains(ownerDetails.Canteens, c => c.CanteenId == canteen.CanteenId);
+    }
+}

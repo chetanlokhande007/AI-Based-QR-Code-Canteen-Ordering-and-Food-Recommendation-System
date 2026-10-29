@@ -35,6 +35,10 @@ export class Login implements OnInit {
       this.errorMessage.set('Your session has expired. Please sign in again.');
     }
 
+    if (this.router.url.includes('/canteen/register') || this.route.snapshot.queryParamMap.get('tab') === 'register') {
+      this.activeTab.set('register');
+    }
+
     if (this.authService.isLoggedIn()) {
       const user = this.authService.currentUser();
       if (user?.role === 'PlatformAdmin') {
@@ -106,6 +110,15 @@ export class Login implements OnInit {
     this.cdr.markForCheck();
   }
 
+  fillAdminCredentials(): void {
+    this.activeTab.set('login');
+    this.email = 'admin@canteen.com';
+    this.password = 'Admin123!';
+    this.errorMessage.set('');
+    this.successMessage.set('Demo Admin credentials applied! Click "Sign In" to open Platform Admin Dashboard.');
+    this.cdr.markForCheck();
+  }
+
   togglePasswordVisibility(): void {
     this.showPassword.update((visible) => !visible);
   }
@@ -171,13 +184,28 @@ export class Login implements OnInit {
               setTimeout(() => {
                 this.router.navigate(['/canteen-setup']);
               }, 400);
-            } else if (canteens.length === 1) {
-              // Exactly 1 Canteen -> auto-select and open dashboard
-              const onlyCanteen = canteens[0];
-              this.successMessage.set(`Welcome back, ${response.fullName}! Opening ${onlyCanteen.name}...`);
+            } else {
+              // Owner has their ONE Canteen -> check if setup is complete
+              const canteen = canteens[0];
+              const isSetupIncomplete = !canteen.isSetupComplete &&
+                (canteen.status === 'Setup Pending' ||
+                 canteen.setupStatus === 'Draft' ||
+                 (canteen.setupStatus as any) === 0 ||
+                 (canteen.setupStatus as any) === 1);
+
+              if (isSetupIncomplete) {
+                this.successMessage.set(`Welcome back, ${response.fullName}! Please complete setting up your canteen...`);
+                this.cdr.markForCheck();
+                setTimeout(() => {
+                  this.router.navigate(['/canteen-setup']);
+                }, 400);
+                return;
+              }
+
+              this.successMessage.set(`Welcome back, ${response.fullName}! Opening ${canteen.name}...`);
               this.cdr.markForCheck();
-              if (response.canteenId !== onlyCanteen.canteenId) {
-                this.authService.switchCanteen(onlyCanteen.canteenId).subscribe({
+              if (response.canteenId !== canteen.canteenId) {
+                this.authService.switchCanteen(canteen.canteenId).subscribe({
                   next: () => { this.router.navigate(['/dashboard']); },
                   error: () => { this.router.navigate(['/dashboard']); }
                 });
@@ -186,13 +214,6 @@ export class Login implements OnInit {
                   this.router.navigate(['/dashboard']);
                 }, 400);
               }
-            } else {
-              // Multiple Canteens -> /my-canteens selector
-              this.successMessage.set(`Welcome back, ${response.fullName}! Opening your canteens...`);
-              this.cdr.markForCheck();
-              setTimeout(() => {
-                this.router.navigate(['/my-canteens']);
-              }, 400);
             }
           },
           error: () => {
@@ -268,9 +289,7 @@ export class Login implements OnInit {
         this.loading.set(false);
         const hasCanteen = !!response.canteenId;
         const targetRoute = hasCanteen ? '/dashboard' : '/canteen-setup';
-        const msg = hasCanteen
-          ? `Welcome, ${response.fullName}! Your canteen owner account was created successfully. Redirecting to dashboard...`
-          : `Welcome, ${response.fullName}! Your canteen owner account was created successfully. Let's set up your canteen...`;
+        const msg = `Welcome, ${response.fullName}! Your owner profile has been created successfully. Redirecting to canteen setup...`;
         this.successMessage.set(msg);
         this.cdr.markForCheck();
         setTimeout(() => {

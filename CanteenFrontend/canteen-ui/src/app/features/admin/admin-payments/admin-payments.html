@@ -1,0 +1,324 @@
+<div class="admin-layout">
+
+  <!-- Left Sidebar Navigation -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="22" height="22">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">CanteenHub</span>
+          <span class="brand-badge">PLATFORM ADMIN</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/admin/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <rect width="7" height="9" x="3" y="3" rx="1" />
+          <rect width="7" height="5" x="14" y="3" rx="1" />
+          <rect width="7" height="9" x="14" y="12" rx="1" />
+          <rect width="7" height="5" x="3" y="16" rx="1" />
+        </svg>
+        <span>Platform Overview</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/canteens">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span>All Canteens</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/owners">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        <span>Owners</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/tables">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <rect width="18" height="18" x="3" y="3" rx="2" />
+          <path d="M3 9h18" />
+          <path d="M9 21V9" />
+          <path d="M14 14h3" />
+          <path d="M14 17h3" />
+        </svg>
+        <span>Tables & QR Codes</span>
+      </a>
+
+      <a class="nav-item active" routerLink="/admin/payments">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <rect width="20" height="14" x="2" y="5" rx="2" />
+          <line x1="2" x2="22" y1="10" y2="10" />
+        </svg>
+        <span>Payments</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/audit-logs">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+        <span>Audit Logs</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-profile-badge">
+        <div class="avatar-circle">PA</div>
+        <div class="user-meta">
+          <span class="user-name">{{ currentUser()?.fullName || 'Platform Administrator' }}</span>
+          <span class="user-role">Platform Admin</span>
+        </div>
+      </div>
+      <button type="button" class="btn-logout" (click)="logout()" title="Sign Out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <h1 class="page-title">Payment Monitoring</h1>
+        <p class="page-subtitle">Track payment setup status, transactions, and settlements across all canteens.</p>
+      </div>
+
+      <div class="header-filters">
+        <select [(ngModel)]="selectedCanteenFilter" class="filter-select">
+          <option value="all">All Canteens</option>
+          @for (s of canteensSetup(); track s.canteenId) {
+            <option [value]="s.canteenId.toString()">{{ s.canteenName }}</option>
+          }
+        </select>
+
+        <select [(ngModel)]="selectedDateFilter" class="filter-select">
+          <option value="7d">Last 7 Days</option>
+          <option value="30d">Last 30 Days</option>
+          <option value="90d">Last 90 Days</option>
+          <option value="all">All Time</option>
+        </select>
+
+        <button type="button" class="btn-refresh" (click)="loadData()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading payment monitoring metrics...</p>
+        </div>
+      } @else if (errorMessage()) {
+        <div class="alert-banner error">
+          <span>{{ errorMessage() }}</span>
+        </div>
+      } @else {
+        <!-- 4 KPI Metrics Cards -->
+        <section class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Total Transactions</span>
+              <div class="kpi-icon blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                  <rect width="20" height="14" x="2" y="5" rx="2" />
+                  <line x1="2" x2="22" y1="10" y2="10" />
+                </svg>
+              </div>
+            </div>
+            <span class="kpi-value">{{ paymentOverview()?.totalTransactions || 0 }}</span>
+            <span class="kpi-caption">All canteens</span>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Successful</span>
+              <div class="kpi-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              </div>
+            </div>
+            <span class="kpi-value">{{ paymentOverview()?.successfulCount || 0 }}</span>
+            <span class="kpi-caption">Completed payments</span>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Failed</span>
+              <div class="kpi-icon red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+              </div>
+            </div>
+            <span class="kpi-value">{{ paymentOverview()?.failedCount || 0 }}</span>
+            <span class="kpi-caption">Failed attempts</span>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Total Revenue</span>
+              <div class="kpi-icon emerald">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                  <line x1="12" y1="1" x2="12" y2="23" />
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              </div>
+            </div>
+            <span class="kpi-value font-currency">₹{{ paymentOverview()?.totalRevenue || 0 }}</span>
+            <span class="kpi-caption">Gross transaction value</span>
+          </div>
+        </section>
+
+        <!-- Tabs & Content -->
+        <section class="card table-container-card">
+          <div class="table-tabs-header">
+            <div class="tabs-group">
+              <button
+                type="button"
+                class="tab-pill"
+                [class.active]="activeTab() === 'transactions'"
+                (click)="setTab('transactions')"
+              >
+                Recent Transactions
+              </button>
+              <button
+                type="button"
+                class="tab-pill"
+                [class.active]="activeTab() === 'setup'"
+                (click)="setTab('setup')"
+              >
+                Canteen Payment Setup
+              </button>
+            </div>
+
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                [(ngModel)]="searchQuery"
+                placeholder="Search transactions..."
+                class="search-input"
+              />
+            </div>
+          </div>
+
+          <!-- Tab 1: Recent Transactions -->
+          @if (activeTab() === 'transactions') {
+            @if (filteredTransactions().length === 0) {
+              <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" class="empty-icon">
+                  <rect width="20" height="14" x="2" y="5" rx="2" />
+                  <line x1="2" x2="22" y1="10" y2="10" />
+                </svg>
+                <h3>No transactions found</h3>
+                <p>No payment transactions recorded for the selected filter period.</p>
+              </div>
+            } @else {
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Date & Time</th>
+                      <th>Canteen</th>
+                      <th>Order ID</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Payment Method</th>
+                      <th>Transaction ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (t of filteredTransactions(); track t.paymentId) {
+                      <tr>
+                        <td>{{ t.createdAt | date:'medium' }}</td>
+                        <td><strong>{{ t.canteenName }}</strong></td>
+                        <td class="font-mono">{{ t.orderNumber }}</td>
+                        <td><strong>₹{{ t.amount }}</strong></td>
+                        <td>
+                          <span class="badge" [class.active]="t.status === 'Success' || t.status === 'Captured' || t.status === 'Paid'" [class.suspended]="t.status === 'Failed'">
+                            {{ t.status }}
+                          </span>
+                        </td>
+                        <td>{{ t.paymentMethod }}</td>
+                        <td class="font-mono text-muted">{{ t.transactionId || 'N/A' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          }
+
+          <!-- Tab 2: Canteen Payment Setup -->
+          @if (activeTab() === 'setup') {
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Canteen Name</th>
+                    <th>Owner</th>
+                    <th>Account Holder</th>
+                    <th>Bank Name</th>
+                    <th>Account Number</th>
+                    <th>IFSC Code</th>
+                    <th>UPI ID</th>
+                    <th>Settlement Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of filteredSetups(); track c.canteenId) {
+                    <tr>
+                      <td><strong>{{ c.canteenName }}</strong></td>
+                      <td>{{ c.ownerName }}</td>
+                      <td>{{ c.bankAccountHolder || 'Not configured' }}</td>
+                      <td>{{ c.bankName || 'Not configured' }}</td>
+                      <td class="font-mono">{{ c.accountNumberMasked || 'Not provided' }}</td>
+                      <td class="font-mono">{{ c.ifscCode || 'N/A' }}</td>
+                      <td>{{ c.upiId || 'N/A' }}</td>
+                      <td>
+                        <span class="badge" [class.active]="c.isConfigured" [class.suspended]="!c.isConfigured">
+                          {{ c.settlementStatus }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+      }
+    </div>
+  </main>
+</div>
+

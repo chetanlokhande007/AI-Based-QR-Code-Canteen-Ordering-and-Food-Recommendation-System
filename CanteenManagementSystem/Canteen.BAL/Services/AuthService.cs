@@ -45,6 +45,40 @@ public class AuthService : IAuthService
         };
 
         var createdOwner = await _ownerRepository.AddAsync(owner);
+
+        // If initial canteen details were supplied during registration, initialize the tenant
+        if (!string.IsNullOrWhiteSpace(dto.CanteenName))
+        {
+            var canteenName = dto.CanteenName.Trim();
+            var slug = Slugify(canteenName);
+            if (string.IsNullOrWhiteSpace(slug)) slug = "canteen-" + Guid.NewGuid().ToString("N")[..6];
+            var candidate = slug;
+            var counter = 1;
+            while (await _canteenRepository.SlugExistsAsync(candidate))
+            {
+                counter++;
+                candidate = $"{slug}-{counter}";
+            }
+
+            var initialCanteen = new Model.Entities.Canteen
+            {
+                Name = canteenName,
+                Slug = candidate,
+                Location = !string.IsNullOrWhiteSpace(dto.CanteenAddress) ? dto.CanteenAddress.Trim() : "Location will be shown here",
+                ContactPhone = dto.ContactPhone?.Trim(),
+                ContactEmail = dto.Email.Trim().ToLower(),
+                OwnerId = createdOwner.OwnerId,
+                IsActive = true,
+                TenantStatus = Model.Enums.TenantStatus.Active,
+                SetupStatus = Model.Enums.SetupStatus.Draft,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var createdCanteen = await _canteenRepository.AddAsync(initialCanteen);
+            createdOwner.CanteenId = createdCanteen.CanteenId;
+            await _ownerRepository.UpdateAsync(createdOwner);
+        }
+
         var token = GenerateJwtToken(createdOwner);
 
         var expiryMinutes = int.TryParse(_configuration["Jwt:ExpiryMinutes"], out var exp) ? exp : 30;
@@ -268,6 +302,28 @@ public class AuthService : IAuthService
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
+    }
+
+    private static string Slugify(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+        var cleaned = text.Trim().ToLowerInvariant();
+        var sb = new StringBuilder();
+        foreach (var ch in cleaned)
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                sb.Append(ch);
+            }
+            else if (ch is ' ' or '-' or '_' or '.' or '/' or '&')
+            {
+                if (sb.Length > 0 && sb[^1] != '-')
+                {
+                    sb.Append('-');
+                }
+            }
+        }
+        return sb.ToString().Trim('-');
     }
 
     // ─── Cryptographic Password Hashing (PBKDF2-HMAC-SHA256) ───────────────────

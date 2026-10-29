@@ -8,12 +8,21 @@ namespace Canteen.Model.DTOs
     {
         public int CanteenId { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string Slug { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
 
         public string? CanteenType { get; set; }
         public string? Description { get; set; }
         public string? ContactPhone { get; set; }
         public string? ContactEmail { get; set; }
+
+        // Owner Bank & Settlement Details (Confidential to Owner & Admin)
+        public string? BankAccountHolder { get; set; }
+        public string? BankName { get; set; }
+        public string? AccountNumber { get; set; }
+        public string? IfscCode { get; set; }
+        public string? AccountType { get; set; }
+        public string? UpiId { get; set; }
 
         public string? AddressLine1 { get; set; }
         public string? AddressLine2 { get; set; }
@@ -38,6 +47,7 @@ namespace Canteen.Model.DTOs
     {
         public int CanteenId { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string Slug { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public string? CanteenType { get; set; }
         public string? Description { get; set; }
@@ -54,6 +64,7 @@ namespace Canteen.Model.DTOs
     {
         public int CanteenId { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string Slug { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public string? Description { get; set; }
         public string? ImageUrl { get; set; }
@@ -74,6 +85,9 @@ namespace Canteen.Model.DTOs
         [StringLength(150, MinimumLength = 2, ErrorMessage = "Canteen name must be between 2 and 150 characters.")]
         public string Name { get; set; } = string.Empty;
 
+        [StringLength(150)]
+        public string? Slug { get; set; }
+
         [Required(ErrorMessage = "Location is required.")]
         [StringLength(250, MinimumLength = 2, ErrorMessage = "Location must be between 2 and 250 characters.")]
         public string Location { get; set; } = string.Empty;
@@ -82,6 +96,25 @@ namespace Canteen.Model.DTOs
         public string? Description { get; set; }
         public string? ContactPhone { get; set; }
         public string? ContactEmail { get; set; }
+
+        // Owner Bank & Settlement Details
+        [StringLength(100)]
+        public string? BankAccountHolder { get; set; }
+
+        [StringLength(100)]
+        public string? BankName { get; set; }
+
+        [StringLength(50)]
+        public string? AccountNumber { get; set; }
+
+        [StringLength(20)]
+        public string? IfscCode { get; set; }
+
+        [StringLength(20)]
+        public string? AccountType { get; set; }
+
+        [StringLength(100)]
+        public string? UpiId { get; set; }
 
         public string? AddressLine1 { get; set; }
         public string? AddressLine2 { get; set; }
@@ -101,6 +134,9 @@ namespace Canteen.Model.DTOs
         [StringLength(150, MinimumLength = 2, ErrorMessage = "Canteen name must be between 2 and 150 characters.")]
         public string Name { get; set; } = string.Empty;
 
+        [StringLength(150)]
+        public string? Slug { get; set; }
+
         [Required(ErrorMessage = "Location is required.")]
         [StringLength(250, MinimumLength = 2, ErrorMessage = "Location must be between 2 and 250 characters.")]
         public string Location { get; set; } = string.Empty;
@@ -109,6 +145,25 @@ namespace Canteen.Model.DTOs
         public string? Description { get; set; }
         public string? ContactPhone { get; set; }
         public string? ContactEmail { get; set; }
+
+        // Owner Bank & Settlement Details
+        [StringLength(100)]
+        public string? BankAccountHolder { get; set; }
+
+        [StringLength(100)]
+        public string? BankName { get; set; }
+
+        [StringLength(50)]
+        public string? AccountNumber { get; set; }
+
+        [StringLength(20)]
+        public string? IfscCode { get; set; }
+
+        [StringLength(20)]
+        public string? AccountType { get; set; }
+
+        [StringLength(100)]
+        public string? UpiId { get; set; }
 
         public string? AddressLine1 { get; set; }
         public string? AddressLine2 { get; set; }

@@ -34,13 +34,53 @@
         </svg>
         <span>All Canteens</span>
       </a>
+
+      <a class="nav-item" routerLink="/admin/owners">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        <span>Owners</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/tables">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <rect width="18" height="18" x="3" y="3" rx="2" />
+          <path d="M3 9h18" />
+          <path d="M9 21V9" />
+          <path d="M14 14h3" />
+          <path d="M14 17h3" />
+        </svg>
+        <span>Tables & QR Codes</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/payments">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <rect width="20" height="14" x="2" y="5" rx="2" />
+          <line x1="2" x2="22" y1="10" y2="10" />
+        </svg>
+        <span>Payments</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/audit-logs">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+        <span>Audit Logs</span>
+      </a>
     </nav>
 
     <div class="sidebar-footer">
       <div class="user-profile-badge">
         <div class="avatar-circle">PA</div>
         <div class="user-meta">
-          <span class="user-name">{{ currentUser()?.fullName || 'Super Administrator' }}</span>
+          <span class="user-name">{{ currentUser()?.fullName || 'Platform Administrator' }}</span>
           <span class="user-role">Platform Admin</span>
         </div>
       </div>
@@ -50,7 +90,6 @@
           <polyline points="16 17 21 12 16 7" />
           <line x1="21" y1="12" x2="9" y2="12" />
         </svg>
-        <span>Sign Out</span>
       </button>
     </div>
   </aside>
@@ -100,6 +139,7 @@
 
       <!-- Real Metrics Grid -->
       @if (metrics(); as m) {
+        <!-- 4 Top KPI Cards -->
         <div class="metrics-grid">
           
           <div class="metric-card">
@@ -112,7 +152,7 @@
               </div>
             </div>
             <div class="metric-value">{{ m.totalCanteens }}</div>
-            <div class="metric-footer">Total tenants registered on platform</div>
+            <div class="metric-footer">Registered on platform</div>
           </div>
 
           <div class="metric-card">
@@ -126,7 +166,7 @@
               </div>
             </div>
             <div class="metric-value green-text">{{ m.activeCanteens }}</div>
-            <div class="metric-footer">Operational & accepting customer orders</div>
+            <div class="metric-footer">Accepting orders</div>
           </div>
 
           <div class="metric-card">
@@ -140,7 +180,7 @@
               </div>
             </div>
             <div class="metric-value red-text">{{ m.suspendedCanteens }}</div>
-            <div class="metric-footer">Suspended or inactive by administrator</div>
+            <div class="metric-footer">Restricted by admin</div>
           </div>
 
           <div class="metric-card">
@@ -154,7 +194,82 @@
               </div>
             </div>
             <div class="metric-value">{{ m.totalOwners }}</div>
-            <div class="metric-footer">SaaS customer owner accounts</div>
+            <div class="metric-footer">SaaS customer accounts</div>
+          </div>
+
+        </div>
+
+        <!-- 3 Insight Cards (Row 2 matching Screen 2) -->
+        <div class="insights-grid">
+          
+          <!-- Card 1: Registration Trend (Bar chart) -->
+          <div class="insight-card trend-card">
+            <div class="card-header-row">
+              <h3 class="insight-title">Canteen Registration Trend</h3>
+              <span class="badge-sub">Last 6 months</span>
+            </div>
+            <div class="bar-chart-container">
+              @for (item of m.registrationTrend || []; track item.month) {
+                <div class="bar-col">
+                  <div class="bar-track">
+                    <div class="bar-fill" [style.height.%]="item.count === 0 ? 8 : (item.count * 15 > 100 ? 100 : item.count * 15)">
+                      <span class="bar-val-pop" *ngIf="item.count > 0">{{ item.count }}</span>
+                    </div>
+                  </div>
+                  <span class="bar-label">{{ item.month }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Card 2: Status Distribution (Donut ring) -->
+          <div class="insight-card donut-card">
+            <h3 class="insight-title">Canteen Status Distribution</h3>
+            <div class="donut-chart-container">
+              <div class="donut-ring">
+                <div class="donut-inner">
+                  <span class="donut-total">{{ m.statusDistribution?.total || m.totalCanteens }}</span>
+                  <span class="donut-sub">Total</span>
+                </div>
+              </div>
+              <div class="donut-legend">
+                <div class="legend-row">
+                  <span class="dot green"></span>
+                  <span class="leg-text">Active</span>
+                  <span class="leg-val">{{ m.statusDistribution?.active || m.activeCanteens }}</span>
+                </div>
+                <div class="legend-row">
+                  <span class="dot red"></span>
+                  <span class="leg-text">Suspended</span>
+                  <span class="leg-val">{{ m.statusDistribution?.suspended || m.suspendedCanteens }}</span>
+                </div>
+                <div class="legend-row">
+                  <span class="dot yellow"></span>
+                  <span class="leg-text">Setup In Progress</span>
+                  <span class="leg-val">{{ m.statusDistribution?.setupInProgress || 0 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Recent Activity Feed -->
+          <div class="insight-card activity-card">
+            <div class="card-header-row">
+              <h3 class="insight-title">Recent Activity</h3>
+              <a routerLink="/admin/audit-logs" class="link-view-all">View All &rarr;</a>
+            </div>
+            <div class="activity-feed-list">
+              @for (act of m.recentActivities || []; track act.id) {
+                <div class="activity-feed-item">
+                  <div class="activity-dot" [class.green]="act.type === 'canteen' || act.type === 'activation'" [class.blue]="act.type === 'setup'" [class.red]="act.type === 'suspension'"></div>
+                  <div class="activity-body">
+                    <p class="activity-title">{{ act.title }}</p>
+                    <p class="activity-sub">{{ act.subtitle }}</p>
+                  </div>
+                  <span class="activity-time">{{ act.timestamp | date:'shortTime' }}</span>
+                </div>
+              }
+            </div>
           </div>
 
         </div>
@@ -170,61 +285,75 @@
           </div>
 
           <div class="table-container">
-            @if (m.recentCanteens.length === 0) {
-              <div class="empty-table-state">
-                <p>No canteens have been registered yet.</p>
-              </div>
-            } @else {
-              <table class="admin-table">
-                <thead>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Canteen ID</th>
+                  <th>Canteen Name</th>
+                  <th>Type & Location</th>
+                  <th>Owner Account</th>
+                  <th>Deployment Status</th>
+                  <th>Registered</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (canteen of m.recentCanteens; track canteen.canteenId) {
                   <tr>
-                    <th>Canteen Name</th>
-                    <th>Location</th>
-                    <th>Owner Account</th>
-                    <th>Status</th>
-                    <th>Registered</th>
-                    <th class="text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (c of m.recentCanteens; track c.canteenId) {
-                    <tr>
-                      <td class="font-medium">
-                        <div class="canteen-name-cell">
-                          <span class="name-text">{{ c.name }}</span>
-                          @if (c.canteenType) {
-                            <span class="type-tag">{{ c.canteenType }}</span>
-                          }
-                        </div>
-                      </td>
-                      <td class="text-muted">{{ c.location }}</td>
-                      <td>
-                        <div class="owner-cell">
-                          <span class="owner-name">{{ c.ownerName }}</span>
-                          <span class="owner-email">{{ c.ownerEmail }}</span>
-                        </div>
-                      </td>
-                      <td>
-                        @if (c.isActive) {
-                          <span class="badge active">Active</span>
-                        } @else {
-                          <span class="badge suspended">Suspended</span>
+                    <td class="font-mono text-muted">#{{ canteen.canteenId }}</td>
+                    <td>
+                      <div class="canteen-name-cell">
+                        <span class="canteen-name">{{ canteen.name }}</span>
+                        @if (canteen.canteenType) {
+                          <span class="canteen-type-tag">{{ canteen.canteenType }}</span>
                         }
-                      </td>
-                      <td class="text-muted">{{ c.createdAt | date:'mediumDate' }}</td>
-                      <td class="text-right">
-                        <a routerLink="/admin/canteens" class="btn-table-action">Inspect</a>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            }
+                      </div>
+                    </td>
+                    <td>
+                      <div class="location-cell">
+                        <svg class="location-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        <span>{{ canteen.location }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="owner-cell">
+                        <span class="owner-name">{{ canteen.ownerName }}</span>
+                        <span class="owner-email">{{ canteen.ownerEmail }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      @if (canteen.isActive) {
+                        <span class="badge active">
+                          <span class="status-indicator green"></span>
+                          Active
+                        </span>
+                      } @else {
+                        <span class="badge suspended">
+                          <span class="status-indicator red"></span>
+                          Suspended
+                        </span>
+                      }
+                    </td>
+                    <td class="text-muted">{{ canteen.createdAt | date:'mediumDate' }}</td>
+                    <td class="text-right">
+                      <a [routerLink]="['/admin/canteens', canteen.canteenId]" class="btn-action">
+                        View Details
+                      </a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
         </section>
+
       }
 
     </div>
-  </main>
-</div>
 
+  </main>
+
+</div>

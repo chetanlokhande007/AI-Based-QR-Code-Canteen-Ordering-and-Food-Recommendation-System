@@ -103,7 +103,9 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
 
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromSeconds(30)
+            ClockSkew = TimeSpan.FromSeconds(30),
+            RoleClaimType = System.Security.Claims.ClaimTypes.Role,
+            NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier
         };
 
         options.Events = new JwtBearerEvents
@@ -145,6 +147,19 @@ builder.Services.AddCors(options =>
 
         policy
             .WithOrigins(allowedOrigins)
+            .SetIsOriginAllowed(origin =>
+            {
+                if (string.IsNullOrEmpty(origin)) return false;
+                try
+                {
+                    var uri = new Uri(origin);
+                    return uri.Host is "localhost" or "127.0.0.1";
+                }
+                catch
+                {
+                    return false;
+                }
+            })
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -209,6 +224,28 @@ if (app.Environment.IsDevelopment())
     if (db.Database.IsRelational())
     {
         db.Database.Migrate();
+
+        // Seed development PlatformAdmin if not present
+        if (!db.Owners.Any(o => o.Role == "PlatformAdmin"))
+        {
+            var salt = System.Security.Cryptography.RandomNumberGenerator.GetBytes(16);
+            var hash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(
+                password: Encoding.UTF8.GetBytes("Admin123!"),
+                salt: salt,
+                iterations: 100_000,
+                hashAlgorithm: System.Security.Cryptography.HashAlgorithmName.SHA256,
+                outputLength: 32);
+
+            db.Owners.Add(new Canteen.Model.Entities.Owner
+            {
+                FullName = "Platform Administrator",
+                Email = "admin@canteen.com",
+                PasswordHash = $"{Convert.ToBase64String(salt)}.{Convert.ToBase64String(hash)}",
+                Role = "PlatformAdmin",
+                CreatedAt = DateTime.UtcNow
+            });
+            db.SaveChanges();
+        }
     }
 }
 
@@ -247,14 +284,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Canteen Management API v1");
-        c.RoutePrefix = string.Empty;   // serve Swagger UI at root "/"
+        c.RoutePrefix = "swagger";
     });
+
+    app.MapGet("/", () => Results.Redirect("/swagger"));
+    app.MapGet("/api", () => Results.Redirect("/swagger"));
 }
 
 // CORS must run before auth so pre-flight OPTIONS requests are handled correctly.
 app.UseCors(CorsPolicyName);
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

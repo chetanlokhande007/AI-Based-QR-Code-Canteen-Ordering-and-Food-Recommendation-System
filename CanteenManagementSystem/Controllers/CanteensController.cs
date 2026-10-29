@@ -30,7 +30,7 @@ public class CanteensController : ControllerBase
     public async Task<IActionResult> GetAll()
         => Ok(await _service.GetAllAsync());
 
-    /// <summary>Get public display information for a canteen (Customer access).</summary>
+    /// <summary>Get public display information for a canteen by ID (Customer access).</summary>
     [HttpGet("{id:int}/public-info")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PublicCanteenDto), StatusCodes.Status200OK)]
@@ -47,6 +47,38 @@ public class CanteensController : ControllerBase
         {
             CanteenId = dto.CanteenId,
             Name = dto.Name,
+            Slug = dto.Slug,
+            Location = dto.Location,
+            CanteenType = dto.CanteenType,
+            Description = dto.Description,
+            AddressLine1 = dto.AddressLine1,
+            City = dto.City,
+            State = dto.State,
+            PostalCode = dto.PostalCode,
+            OperatingHoursJson = dto.OperatingHoursJson,
+            ImageUrl = dto.ImageUrl,
+            IsActive = dto.IsActive
+        });
+    }
+
+    /// <summary>Get public display information for a canteen by URL slug (Customer access, e.g. /c/deshmuk-catten).</summary>
+    [HttpGet("by-slug/{slug}/public-info")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(PublicCanteenDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPublicInfoBySlug(string slug)
+    {
+        var dto = await _service.GetBySlugAsync(slug);
+        if (dto is null || !dto.IsActive || dto.TenantStatus != TenantStatus.Active)
+        {
+            return NotFound();
+        }
+
+        return Ok(new PublicCanteenDto
+        {
+            CanteenId = dto.CanteenId,
+            Name = dto.Name,
+            Slug = dto.Slug,
             Location = dto.Location,
             CanteenType = dto.CanteenType,
             Description = dto.Description,
@@ -86,6 +118,19 @@ public class CanteensController : ControllerBase
         if (!User.IsInRole("PlatformAdmin") && dto.TenantStatus != TenantStatus.Active)
         {
             return NotFound();
+        }
+
+        // Mask confidential bank & settlement details for non-owners and non-admins
+        var ownerId = User.GetOwnerId();
+        var isOwner = ownerId.HasValue && dto.OwnerId == ownerId.Value;
+        if (!User.IsInRole("PlatformAdmin") && !isOwner)
+        {
+            dto.BankAccountHolder = null;
+            dto.BankName = null;
+            dto.AccountNumber = null;
+            dto.IfscCode = null;
+            dto.AccountType = null;
+            dto.UpiId = null;
         }
 
         return Ok(dto);

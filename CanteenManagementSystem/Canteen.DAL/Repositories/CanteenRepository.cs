@@ -24,6 +24,25 @@ public class CanteenRepository : ICanteenRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.CanteenId == id);
 
+    public async Task<Model.Entities.Canteen?> GetBySlugAsync(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug)) return null;
+        var normalized = slug.Trim().ToLowerInvariant();
+        return await _context.Canteens
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Slug.ToLower() == normalized);
+    }
+
+    public async Task<bool> SlugExistsAsync(string slug, int? excludeCanteenId = null)
+    {
+        if (string.IsNullOrWhiteSpace(slug)) return false;
+        var normalized = slug.Trim().ToLowerInvariant();
+        return await _context.Canteens
+            .AsNoTracking()
+            .AnyAsync(c => c.Slug.ToLower() == normalized &&
+                           (!excludeCanteenId.HasValue || c.CanteenId != excludeCanteenId.Value));
+    }
+
     public async Task<Model.Entities.Canteen> AddAsync(Model.Entities.Canteen canteen)
     {
         _context.Canteens.Add(canteen);

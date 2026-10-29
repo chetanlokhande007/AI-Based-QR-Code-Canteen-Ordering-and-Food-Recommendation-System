@@ -1,0 +1,495 @@
+<div class="admin-layout">
+
+  <!-- Left Sidebar Navigation -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="22" height="22">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">CanteenHub</span>
+          <span class="brand-badge">PLATFORM ADMIN</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/admin/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <rect width="7" height="9" x="3" y="3" rx="1" />
+          <rect width="7" height="5" x="14" y="3" rx="1" />
+          <rect width="7" height="9" x="14" y="12" rx="1" />
+          <rect width="7" height="5" x="3" y="16" rx="1" />
+        </svg>
+        <span>Platform Overview</span>
+      </a>
+
+      <a class="nav-item active" routerLink="/admin/canteens">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span>All Canteens</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/owners">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        <span>Owners</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/tables">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <rect width="18" height="18" x="3" y="3" rx="2" />
+          <path d="M3 9h18" />
+          <path d="M9 21V9" />
+          <path d="M14 14h3" />
+          <path d="M14 17h3" />
+        </svg>
+        <span>Tables & QR Codes</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/payments">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <rect width="20" height="14" x="2" y="5" rx="2" />
+          <line x1="2" x2="22" y1="10" y2="10" />
+        </svg>
+        <span>Payments</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/audit-logs">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+        <span>Audit Logs</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-profile-badge">
+        <div class="avatar-circle">PA</div>
+        <div class="user-meta">
+          <span class="user-name">{{ currentUser()?.fullName || 'Platform Administrator' }}</span>
+          <span class="user-role">Platform Admin</span>
+        </div>
+      </div>
+      <button type="button" class="btn-logout" (click)="logout()" title="Sign Out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="admin-main">
+    <header class="admin-header">
+      <div class="breadcrumb-container">
+        <a routerLink="/admin/canteens" class="breadcrumb-back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <span>All Canteens</span>
+        </a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">{{ details()?.name || 'Canteen Details' }}</span>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading tenant details...</p>
+        </div>
+      } @else if (errorMessage()) {
+        <div class="alert-banner error">
+          <span>{{ errorMessage() }}</span>
+        </div>
+      } @else if (details()) {
+        <!-- Canteen Profile Hero Banner -->
+        <section class="tenant-hero-card">
+          <div class="hero-left">
+            <div class="canteen-avatar">
+              @if (details()?.imageUrl) {
+                <img [src]="details()?.imageUrl" [alt]="details()?.name" class="avatar-img" />
+              } @else {
+                <div class="avatar-placeholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="32" height="32">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  </svg>
+                </div>
+              }
+            </div>
+            <div class="canteen-header-meta">
+              <div class="title-row">
+                <h1 class="canteen-title">{{ details()?.name }}</h1>
+                @if (details()?.isActive) {
+                  <span class="badge active">Active</span>
+                } @else {
+                  <span class="badge suspended">Suspended</span>
+                }
+              </div>
+              <p class="canteen-subtitle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                <span>{{ details()?.location }}</span>
+              </p>
+              <p class="canteen-subtitle owner-line">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <span>Owner: <strong>{{ details()?.owner?.fullName }}</strong> ({{ details()?.owner?.email }})</span>
+              </p>
+            </div>
+          </div>
+          <div class="hero-right">
+            <span class="tenant-id-pill">Tenant #{{ details()?.canteenId }}</span>
+          </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <div class="tenant-tabs-bar">
+          <button type="button" class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">
+            Overview
+          </button>
+          <button type="button" class="tab-btn" [class.active]="activeTab() === 'owner'" (click)="setTab('owner')">
+            Owner
+          </button>
+          <button type="button" class="tab-btn" [class.active]="activeTab() === 'tables'" (click)="setTab('tables')">
+            Tables ({{ details()?.tables?.length || 0 }})
+          </button>
+          <button type="button" class="tab-btn" [class.active]="activeTab() === 'food-items'" (click)="setTab('food-items')">
+            Food Items ({{ details()?.foodItems?.length || 0 }})
+          </button>
+          <button type="button" class="tab-btn" [class.active]="activeTab() === 'orders'" (click)="setTab('orders')">
+            Orders ({{ details()?.orders?.length || 0 }})
+          </button>
+          <button type="button" class="tab-btn" [class.active]="activeTab() === 'payments'" (click)="setTab('payments')">
+            Payments
+          </button>
+          <button type="button" class="tab-btn" [class.active]="activeTab() === 'activity'" (click)="setTab('activity')">
+            Activity
+          </button>
+        </div>
+
+        <!-- Tab 1: Overview -->
+        @if (activeTab() === 'overview') {
+          <div class="tab-content overview-grid">
+            <div class="card info-card">
+              <h3 class="card-title">Canteen Information</h3>
+              <div class="info-rows">
+                <div class="info-row">
+                  <span class="info-label">Canteen ID</span>
+                  <span class="info-value font-mono">#{{ details()?.canteenId }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Type</span>
+                  <span class="info-value">{{ details()?.canteenType || 'General Food Service' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Location</span>
+                  <span class="info-value">{{ details()?.location }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Registered</span>
+                  <span class="info-value">{{ details()?.createdAt | date:'mediumDate' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Setup Status</span>
+                  <span class="info-value">
+                    <span class="badge active">{{ details()?.setupStatus || 'Completed' }}</span>
+                  </span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Tenant Status</span>
+                  <span class="info-value">
+                    <span class="badge active">Active</span>
+                  </span>
+                </div>
+                @if (details()?.contactPhone) {
+                  <div class="info-row">
+                    <span class="info-label">Phone</span>
+                    <span class="info-value">{{ details()?.contactPhone }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="card stats-card">
+              <h3 class="card-title">Statistics</h3>
+              <div class="stats-boxes-grid">
+                <div class="stat-box">
+                  <span class="stat-number">{{ details()?.statistics?.tablesCount || 0 }}</span>
+                  <span class="stat-label">Tables</span>
+                  <span class="stat-sub">Configured tables</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-number">{{ details()?.statistics?.foodItemsCount || 0 }}</span>
+                  <span class="stat-label">Food Items</span>
+                  <span class="stat-sub">Active menu items</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-number">{{ details()?.statistics?.totalOrdersCount || 0 }}</span>
+                  <span class="stat-label">Total Orders</span>
+                  <span class="stat-sub">All-time orders</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-number font-currency">₹{{ details()?.statistics?.revenue || 0 }}</span>
+                  <span class="stat-label">Revenue</span>
+                  <span class="stat-sub">All-time revenue</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Tab 2: Owner -->
+        @if (activeTab() === 'owner') {
+          <div class="tab-content">
+            <div class="card">
+              <h3 class="card-title">Owner Profile</h3>
+              <div class="info-rows">
+                <div class="info-row">
+                  <span class="info-label">Full Name</span>
+                  <span class="info-value"><strong>{{ details()?.owner?.fullName }}</strong></span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Email Address</span>
+                  <span class="info-value">{{ details()?.owner?.email }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">System Role</span>
+                  <span class="info-value">{{ details()?.owner?.role }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Account Created</span>
+                  <span class="info-value">{{ details()?.owner?.createdAt | date:'mediumDate' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Tab 3: Tables -->
+        @if (activeTab() === 'tables') {
+          <div class="tab-content">
+            @if (details()?.tables?.length === 0) {
+              <div class="empty-state card">
+                <p>No dining tables configured for this canteen yet.</p>
+              </div>
+            } @else {
+              <div class="tables-cards-grid">
+                @for (t of details()?.tables; track t.tableId) {
+                  <div class="table-card">
+                    <div class="table-card-header">
+                      <span class="table-num">Table #{{ t.tableNumber }}</span>
+                      <span class="badge" [class.active]="t.isAvailable" [class.suspended]="!t.isAvailable">
+                        {{ t.isAvailable ? 'Available' : 'Occupied' }}
+                      </span>
+                    </div>
+                    <div class="table-card-body">
+                      <p>Capacity: <strong>{{ t.capacity }} Seats</strong></p>
+                    </div>
+                    <div class="table-card-footer">
+                      <button type="button" class="btn-qr" (click)="openQrModal(t)">View QR Code</button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Tab 4: Food Items -->
+        @if (activeTab() === 'food-items') {
+          <div class="tab-content card">
+            @if (details()?.foodItems?.length === 0) {
+              <div class="empty-state">
+                <p>No food menu items added for this canteen yet.</p>
+              </div>
+            } @else {
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Dish Name</th>
+                      <th>Category</th>
+                      <th>Type</th>
+                      <th>Price</th>
+                      <th>Stock</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of details()?.foodItems; track item.productId) {
+                      <tr>
+                        <td><strong>{{ item.name }}</strong></td>
+                        <td>{{ item.categoryName }}</td>
+                        <td>
+                          <span class="badge" [class.veg]="item.foodType === 'Veg'" [class.nonveg]="item.foodType !== 'Veg'">
+                            {{ item.foodType }}
+                          </span>
+                        </td>
+                        <td>₹{{ item.price }}</td>
+                        <td>{{ item.stockQuantity }}</td>
+                        <td>
+                          <span class="badge" [class.active]="item.isAvailable" [class.suspended]="!item.isAvailable">
+                            {{ item.isAvailable ? 'In Stock' : 'Out of Stock' }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Tab 5: Orders -->
+        @if (activeTab() === 'orders') {
+          <div class="tab-content card">
+            @if (details()?.orders?.length === 0) {
+              <div class="empty-state">
+                <p>No customer orders recorded for this canteen yet.</p>
+              </div>
+            } @else {
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Order #</th>
+                      <th>Table</th>
+                      <th>Amount</th>
+                      <th>Order Status</th>
+                      <th>Payment</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (o of details()?.orders; track o.orderId) {
+                      <tr>
+                        <td class="font-mono">{{ o.orderNumber }}</td>
+                        <td>Table #{{ o.tableNumber }}</td>
+                        <td><strong>₹{{ o.totalAmount }}</strong></td>
+                        <td><span class="badge active">{{ o.status }}</span></td>
+                        <td><span class="badge active">{{ o.paymentStatus }}</span></td>
+                        <td>{{ o.createdAt | date:'short' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Tab 6: Payments -->
+        @if (activeTab() === 'payments') {
+          <div class="tab-content">
+            <div class="card">
+              <h3 class="card-title">Bank & Settlement Details</h3>
+              <div class="info-rows">
+                <div class="info-row">
+                  <span class="info-label">Account Holder</span>
+                  <span class="info-value">{{ details()?.bankDetails?.bankAccountHolder || 'Not configured' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Bank Name</span>
+                  <span class="info-value">{{ details()?.bankDetails?.bankName || 'Not configured' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Account Number</span>
+                  <span class="info-value">{{ details()?.bankDetails?.accountNumberMasked || 'Not provided' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">IFSC Code</span>
+                  <span class="info-value">{{ details()?.bankDetails?.ifscCode || 'N/A' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Account Type</span>
+                  <span class="info-value">{{ details()?.bankDetails?.accountType || 'Current Account' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">UPI ID</span>
+                  <span class="info-value">{{ details()?.bankDetails?.upiId || 'Not provided' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Tab 7: Activity -->
+        @if (activeTab() === 'activity') {
+          <div class="tab-content card">
+            <h3 class="card-title">Recent Lifecycle Activity</h3>
+            <ul class="activity-timeline">
+              <li class="timeline-item">
+                <div class="timeline-icon green"></div>
+                <div class="timeline-content">
+                  <p class="timeline-title">Canteen registered on platform</p>
+                  <p class="timeline-meta">{{ details()?.createdAt | date:'medium' }}</p>
+                </div>
+              </li>
+              @if (details()?.setupStatus === 'Completed') {
+                <li class="timeline-item">
+                  <div class="timeline-icon blue"></div>
+                  <div class="timeline-content">
+                    <p class="timeline-title">Canteen onboarding and profile setup completed</p>
+                    <p class="timeline-meta">{{ details()?.createdAt | date:'medium' }}</p>
+                  </div>
+                </li>
+              }
+              @if (details()?.isActive) {
+                <li class="timeline-item">
+                  <div class="timeline-icon green"></div>
+                  <div class="timeline-content">
+                    <p class="timeline-title">Canteen active and accepting orders</p>
+                    <p class="timeline-meta">{{ details()?.createdAt | date:'medium' }}</p>
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      }
+    </div>
+  </main>
+</div>
+
+<!-- QR Inspection Modal -->
+@if (showQrModal() && selectedQrTable()) {
+  <div class="modal-overlay" (click)="closeQrModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h3>Table #{{ selectedQrTable()?.tableNumber }} QR Code</h3>
+        <button type="button" class="btn-close" (click)="closeQrModal()">&times;</button>
+      </header>
+      <div class="modal-body text-center">
+        <img [src]="getQrImageUrl(selectedQrTable()!.tableId)" alt="QR Code" class="qr-preview-img" />
+        <p class="qr-token-text font-mono">Token: {{ selectedQrTable()?.qrToken }}</p>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn-primary" (click)="closeQrModal()">Close</button>
+      </footer>
+    </div>
+  </div>
+}
+

@@ -533,8 +533,8 @@ export class FoodItems implements OnInit, OnDestroy {
 
   onImageError(event: Event): void {
     const target = event.target as HTMLImageElement;
-    if (target && !target.src.endsWith('/canteen-preview.jpg')) {
-      target.src = '/canteen-preview.jpg';
+    if (target && !target.src.endsWith('/food-placeholder.png')) {
+      target.src = '/food-placeholder.png';
     }
   }
 

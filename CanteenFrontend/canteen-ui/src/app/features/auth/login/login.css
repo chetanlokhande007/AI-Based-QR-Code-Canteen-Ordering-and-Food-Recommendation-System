@@ -393,6 +393,16 @@
 
 .demo-sparkle { font-size: 11px; }
 
+.admin-demo-pill {
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+}
+
+.admin-demo-pill:hover {
+    background: rgba(59, 130, 246, 0.22);
+}
+
 .theme-toggle-btn-small {
     width: 30px;
     height: 30px;

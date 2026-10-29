@@ -129,7 +129,7 @@ export class AdminCanteens implements OnInit {
   }
 
   openDetails(canteen: AdminCanteenItem): void {
-    this.selectedCanteenForModal.set(canteen);
+    this.router.navigate(['/admin/canteens', canteen.canteenId]);
   }
 
   closeDetails(): void {

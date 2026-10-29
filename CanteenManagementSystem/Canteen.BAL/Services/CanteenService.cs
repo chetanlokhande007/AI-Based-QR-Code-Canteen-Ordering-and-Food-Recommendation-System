@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Canteen.BAL.Interfaces;
 using Canteen.DAL.Interfaces;
@@ -44,23 +45,39 @@ public class CanteenService : ICanteenService
         return entity is null ? null : ToDto(entity);
     }
 
+    public async Task<CanteenDto?> GetBySlugAsync(string slug)
+    {
+        var entity = await _repo.GetBySlugAsync(slug);
+        return entity is null ? null : ToDto(entity);
+    }
+
     public async Task<CanteenDto> CreateAsync(CreateCanteenDto dto, int? ownerId = null)
     {
         Owner? owner = null;
         if (ownerId.HasValue)
         {
             owner = await _ownerRepo.GetByIdAsync(ownerId.Value);
+
         }
+
+        var slug = await GenerateUniqueSlugAsync(dto.Name, dto.Slug);
 
         var entity = new Model.Entities.Canteen
         {
             OwnerId = ownerId,
             Name = dto.Name,
+            Slug = slug,
             Location = dto.Location,
             CanteenType = dto.CanteenType,
             Description = dto.Description,
             ContactPhone = dto.ContactPhone,
             ContactEmail = dto.ContactEmail,
+            BankAccountHolder = dto.BankAccountHolder,
+            BankName = dto.BankName,
+            AccountNumber = dto.AccountNumber,
+            IfscCode = dto.IfscCode,
+            AccountType = dto.AccountType,
+            UpiId = dto.UpiId,
             AddressLine1 = dto.AddressLine1,
             AddressLine2 = dto.AddressLine2,
             City = dto.City,
@@ -72,7 +89,7 @@ public class CanteenService : ICanteenService
             ImageUrl = dto.ImageUrl,
             IsActive = true,
             TenantStatus = TenantStatus.Active,
-            SetupStatus = SetupStatus.Draft
+            SetupStatus = !string.IsNullOrWhiteSpace(dto.AddressLine1) ? SetupStatus.Completed : SetupStatus.Draft
         };
         var created = await _repo.AddAsync(entity);
 
@@ -92,11 +109,30 @@ public class CanteenService : ICanteenService
         if (entity is null) return null;
 
         entity.Name = dto.Name;
+        if (!string.IsNullOrWhiteSpace(dto.Slug) && !string.Equals(entity.Slug, dto.Slug, StringComparison.OrdinalIgnoreCase))
+        {
+            entity.Slug = await GenerateUniqueSlugAsync(dto.Name, dto.Slug, id);
+        }
+        else if (string.IsNullOrWhiteSpace(entity.Slug))
+        {
+            entity.Slug = await GenerateUniqueSlugAsync(dto.Name, null, id);
+        }
+
         entity.Location = dto.Location;
         entity.CanteenType = dto.CanteenType ?? entity.CanteenType;
         entity.Description = dto.Description ?? entity.Description;
         entity.ContactPhone = dto.ContactPhone ?? entity.ContactPhone;
         entity.ContactEmail = dto.ContactEmail ?? entity.ContactEmail;
+
+        // Owner Bank & Settlement Details
+        entity.BankAccountHolder = dto.BankAccountHolder ?? entity.BankAccountHolder;
+        entity.BankName = dto.BankName ?? entity.BankName;
+        entity.AccountNumber = dto.AccountNumber ?? entity.AccountNumber;
+        entity.IfscCode = dto.IfscCode ?? entity.IfscCode;
+        entity.AccountType = dto.AccountType ?? entity.AccountType;
+        entity.UpiId = dto.UpiId ?? entity.UpiId;
+
+        // Structured Address Fields
         entity.AddressLine1 = dto.AddressLine1 ?? entity.AddressLine1;
         entity.AddressLine2 = dto.AddressLine2 ?? entity.AddressLine2;
         entity.City = dto.City ?? entity.City;
@@ -108,15 +144,10 @@ public class CanteenService : ICanteenService
         entity.ImageUrl = dto.ImageUrl ?? entity.ImageUrl;
         entity.IsActive = dto.IsActive;
 
-        // If in Draft and address details + products/tables exist, advance to Completed
-        if (entity.SetupStatus == SetupStatus.Draft && !string.IsNullOrWhiteSpace(entity.AddressLine1))
+        // Advance to Completed if required setup steps (address details) exist
+        if (!string.IsNullOrWhiteSpace(entity.AddressLine1))
         {
-            var tables = await _tableRepo.GetAllByCanteenAsync(id);
-            var products = await _productRepo.GetAllByCanteenAsync(id);
-            if (tables.Any() || products.Any())
-            {
-                entity.SetupStatus = SetupStatus.Completed;
-            }
+            entity.SetupStatus = SetupStatus.Completed;
         }
 
         var updated = await _repo.UpdateAsync(entity);
@@ -143,7 +174,7 @@ public class CanteenService : ICanteenService
             var todayOrdersCount = orders.Count(o => o.CreatedAt.Date == todayUtc);
 
             var isSetupComplete = c.SetupStatus == SetupStatus.Completed ||
-                (!string.IsNullOrWhiteSpace(c.AddressLine1) && (tablesCount > 0 || menuItemsCount > 0));
+                !string.IsNullOrWhiteSpace(c.AddressLine1);
 
             string status;
             if (c.TenantStatus == TenantStatus.Suspended)
@@ -175,6 +206,7 @@ public class CanteenService : ICanteenService
             {
                 CanteenId = c.CanteenId,
                 Name = c.Name,
+                Slug = c.Slug,
                 Location = locationDisplay,
                 Description = !string.IsNullOrWhiteSpace(c.Description)
                     ? c.Description
@@ -296,15 +328,72 @@ public class CanteenService : ICanteenService
         return true;
     }
 
+    private async Task<string> GenerateUniqueSlugAsync(string name, string? customSlug, int? excludeCanteenId = null)
+    {
+        string baseSlug;
+        if (!string.IsNullOrWhiteSpace(customSlug))
+        {
+            baseSlug = Slugify(customSlug);
+        }
+        else
+        {
+            baseSlug = Slugify(name);
+        }
+
+        if (string.IsNullOrWhiteSpace(baseSlug))
+        {
+            baseSlug = "canteen-" + Guid.NewGuid().ToString("N")[..6];
+        }
+
+        var candidate = baseSlug;
+        var counter = 1;
+        while (await _repo.SlugExistsAsync(candidate, excludeCanteenId))
+        {
+            counter++;
+            candidate = $"{baseSlug}-{counter}";
+        }
+
+        return candidate;
+    }
+
+    private static string Slugify(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+        var cleaned = text.Trim().ToLowerInvariant();
+        var sb = new StringBuilder();
+        foreach (var ch in cleaned)
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                sb.Append(ch);
+            }
+            else if (ch is ' ' or '-' or '_' or '.' or '/' or '&')
+            {
+                if (sb.Length > 0 && sb[^1] != '-')
+                {
+                    sb.Append('-');
+                }
+            }
+        }
+        return sb.ToString().Trim('-');
+    }
+
     private static CanteenDto ToDto(Model.Entities.Canteen c) => new()
     {
         CanteenId = c.CanteenId,
         Name = c.Name,
+        Slug = c.Slug,
         Location = c.Location,
         CanteenType = c.CanteenType,
         Description = c.Description,
         ContactPhone = c.ContactPhone,
         ContactEmail = c.ContactEmail,
+        BankAccountHolder = c.BankAccountHolder,
+        BankName = c.BankName,
+        AccountNumber = c.AccountNumber,
+        IfscCode = c.IfscCode,
+        AccountType = c.AccountType,
+        UpiId = c.UpiId,
         AddressLine1 = c.AddressLine1,
         AddressLine2 = c.AddressLine2,
         City = c.City,

@@ -15,6 +15,10 @@ export class CanteenService {
     return this.http.get<PublicCanteenDto>(`${this.baseUrl}/${id}/public-info`);
   }
 
+  getPublicInfoBySlug(slug: string): Observable<PublicCanteenDto> {
+    return this.http.get<PublicCanteenDto>(`${this.baseUrl}/by-slug/${encodeURIComponent(slug)}/public-info`);
+  }
+
   getById(id: number): Observable<CanteenDto> {
     return this.http.get<CanteenDto>(`${this.baseUrl}/${id}`);
   }
@@ -31,4 +35,3 @@ export class CanteenService {
     return this.http.put<CanteenDto>(`${this.baseUrl}/${id}`, payload);
   }
 }
-

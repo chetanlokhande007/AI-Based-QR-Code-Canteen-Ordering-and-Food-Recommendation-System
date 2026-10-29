@@ -8,11 +8,21 @@ export interface DaySchedule {
 export interface CanteenDto {
   canteenId: number;
   name: string;
+  slug?: string;
   location: string;
   canteenType?: string;
   description?: string;
   contactPhone?: string;
   contactEmail?: string;
+
+  // Owner Bank Details
+  bankAccountHolder?: string;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  accountType?: string;
+  upiId?: string;
+
   addressLine1?: string;
   addressLine2?: string;
   city?: string;
@@ -32,6 +42,7 @@ export interface CanteenDto {
 export interface PublicCanteenDto {
   canteenId: number;
   name: string;
+  slug?: string;
   location: string;
   canteenType?: string;
   description?: string;
@@ -47,6 +58,7 @@ export interface PublicCanteenDto {
 export interface CanteenSummaryDto {
   canteenId: number;
   name: string;
+  slug?: string;
   location: string;
   description?: string;
   imageUrl?: string;
@@ -63,11 +75,21 @@ export interface CanteenSummaryDto {
 
 export interface CreateCanteenRequest {
   name: string;
+  slug?: string;
   location: string;
   canteenType?: string;
   description?: string;
   contactPhone?: string;
   contactEmail?: string;
+
+  // Owner Bank Details
+  bankAccountHolder?: string;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  accountType?: string;
+  upiId?: string;
+
   addressLine1?: string;
   addressLine2?: string;
   city?: string;
@@ -81,11 +103,21 @@ export interface CreateCanteenRequest {
 
 export interface UpdateCanteenRequest {
   name: string;
+  slug?: string;
   location: string;
   canteenType?: string;
   description?: string;
   contactPhone?: string;
   contactEmail?: string;
+
+  // Owner Bank Details
+  bankAccountHolder?: string;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  accountType?: string;
+  upiId?: string;
+
   addressLine1?: string;
   addressLine2?: string;
   city?: string;

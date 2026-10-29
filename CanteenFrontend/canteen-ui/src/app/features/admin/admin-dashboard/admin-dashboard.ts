@@ -39,8 +39,10 @@ export class AdminDashboard implements OnInit {
         this.loading.set(false);
         if (err.status === 403) {
           this.errorMessage.set('Access Denied. You do not have Platform Administrator authorization.');
+        } else if (err.status === 401) {
+          this.errorMessage.set('Your session has expired or is unauthorized. Please sign in again.');
         } else {
-          this.errorMessage.set('Failed to load platform metrics. Please verify backend connection.');
+          this.errorMessage.set(err.error?.message || 'Failed to load platform metrics. Please verify backend connection.');
         }
       }
     });

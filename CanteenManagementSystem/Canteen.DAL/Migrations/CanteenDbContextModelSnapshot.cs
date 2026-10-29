@@ -30,11 +30,27 @@ namespace Canteen.DAL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CanteenId"));
 
+                    b.Property<string>("AccountNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("AccountType")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<string>("AddressLine1")
                         .HasColumnType("text");
 
                     b.Property<string>("AddressLine2")
                         .HasColumnType("text");
+
+                    b.Property<string>("BankAccountHolder")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("BankName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("CanteenType")
                         .HasColumnType("text");
@@ -56,6 +72,10 @@ namespace Canteen.DAL.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
+
+                    b.Property<string>("IfscCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text");
@@ -91,6 +111,11 @@ namespace Canteen.DAL.Migrations
                         .HasColumnType("character varying(30)")
                         .HasDefaultValue("Draft");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
                     b.Property<string>("State")
                         .HasColumnType("text");
 
@@ -101,9 +126,16 @@ namespace Canteen.DAL.Migrations
                         .HasColumnType("character varying(30)")
                         .HasDefaultValue("Active");
 
+                    b.Property<string>("UpiId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.HasKey("CanteenId");
 
                     b.HasIndex("OwnerId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
 
                     b.ToTable("Canteens");
                 });

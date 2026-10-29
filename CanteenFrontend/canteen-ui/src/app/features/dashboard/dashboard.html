@@ -22,13 +22,13 @@
     <nav class="sidebar-nav">
       <!-- Canteen Setup (Shown if no canteen yet) -->
       @if (!currentUser()?.canteenId) {
-        <a class="nav-item setup-prompt-item" (click)="openSetupWizard()">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
-          <span class="nav-label">Canteen Setup</span>
-        </a>
+      <a class="nav-item setup-prompt-item" (click)="openSetupWizard()">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span class="nav-label">Canteen Setup</span>
+      </a>
       }
 
       <!-- My Canteens -->
@@ -64,13 +64,14 @@
       <!-- Categories -->
       <a class="nav-item" routerLink="/categories">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+          <path
+            d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
         </svg>
         <span class="nav-label">Categories</span>
       </a>
 
       <!-- Tables & QR Codes -->
-      <a class="nav-item" (click)="openMenuModal('tables')">
+      <a class="nav-item" routerLink="/tables">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect width="5" height="5" x="3" y="3" rx="1" />
           <rect width="5" height="5" x="16" y="3" rx="1" />
@@ -139,7 +140,8 @@
       <!-- Inventory -->
       <a class="nav-item">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+          <path
+            d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
           <path d="m3.3 7 8.7 5 8.7-5" />
           <path d="M12 22V12" />
         </svg>
@@ -149,7 +151,8 @@
       <!-- Settings -->
       <a class="nav-item">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+          <path
+            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
           <circle cx="12" cy="12" r="3" />
         </svg>
         <span class="nav-label">Settings</span>
@@ -185,7 +188,8 @@
       <div class="nav-user-actions">
         <!-- Current Canteen Selector Dropdown -->
         <div class="canteen-selector-wrapper" (click)="$event.stopPropagation()">
-          <button type="button" class="btn-canteen-selector" (click)="toggleCanteenSelector($event)" title="Switch Active Canteen">
+          <button type="button" class="btn-canteen-selector" (click)="toggleCanteenSelector($event)"
+            title="Switch Active Canteen">
             <div class="selector-icon-badge">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -196,84 +200,88 @@
               <span class="selector-prefix">Current canteen:</span>
               <span class="selector-active-name">{{ currentCanteenName() }}</span>
             </div>
-            <svg class="chevron-icon" [class.rotated]="isCanteenSelectorOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+            <svg class="chevron-icon" [class.rotated]="isCanteenSelectorOpen()" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" width="14" height="14">
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
 
           <!-- Dropdown Menu -->
           @if (isCanteenSelectorOpen()) {
-            <div class="canteen-dropdown-popover" (click)="$event.stopPropagation()">
-              <div class="dropdown-header-row">
-                <span class="dropdown-title">Your Canteens</span>
-                <span class="dropdown-count">{{ canteens().length }} total</span>
-              </div>
-
-              <div class="dropdown-items-scroll">
-                @for (c of canteens(); track c.canteenId) {
-                  <button type="button" class="canteen-dropdown-item" [class.selected]="c.canteenId === currentUser()?.canteenId" (click)="switchActiveCanteen(c)">
-                    <div class="item-store-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                        <polyline points="9 22 9 12 15 12 15 22" />
-                      </svg>
-                    </div>
-                    <div class="item-meta">
-                      <div class="item-name-row">
-                        <span class="item-name">{{ c.name }}</span>
-                        @if (c.canteenId === currentUser()?.canteenId) {
-                          <span class="current-badge">Active</span>
-                        }
-                      </div>
-                      <span class="item-loc">{{ c.location }}</span>
-                    </div>
-                    <span class="item-status-pill" [class.status-active]="c.status === 'Active'" [class.status-pending]="c.status === 'Setup Pending'">
-                      {{ c.status }}
-                    </span>
-                  </button>
-                }
-              </div>
-
-              <div class="dropdown-footer-row">
-                <button type="button" class="btn-dropdown-manage" (click)="goToMyCanteens(); closeCanteenSelector()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                  </svg>
-                  <span>Manage All Canteens</span>
-                </button>
-                <button type="button" class="btn-dropdown-add" (click)="addNewCanteen(); closeCanteenSelector()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                  <span>Add New Canteen</span>
-                </button>
-              </div>
+          <div class="canteen-dropdown-popover" (click)="$event.stopPropagation()">
+            <div class="dropdown-header-row">
+              <span class="dropdown-title">Your Canteens</span>
+              <span class="dropdown-count">{{ canteens().length }} total</span>
             </div>
+
+            <div class="dropdown-items-scroll">
+              @for (c of canteens(); track c.canteenId) {
+              <button type="button" class="canteen-dropdown-item"
+                [class.selected]="c.canteenId === currentUser()?.canteenId" (click)="switchActiveCanteen(c)">
+                <div class="item-store-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                  </svg>
+                </div>
+                <div class="item-meta">
+                  <div class="item-name-row">
+                    <span class="item-name">{{ c.name }}</span>
+                    @if (c.canteenId === currentUser()?.canteenId) {
+                    <span class="current-badge">Active</span>
+                    }
+                  </div>
+                  <span class="item-loc">{{ c.location }}</span>
+                </div>
+                <span class="item-status-pill" [class.status-active]="c.status === 'Active'"
+                  [class.status-pending]="c.status === 'Setup Pending'">
+                  {{ c.status }}
+                </span>
+              </button>
+              }
+            </div>
+
+            <div class="dropdown-footer-row">
+              <button type="button" class="btn-dropdown-manage" (click)="goToMyCanteens(); closeCanteenSelector()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <rect width="7" height="9" x="3" y="3" rx="1" />
+                  <rect width="7" height="5" x="14" y="3" rx="1" />
+                  <rect width="7" height="9" x="14" y="12" rx="1" />
+                  <rect width="7" height="5" x="3" y="16" rx="1" />
+                </svg>
+                <span>Manage All Canteens</span>
+              </button>
+              <button type="button" class="btn-dropdown-add" (click)="addNewCanteen(); closeCanteenSelector()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span>Add New Canteen</span>
+              </button>
+            </div>
+          </div>
           }
         </div>
 
         <!-- Theme Toggle Button -->
-        <button type="button" class="theme-toggle-btn" (click)="toggleTheme()" [title]="activeTheme() === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
+        <button type="button" class="theme-toggle-btn" (click)="toggleTheme()"
+          [title]="activeTheme() === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
           @if (activeTheme() === 'light') {
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2" />
-              <path d="M12 20v2" />
-              <path d="m4.93 4.93 1.41 1.41" />
-              <path d="m17.66 17.66 1.41 1.41" />
-              <path d="M2 12h2" />
-              <path d="M20 12h2" />
-              <path d="m6.34 17.66-1.41 1.41" />
-              <path d="m19.07 4.93-1.41 1.41" />
-            </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2" />
+            <path d="M12 20v2" />
+            <path d="m4.93 4.93 1.41 1.41" />
+            <path d="m17.66 17.66 1.41 1.41" />
+            <path d="M2 12h2" />
+            <path d="M20 12h2" />
+            <path d="m6.34 17.66-1.41 1.41" />
+            <path d="m19.07 4.93-1.41 1.41" />
+          </svg>
           } @else {
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-            </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </svg>
           }
         </button>
 
@@ -291,15 +299,16 @@
           </div>
           <div class="user-meta">
             <span class="user-name">{{ currentUser()?.fullName || 'Owner' }}</span>
-            <span class="user-role">{{ canteenDetails()?.name || (currentUser()?.canteenId ? ('Canteen #' + currentUser()?.canteenId) : 'Owner Account') }}</span>
+            <span class="user-role">{{ canteenDetails()?.name || (currentUser()?.canteenId ? ('Canteen #' +
+              currentUser()?.canteenId) : 'Owner Account') }}</span>
           </div>
           <div class="tenant-badge" [class.tenant-unlinked]="!currentUser()?.canteenId">
             @if (canteenDetails()) {
-              <span>{{ canteenDetails()?.name }}</span>
+            <span>{{ canteenDetails()?.name }}</span>
             } @else if (currentUser()?.canteenId) {
-              <span>Canteen #{{ currentUser()?.canteenId }}</span>
+            <span>Canteen #{{ currentUser()?.canteenId }}</span>
             } @else {
-              <span>Pending Setup</span>
+            <span>Pending Setup</span>
             }
           </div>
         </div>
@@ -320,17 +329,17 @@
 
       <!-- Error Alert (If API fails) -->
       @if (errorMessage()) {
-        <div class="dashboard-alert alert-error" role="alert">
-          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="12.01" x2="12" y2="16" />
-          </svg>
-          <div class="alert-text-block">
-            <span>{{ errorMessage() }}</span>
-            <button type="button" class="retry-btn" (click)="loadDashboardData()">Retry</button>
-          </div>
+      <div class="dashboard-alert alert-error" role="alert">
+        <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="12.01" x2="12" y2="16" />
+        </svg>
+        <div class="alert-text-block">
+          <span>{{ errorMessage() }}</span>
+          <button type="button" class="retry-btn" (click)="loadDashboardData()">Retry</button>
         </div>
+      </div>
       }
 
       <!-- Welcome Hero Banner -->
@@ -338,7 +347,8 @@
         <div class="welcome-text-group">
           <div class="hero-chip">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
             <span>MANAGEMENT CONSOLE</span>
           </div>
@@ -346,7 +356,8 @@
             Welcome back, <span class="gradient-text">{{ currentUser()?.fullName || 'Partner' }}</span>! 👋
           </h1>
           <p class="welcome-subtitle">
-            Here is an overview of your canteen operations, real-time orders, and AI recommendation performance for today.
+            Here is an overview of your canteen operations, real-time orders, and AI recommendation performance for
+            today.
           </p>
         </div>
 
@@ -365,72 +376,74 @@
 
       <!-- Active Canteen Branch Card (Shows Uploaded Photo & Details from Database) -->
       @if (canteenDetails(); as canteen) {
-        <section class="canteen-active-hero-banner">
-          <div class="active-canteen-media">
-            <img [src]="canteen.imageUrl || '/canteen-preview.jpg'" [alt]="canteen.name" class="active-canteen-img" />
-            <div class="active-canteen-badge-tag">
-              <span>🍽️ {{ canteen.canteenType || 'Canteen' }}</span>
-            </div>
+      <section class="canteen-active-hero-banner">
+        <div class="active-canteen-media">
+          <img [src]="canteen.imageUrl || '/canteen-preview.jpg'" [alt]="canteen.name" class="active-canteen-img" />
+          <div class="active-canteen-badge-tag">
+            <span>🍽️ {{ canteen.canteenType || 'Canteen' }}</span>
           </div>
-          <div class="active-canteen-info">
-            <div class="active-canteen-title-row">
-              <h2 class="active-canteen-title">{{ canteen.name }}</h2>
-              <span class="active-status-pill">
-                <span class="pulse-dot"></span>
-                Active Branch
-              </span>
-            </div>
-            <p class="active-canteen-location">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <span>{{ canteen.location || (canteen.addressLine1 ? (canteen.addressLine1 + ', ' + canteen.city) : 'Campus Location') }}</span>
-            </p>
-            @if (canteen.description) {
-              <p class="active-canteen-desc">{{ canteen.description }}</p>
+        </div>
+        <div class="active-canteen-info">
+          <div class="active-canteen-title-row">
+            <h2 class="active-canteen-title">{{ canteen.name }}</h2>
+            <span class="active-status-pill">
+              <span class="pulse-dot"></span>
+              Active Branch
+            </span>
+          </div>
+          <p class="active-canteen-location">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span>{{ canteen.location || (canteen.addressLine1 ? (canteen.addressLine1 + ', ' + canteen.city) : 'Campus
+              Location') }}</span>
+          </p>
+          @if (canteen.description) {
+          <p class="active-canteen-desc">{{ canteen.description }}</p>
+          }
+          <div class="active-canteen-meta-tags">
+            @if (canteen.contactPhone) {
+            <span class="canteen-contact-tag">📞 {{ canteen.contactPhone }}</span>
             }
-            <div class="active-canteen-meta-tags">
-              @if (canteen.contactPhone) {
-                <span class="canteen-contact-tag">📞 {{ canteen.contactPhone }}</span>
-              }
-              @if (canteen.contactEmail) {
-                <span class="canteen-contact-tag">✉️ {{ canteen.contactEmail }}</span>
-              }
-              <button type="button" class="btn-manage-catalog-shortcut" routerLink="/categories">
-                <span>📁 Manage Menu Catalog</span>
-              </button>
-            </div>
+            @if (canteen.contactEmail) {
+            <span class="canteen-contact-tag">✉️ {{ canteen.contactEmail }}</span>
+            }
+            <button type="button" class="btn-manage-catalog-shortcut" routerLink="/categories">
+              <span>📁 Manage Menu Catalog</span>
+            </button>
           </div>
-        </section>
+        </div>
+      </section>
       }
 
       <!-- Onboarding Notice (Shown when canteenId is null) -->
       @if (!currentUser()?.canteenId) {
-        <section class="onboarding-banner">
-          <div class="banner-icon-col">
-            <div class="store-icon-box">🏪</div>
+      <section class="onboarding-banner">
+        <div class="banner-icon-col">
+          <div class="store-icon-box">🏪</div>
+        </div>
+        <div class="banner-content">
+          <div class="banner-header">
+            <h3>Link Your Canteen Branch</h3>
+            <span class="action-required-tag">ACTION RECOMMENDED</span>
           </div>
-          <div class="banner-content">
-            <div class="banner-header">
-              <h3>Link Your Canteen Branch</h3>
-              <span class="action-required-tag">ACTION RECOMMENDED</span>
-            </div>
-            <p>
-              Your owner account is active, but your physical canteen branch hasn't been configured yet.
-              Registering your canteen location enables custom QR code table ordering, digital menu publishing, and Kitchen Display synchronization.
-            </p>
-          </div>
-          <div class="banner-action">
-            <button type="button" class="btn-setup-canteen" (click)="openSetupWizard()">
-              <span>+ Configure Canteen Branch</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </section>
+          <p>
+            Your owner account is active, but your physical canteen branch hasn't been configured yet.
+            Registering your canteen location enables custom QR code table ordering, digital menu publishing, and
+            Kitchen Display synchronization.
+          </p>
+        </div>
+        <div class="banner-action">
+          <button type="button" class="btn-setup-canteen" (click)="openSetupWizard()">
+            <span>+ Configure Canteen Branch</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </section>
       }
 
       <!-- Real KPI Metric Cards Grid -->
@@ -498,12 +511,14 @@
         </div>
 
         <!-- Card 4: Catalog Menu Items -->
-        <div class="metric-card clickable-metric-card" routerLink="/food-items" title="Click to view and manage food items">
+        <div class="metric-card clickable-metric-card" routerLink="/food-items"
+          title="Click to view and manage food items">
           <div class="metric-card-top">
             <span class="metric-card-title">Catalog Menu Items</span>
             <div class="metric-icon-box ai">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                <path
+                  d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
               </svg>
             </div>
           </div>
@@ -512,7 +527,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="18 15 12 9 6 15" />
             </svg>
-            <span>{{ totalProductsCount() > 0 ? (totalProductsCount() + ' items across ' + totalCategoriesCount() + ' categories') : 'Menu catalog empty' }}</span>
+            <span>{{ totalProductsCount() > 0 ? (totalProductsCount() + ' items across ' + totalCategoriesCount() + '
+              categories') : 'Menu catalog empty' }}</span>
           </div>
         </div>
 
@@ -520,57 +536,58 @@
 
       <!-- Popular Menu Items Section (Canteen-Specific Isolated Data matching Reference) -->
       @if (canteenDetails()) {
-        <section class="popular-items-section">
-          <div class="section-header">
-            <div>
-              <h2 class="section-title">Popular Menu Items ({{ currentCanteenName() }} only)</h2>
-              <p class="section-subtitle">Top customer-ordered dishes isolated to this canteen branch</p>
-            </div>
-            <button type="button" class="btn-view-all-link" routerLink="/food-items">
-              <span>View All</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-              </svg>
-            </button>
+      <section class="popular-items-section">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Popular Menu Items ({{ currentCanteenName() }} only)</h2>
+            <p class="section-subtitle">Top customer-ordered dishes isolated to this canteen branch</p>
           </div>
+          <button type="button" class="btn-view-all-link" routerLink="/food-items">
+            <span>View All</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+          </button>
+        </div>
 
-          @if (popularProducts().length > 0) {
-            <div class="popular-dishes-grid">
-              @for (prod of popularProducts(); track prod.productId) {
-                <div class="dish-card" routerLink="/food-items">
-                  <div class="dish-card-media">
-                    <img [src]="'/canteen-preview.jpg'" [alt]="prod.name" class="dish-card-img" />
-                    <span class="dish-badge-pill">{{ getCategoryName(prod.categoryId) }}</span>
-                  </div>
-                  <div class="dish-card-body">
-                    <div class="dish-header-row">
-                      <h4 class="dish-name">{{ prod.name }}</h4>
-                      <span class="dish-price">₹{{ prod.price }}</span>
-                    </div>
-                    @if (prod.description) {
-                      <p class="dish-desc">{{ prod.description }}</p>
-                    }
-                    <div class="dish-card-footer">
-                      <span class="stock-tag" [class.in-stock]="prod.isAvailable" [class.out-stock]="!prod.isAvailable">
-                        {{ prod.isAvailable ? '● Available' : '○ Out of stock' }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+        @if (popularProducts().length > 0) {
+        <div class="popular-dishes-grid">
+          @for (prod of popularProducts(); track prod.productId) {
+          <div class="dish-card" routerLink="/food-items">
+            <div class="dish-card-media">
+              <img [src]="getProductImageUrl(prod)" [alt]="prod.name" class="dish-card-img"
+                (error)="onProductImageError($event)" />
+              <span class="dish-badge-pill">{{ getCategoryName(prod.categoryId) }}</span>
+            </div>
+            <div class="dish-card-body">
+              <div class="dish-header-row">
+                <h4 class="dish-name">{{ prod.name }}</h4>
+                <span class="dish-price">₹{{ prod.price }}</span>
+              </div>
+              @if (prod.description) {
+              <p class="dish-desc">{{ prod.description }}</p>
               }
+              <div class="dish-card-footer">
+                <span class="stock-tag" [class.in-stock]="prod.isAvailable" [class.out-stock]="!prod.isAvailable">
+                  {{ prod.isAvailable ? '● Available' : '○ Out of stock' }}
+                </span>
+              </div>
             </div>
-          } @else {
-            <div class="empty-dishes-box">
-              <div class="empty-icon">🍽️</div>
-              <h4>No dishes in {{ currentCanteenName() }} yet</h4>
-              <p>Add menu items to publish them to this canteen's digital QR ordering menu.</p>
-              <button type="button" class="btn-primary-action" routerLink="/food-items">
-                + Add Food Item
-              </button>
-            </div>
+          </div>
           }
-        </section>
+        </div>
+        } @else {
+        <div class="empty-dishes-box">
+          <div class="empty-icon">🍽️</div>
+          <h4>No dishes in {{ currentCanteenName() }} yet</h4>
+          <p>Add menu items to publish them to this canteen's digital QR ordering menu.</p>
+          <button type="button" class="btn-primary-action" routerLink="/food-items">
+            + Add Food Item
+          </button>
+        </div>
+        }
+      </section>
       }
 
       <!-- Quick Access Operations Modules Grid -->
@@ -631,7 +648,8 @@
             </div>
             <div class="module-content">
               <h3>Kitchen Display System (KDS)</h3>
-              <p>Real-time order ticket routing powered by SignalR. Track cooking queues, expedite orders, and notify table pickup.</p>
+              <p>Real-time order ticket routing powered by SignalR. Track cooking queues, expedite orders, and notify
+                table pickup.</p>
               <span class="module-link">View Live Cooking Queue →</span>
             </div>
           </div>
@@ -646,7 +664,8 @@
             </div>
             <div class="module-content">
               <h3>Razorpay Payments & Payouts</h3>
-              <p>Verify live UPI / card payment captures, track settlement reports, and review multi-tenant payment records.</p>
+              <p>Verify live UPI / card payment captures, track settlement reports, and review multi-tenant payment
+                records.</p>
               <span class="module-link">Verified Test Integration ✓</span>
             </div>
           </div>
@@ -668,51 +687,51 @@
 
         <div class="orders-table-wrapper">
           @if (recentOrdersList().length > 0) {
-            <table class="orders-table">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Table / Mode</th>
-                  <th>Items Ordered</th>
-                  <th>Total Amount</th>
-                  <th>Status</th>
-                  <th>Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (order of recentOrdersList(); track order.orderId) {
-                  <tr>
-                    <td class="order-id-cell">{{ order.orderNumber || ('#ORD-' + order.orderId) }}</td>
-                    <td class="order-table-cell">
-                      <span class="table-tag">Table #{{ order.tableId }}</span>
-                    </td>
-                    <td class="order-items-cell">{{ formatOrderItems(order) }}</td>
-                    <td class="order-amount-cell">₹{{ order.totalAmount }}</td>
-                    <td>
-                      <span class="status-badge" [ngClass]="order.status.toLowerCase()">
-                        {{ order.status }}
-                      </span>
-                    </td>
-                    <td class="order-time-cell">{{ getTimeAgo(order.createdAt) }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          } @else {
-            <!-- Empty State (No orders or unlinked canteen) -->
-            <div class="empty-orders-state">
-              <div class="empty-icon-box">📋</div>
-              @if (!currentUser()?.canteenId) {
-                <h3>No Canteen Branch Linked</h3>
-                <p>Configure your canteen branch to activate QR code table menus and start receiving customer orders.</p>
-                <button type="button" class="btn-setup-canteen" (click)="openSetupWizard()">
-                  <span>+ Configure Canteen Branch</span>
-                </button>
-              } @else {
-                <h3>No Orders Placed Today</h3>
-                <p>Live kitchen orders will stream here automatically when customers scan table QR codes.</p>
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Table / Mode</th>
+                <th>Items Ordered</th>
+                <th>Total Amount</th>
+                <th>Status</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of recentOrdersList(); track order.orderId) {
+              <tr>
+                <td class="order-id-cell">{{ order.orderNumber || ('#ORD-' + order.orderId) }}</td>
+                <td class="order-table-cell">
+                  <span class="table-tag">Table #{{ order.tableId }}</span>
+                </td>
+                <td class="order-items-cell">{{ formatOrderItems(order) }}</td>
+                <td class="order-amount-cell">₹{{ order.totalAmount }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="order.status.toLowerCase()">
+                    {{ order.status }}
+                  </span>
+                </td>
+                <td class="order-time-cell">{{ getTimeAgo(order.createdAt) }}</td>
+              </tr>
               }
-            </div>
+            </tbody>
+          </table>
+          } @else {
+          <!-- Empty State (No orders or unlinked canteen) -->
+          <div class="empty-orders-state">
+            <div class="empty-icon-box">📋</div>
+            @if (!currentUser()?.canteenId) {
+            <h3>No Canteen Branch Linked</h3>
+            <p>Configure your canteen branch to activate QR code table menus and start receiving customer orders.</p>
+            <button type="button" class="btn-setup-canteen" (click)="openSetupWizard()">
+              <span>+ Configure Canteen Branch</span>
+            </button>
+            } @else {
+            <h3>No Orders Placed Today</h3>
+            <p>Live kitchen orders will stream here automatically when customers scan table QR codes.</p>
+            }
+          </div>
           }
         </div>
       </section>
@@ -730,51 +749,53 @@
        QR Code View & Print Modal
        ======================================================================== -->
   @if (showQrModal() && selectedQrTable(); as tbl) {
-    <div class="modal-backdrop" (click)="closeQrModal()">
-      <div class="qr-modal-card" (click)="$event.stopPropagation()">
-        <div class="qr-modal-header">
-          <div>
-            <span class="modal-badge">{{ currentCanteenName() }}</span>
-            <h3 class="modal-title">Table {{ tbl.tableNumber }} QR Code</h3>
-          </div>
-          <button type="button" class="modal-close-btn" (click)="closeQrModal()" aria-label="Close modal">✕</button>
+  <div class="modal-backdrop" (click)="closeQrModal()">
+    <div class="qr-modal-card" (click)="$event.stopPropagation()">
+      <div class="qr-modal-header">
+        <div>
+          <span class="modal-badge">{{ currentCanteenName() }}</span>
+          <h3 class="modal-title">Table {{ tbl.tableNumber }} QR Code</h3>
+        </div>
+        <button type="button" class="modal-close-btn" (click)="closeQrModal()" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="qr-modal-body">
+        <div class="qr-image-wrapper">
+          <img [src]="getTableQrImageUrl(tbl)" [alt]="'QR Code for Table ' + tbl.tableNumber" class="qr-preview-img" />
         </div>
 
-        <div class="qr-modal-body">
-          <div class="qr-image-wrapper">
-            <img [src]="getTableQrImageUrl(tbl)" [alt]="'QR Code for Table ' + tbl.tableNumber" class="qr-preview-img" />
+        <div class="qr-info-block">
+          <h4 class="qr-table-title">Scan to Order · Table #{{ tbl.tableNumber }}</h4>
+          <p class="qr-explanation">
+            Customers scan this QR code with their mobile phone camera to browse the live menu and place orders directly
+            to Table #{{ tbl.tableNumber }}.
+          </p>
+
+          <div class="qr-direct-link-box">
+            <span class="link-label">Direct Table URL:</span>
+            <a [href]="getTableMenuUrl(tbl)" target="_blank" class="table-direct-link">
+              {{ getTableMenuUrl(tbl) }} ↗
+            </a>
           </div>
 
-          <div class="qr-info-block">
-            <h4 class="qr-table-title">Scan to Order · Table #{{ tbl.tableNumber }}</h4>
-            <p class="qr-explanation">
-              Customers scan this QR code with their mobile phone camera to browse the live menu and place orders directly to Table #{{ tbl.tableNumber }}.
-            </p>
-
-            <div class="qr-direct-link-box">
-              <span class="link-label">Direct Table URL:</span>
-              <a [href]="getTableMenuUrl(tbl)" target="_blank" class="table-direct-link">
-                {{ getTableMenuUrl(tbl) }} ↗
-              </a>
-            </div>
-
-            <div class="qr-modal-actions">
-              <a [href]="getTableQrImageUrl(tbl)" [download]="currentCanteenName() + '-Table-' + tbl.tableNumber + '-QR.png'" class="btn-primary-action">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                <span>Download QR PNG</span>
-              </a>
-              <button type="button" class="btn-secondary-action" (click)="closeQrModal()">
-                Close
-              </button>
-            </div>
+          <div class="qr-modal-actions">
+            <a [href]="getTableQrImageUrl(tbl)"
+              [download]="currentCanteenName() + '-Table-' + tbl.tableNumber + '-QR.png'" class="btn-primary-action">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>Download QR PNG</span>
+            </a>
+            <button type="button" class="btn-secondary-action" (click)="closeQrModal()">
+              Close
+            </button>
           </div>
         </div>
       </div>
     </div>
+  </div>
   }
 
 </div>

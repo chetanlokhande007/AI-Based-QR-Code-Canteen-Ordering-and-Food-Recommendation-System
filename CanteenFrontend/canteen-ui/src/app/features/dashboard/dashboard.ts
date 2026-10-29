@@ -451,6 +451,10 @@ export class Dashboard implements OnInit, OnDestroy {
       this.router.navigate(['/categories']);
       return;
     }
+    if (tab === 'tables') {
+      this.router.navigate(['/tables']);
+      return;
+    }
   }
 
   closeMenuModal(): void {
@@ -525,6 +529,38 @@ export class Dashboard implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  getProductImageUrl(product: ProductDto): string {
+    const image = product?.imageUrl;
+
+    if (!image || !image.trim()) {
+      return '/food-placeholder.png';
+    }
+
+    // 1. Data URLs (uploaded base64 images stored in DB)
+    if (image.startsWith('data:image/')) {
+      return image;
+    }
+
+    // 2. Full HTTP/HTTPS URLs
+    if (/^https?:\/\//i.test(image)) {
+      return image;
+    }
+
+    // 3. Relative image paths served by backend
+    const apiBaseUrl = 'http://localhost:5151/api';
+    const backendBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
+
+    return image.startsWith('/')
+      ? `${backendBaseUrl}${image}`
+      : `${backendBaseUrl}/${image}`;
+  }
+
+  onProductImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.onerror = null;
+    img.src = '/food-placeholder.png';
   }
 
   getCategoryItemCount(categoryId: number): number {

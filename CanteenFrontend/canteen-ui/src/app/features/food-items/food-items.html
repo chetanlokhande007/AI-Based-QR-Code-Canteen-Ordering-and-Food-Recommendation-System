@@ -68,7 +68,7 @@
       </a>
 
       <!-- Tables & QR Codes -->
-      <a class="nav-item" routerLink="/dashboard" [queryParams]="{ openMenu: 'tables' }">
+      <a class="nav-item" routerLink="/tables">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect width="5" height="5" x="3" y="3" rx="1" />
           <rect width="5" height="5" x="16" y="3" rx="1" />
@@ -546,7 +546,7 @@
                           @if (prod.imageUrl) {
                             <img [src]="prod.imageUrl" [alt]="prod.name" class="food-img" (error)="onImageError($event)" />
                           } @else {
-                            <img src="/canteen-preview.jpg" [alt]="prod.name" class="food-img" />
+                            <img src="/food-placeholder.png" [alt]="prod.name" class="food-img" />
                           }
                         </div>
                         <div class="food-meta-col">

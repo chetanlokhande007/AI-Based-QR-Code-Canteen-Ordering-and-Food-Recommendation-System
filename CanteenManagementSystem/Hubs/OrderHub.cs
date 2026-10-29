@@ -23,6 +23,7 @@ public class OrderHub : Hub
     {
     }
 
+    [Microsoft.Extensions.DependencyInjection.ActivatorUtilitiesConstructor]
     public OrderHub(
         IOrderRepository orderRepository,
         ICanteenRepository? canteenRepository,

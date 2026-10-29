@@ -218,6 +218,22 @@ public class TenantIsolationSecurityTests : IClassFixture<TestWebApplicationFact
         // Owner A attempts to delete Owner B's table
         var deleteRes = await _client.DeleteAsync($"/api/canteens/{canteenIdB}/tables/{tableB.TableId}");
         Assert.Equal(HttpStatusCode.Forbidden, deleteRes.StatusCode);
+
+        // Owner A attempts to list Owner B's tables
+        var getTablesRes = await _client.GetAsync($"/api/canteens/{canteenIdB}/tables");
+        Assert.Equal(HttpStatusCode.Forbidden, getTablesRes.StatusCode);
+
+        // Owner A attempts to get Owner B's table by ID
+        var getTableByIdRes = await _client.GetAsync($"/api/canteens/{canteenIdB}/tables/{tableB.TableId}");
+        Assert.Equal(HttpStatusCode.Forbidden, getTableByIdRes.StatusCode);
+
+        // Owner A attempts to get Owner B's table QR image
+        var getQrImageRes = await _client.GetAsync($"/api/canteens/{canteenIdB}/tables/{tableB.TableId}/qr-image");
+        Assert.Equal(HttpStatusCode.Forbidden, getQrImageRes.StatusCode);
+
+        // Owner A attempts to get Owner B's table QR URL
+        var getQrUrlRes = await _client.GetAsync($"/api/canteens/{canteenIdB}/tables/{tableB.TableId}/qr-url");
+        Assert.Equal(HttpStatusCode.Forbidden, getQrUrlRes.StatusCode);
     }
 
     // ─── 4. Orders and Payments Cross-Tenant Isolation ──────────────────────
@@ -429,4 +445,165 @@ public class TenantIsolationSecurityTests : IClassFixture<TestWebApplicationFact
         var tables = await _client.GetAsync($"/api/canteens/{canteenId}/tables");
         Assert.Equal(HttpStatusCode.NotFound, tables.StatusCode);
     }
+
+    // ─── 10. Registration Enforces Unique Email and CanteenOwner Role ────────
+    [Fact]
+    public async Task Registration_Enforces_Unique_Email_And_CanteenOwner_Role()
+    {
+        var email = $"reg_test_{Guid.NewGuid():N}@test.com";
+        var regDto = new RegisterOwnerDto
+        {
+            FullName = "New Owner",
+            Email = email,
+            Password = "SecurePassword123!"
+        };
+
+        var res = await _client.PostAsJsonAsync("/api/auth/register", regDto);
+        Assert.Equal(HttpStatusCode.Created, res.StatusCode);
+        var authData = await res.Content.ReadFromJsonAsync<AuthResponseDto>(JsonOptions);
+        Assert.NotNull(authData);
+        Assert.Equal("CanteenOwner", authData.Role);
+        Assert.Null(authData.CanteenId);
+
+        // Attempt duplicate registration with same email
+        var duplicateRes = await _client.PostAsJsonAsync("/api/auth/register", regDto);
+        Assert.Equal(HttpStatusCode.Conflict, duplicateRes.StatusCode);
+    }
+
+    // ─── 11. Registration With Initial Canteen Details ───────────────────────
+    [Fact]
+    public async Task Registration_With_Initial_Canteen_Sets_Up_Tenant_And_Active_Context()
+    {
+        var email = $"reg_canteen_{Guid.NewGuid():N}@test.com";
+        var regDto = new RegisterOwnerDto
+        {
+            FullName = "Quick Owner",
+            Email = email,
+            Password = "SecurePassword123!",
+            CanteenName = "Quick Campus Cafe",
+            ContactPhone = "9876543210",
+            CanteenAddress = "Academic Block A, Pune"
+        };
+
+        var res = await _client.PostAsJsonAsync("/api/auth/register", regDto);
+        Assert.Equal(HttpStatusCode.Created, res.StatusCode);
+        var authData = await res.Content.ReadFromJsonAsync<AuthResponseDto>(JsonOptions);
+        Assert.NotNull(authData);
+        Assert.NotNull(authData.CanteenId);
+
+        // Verify canteen details
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authData.Token);
+        var canteenRes = await _client.GetAsync($"/api/canteens/{authData.CanteenId}");
+        canteenRes.EnsureSuccessStatusCode();
+        var canteen = await canteenRes.Content.ReadFromJsonAsync<CanteenDto>(JsonOptions);
+        Assert.NotNull(canteen);
+        Assert.Equal("Quick Campus Cafe", canteen.Name);
+        Assert.False(string.IsNullOrWhiteSpace(canteen.Slug));
+        Assert.Equal(TenantStatus.Active, canteen.TenantStatus);
+        Assert.Equal(SetupStatus.Draft, canteen.SetupStatus);
+    }
+
+    // ─── 12. Canteen Generates Unique Slug And Supports Public Browsing ──────
+    [Fact]
+    public async Task Canteen_Generates_Unique_Slug_And_Supports_Public_Browsing_By_Slug()
+    {
+        var (token, _, canteenId) = await RegisterOwnerAndCanteenAsync("slug_owner", "Royal Engineering Mess");
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var canteenRes = await _client.GetAsync($"/api/canteens/{canteenId}");
+        var canteen = await canteenRes.Content.ReadFromJsonAsync<CanteenDto>(JsonOptions);
+        Assert.NotNull(canteen);
+        Assert.False(string.IsNullOrWhiteSpace(canteen.Slug));
+
+        // Public customer access via by-slug
+        _client.DefaultRequestHeaders.Authorization = null;
+        var pubRes = await _client.GetAsync($"/api/canteens/by-slug/{canteen.Slug}/public-info");
+        Assert.Equal(HttpStatusCode.OK, pubRes.StatusCode);
+        var pubInfo = await pubRes.Content.ReadFromJsonAsync<PublicCanteenDto>(JsonOptions);
+        Assert.NotNull(pubInfo);
+        Assert.Equal("Royal Engineering Mess", pubInfo.Name);
+        Assert.Equal(canteen.Slug, pubInfo.Slug);
+    }
+
+    // ─── 13. Bank Details Are Saved And Isolated From Unauthorized Users ─────
+    [Fact]
+    public async Task Bank_Details_Are_Saved_And_Isolated_From_Unauthorized_Users()
+    {
+        var (token1, _, canteen1Id) = await RegisterOwnerAndCanteenAsync("bank_owner1", "Bank Secured Canteen");
+        var (token2, _, _) = await RegisterOwnerAndCanteenAsync("bank_owner2", "Other Canteen");
+
+        // Owner 1 updates bank details
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token1);
+        var updateDto = new UpdateCanteenDto
+        {
+            Name = "Bank Secured Canteen",
+            Location = "Campus West",
+            BankAccountHolder = "Owner One",
+            BankName = "State Bank of India",
+            AccountNumber = "123456789012",
+            IfscCode = "SBIN0001234",
+            AccountType = "Current Account",
+            UpiId = "owner1@sbi",
+            IsActive = true
+        };
+        var updateRes = await _client.PutAsJsonAsync($"/api/canteens/{canteen1Id}", updateDto);
+        updateRes.EnsureSuccessStatusCode();
+
+        // 1. Owner 1 reads their own canteen: bank details present
+        var owner1View = await (await _client.GetAsync($"/api/canteens/{canteen1Id}")).Content.ReadFromJsonAsync<CanteenDto>(JsonOptions);
+        Assert.NotNull(owner1View);
+        Assert.Equal("Owner One", owner1View.BankAccountHolder);
+        Assert.Equal("123456789012", owner1View.AccountNumber);
+        Assert.Equal("SBIN0001234", owner1View.IfscCode);
+
+        // 2. Owner 2 reads Canteen 1: bank details must be masked/null
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token2);
+        var owner2View = await (await _client.GetAsync($"/api/canteens/{canteen1Id}")).Content.ReadFromJsonAsync<CanteenDto>(JsonOptions);
+        Assert.NotNull(owner2View);
+        Assert.Null(owner2View.BankAccountHolder);
+        Assert.Null(owner2View.AccountNumber);
+        Assert.Null(owner2View.IfscCode);
+
+        // 3. Anonymous public customer: public-info does not contain bank fields
+        _client.DefaultRequestHeaders.Authorization = null;
+        var pubRes = await _client.GetAsync($"/api/canteens/{canteen1Id}/public-info");
+        Assert.Equal(HttpStatusCode.OK, pubRes.StatusCode);
+        var pubJson = await pubRes.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("123456789012", pubJson);
+        Assert.DoesNotContain("SBIN0001234", pubJson);
+    }
+
+    // ─── 14. Owner Cannot Tamper With TenantStatus In Profile Update ─────────
+    [Fact]
+    public async Task Owner_Cannot_Tamper_With_TenantStatus_In_Profile_Update()
+    {
+        var (token, _, canteenId) = await RegisterOwnerAndCanteenAsync("tamper_owner", "Tamper Test Canteen");
+
+        // Platform admin suspends the canteen
+        var adminToken = await CreatePlatformAdminTokenAsync("admin_tamper");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        await _client.PatchAsJsonAsync($"/api/admin/canteens/{canteenId}/status", new UpdateCanteenStatusDto
+        {
+            TenantStatus = TenantStatus.Suspended
+        });
+
+        // Owner attempts to update canteen (or reinstate it)
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var updateRes = await _client.PutAsJsonAsync($"/api/canteens/{canteenId}", new UpdateCanteenDto
+        {
+            Name = "Reactivated Canteen",
+            Location = "New Location",
+            IsActive = true
+        });
+
+        // Forbidden because tenant is suspended
+        Assert.Equal(HttpStatusCode.Forbidden, updateRes.StatusCode);
+
+        // Check canteen status remains Suspended
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var canteen = await (await _client.GetAsync($"/api/canteens/{canteenId}")).Content.ReadFromJsonAsync<CanteenDto>(JsonOptions);
+        Assert.NotNull(canteen);
+        Assert.Equal(TenantStatus.Suspended, canteen.TenantStatus);
+    }
 }
+

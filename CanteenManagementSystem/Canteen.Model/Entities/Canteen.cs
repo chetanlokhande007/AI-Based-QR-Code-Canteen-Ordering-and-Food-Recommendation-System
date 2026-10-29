@@ -10,6 +10,9 @@ namespace Canteen.Model.Entities
 
         public string Name { get; set; } = string.Empty;
 
+        // URL-friendly unique identifier for public customer menus (e.g. /c/deshmuk-catten)
+        public string Slug { get; set; } = string.Empty;
+
         public string Location { get; set; } = string.Empty;
 
         // Additional Canteen Profile Details
@@ -17,6 +20,14 @@ namespace Canteen.Model.Entities
         public string? Description { get; set; }
         public string? ContactPhone { get; set; }
         public string? ContactEmail { get; set; }
+
+        // Owner Bank & Settlement Details (Restricted to Owner and Platform Admin)
+        public string? BankAccountHolder { get; set; }
+        public string? BankName { get; set; }
+        public string? AccountNumber { get; set; }
+        public string? IfscCode { get; set; }
+        public string? AccountType { get; set; }
+        public string? UpiId { get; set; }
 
         // Structured Address Fields
         public string? AddressLine1 { get; set; }

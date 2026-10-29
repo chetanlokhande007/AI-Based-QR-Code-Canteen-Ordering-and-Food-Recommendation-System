@@ -17,6 +17,9 @@ export interface RegisterOwnerRequest {
   fullName: string;
   email: string;
   password: string;
+  canteenName?: string;
+  contactPhone?: string;
+  canteenAddress?: string;
 }
 
 export interface ForgotPasswordRequest {

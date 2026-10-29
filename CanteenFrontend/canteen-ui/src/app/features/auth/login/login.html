@@ -166,6 +166,10 @@
                             <span class="demo-sparkle">⚡</span>
                             <span>Auto-fill Demo Owner</span>
                         </button>
+                        <button type="button" class="demo-pill-btn admin-demo-pill" (click)="fillAdminCredentials()" title="Fill pre-configured test platform admin credentials">
+                            <span class="demo-sparkle">🛡️</span>
+                            <span>Auto-fill Demo Admin</span>
+                        </button>
                         }
                         <button type="button" class="theme-toggle-btn-small" (click)="toggleTheme()" [title]="activeTheme() === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
                             @if (activeTheme() === 'light') {
@@ -193,7 +197,7 @@
                     @if (activeTab() === 'login') {
                         Welcome back
                     } @else if (activeTab() === 'register') {
-                        Create owner account
+                        Register Owner Profile
                     } @else if (activeTab() === 'forgot') {
                         Forgot password?
                     } @else if (activeTab() === 'reset') {
@@ -205,7 +209,7 @@
                     @if (activeTab() === 'login') {
                         Sign in to access your canteen dashboard, live orders, and menu operations.
                     } @else if (activeTab() === 'register') {
-                        Register a new canteen owner account to launch your digital canteen.
+                        Create your owner profile first. You will configure your canteen and bank details right after signing in.
                     } @else if (activeTab() === 'forgot') {
                         Enter your email address. We'll generate a single-use token to securely reset your password.
                     } @else if (activeTab() === 'reset') {
@@ -231,7 +235,7 @@
                     (click)="switchTab('register')"
                     role="tab"
                     [attr.aria-selected]="activeTab() === 'register'">
-                    <span>Register Canteen</span>
+                    <span>Register as Owner</span>
                 </button>
             </div>
             } @else {
@@ -659,7 +663,7 @@
                         @if (activeTab() === 'login') {
                             <span>Sign In to Portal</span>
                         } @else if (activeTab() === 'register') {
-                            <span>Create Canteen Account</span>
+                            <span>Register Owner Profile & Continue</span>
                         } @else if (activeTab() === 'forgot') {
                             <span>Generate Reset Token</span>
                         } @else if (activeTab() === 'reset') {

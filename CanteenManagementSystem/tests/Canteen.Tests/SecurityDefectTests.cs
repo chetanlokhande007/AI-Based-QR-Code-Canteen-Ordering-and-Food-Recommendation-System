@@ -167,6 +167,8 @@ public class SecurityDefectTests
     {
         public Task<IEnumerable<Canteen.Model.Entities.Canteen>> GetAllAsync() => Task.FromResult<IEnumerable<Canteen.Model.Entities.Canteen>>(new List<Canteen.Model.Entities.Canteen>());
         public Task<Canteen.Model.Entities.Canteen?> GetByIdAsync(int id) => Task.FromResult<Canteen.Model.Entities.Canteen?>(null);
+        public Task<Canteen.Model.Entities.Canteen?> GetBySlugAsync(string slug) => Task.FromResult<Canteen.Model.Entities.Canteen?>(null);
+        public Task<bool> SlugExistsAsync(string slug, int? excludeCanteenId = null) => Task.FromResult(false);
         public Task<Canteen.Model.Entities.Canteen> AddAsync(Canteen.Model.Entities.Canteen canteen) => Task.FromResult(canteen);
         public Task<Canteen.Model.Entities.Canteen> UpdateAsync(Canteen.Model.Entities.Canteen canteen) => Task.FromResult(canteen);
         public Task<bool> DeleteAsync(int id) => Task.FromResult(true);

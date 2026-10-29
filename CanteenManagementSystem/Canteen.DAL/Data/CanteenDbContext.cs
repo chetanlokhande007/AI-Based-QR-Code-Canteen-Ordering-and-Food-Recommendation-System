@@ -96,20 +96,57 @@ public class CanteenDbContext : DbContext
             .HasMaxLength(150)
             .IsRequired();
 
+        // Unique URL-friendly slug for customer menu browsing
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .Property(c => c.Slug)
+            .HasMaxLength(150)
+            .IsRequired();
+
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .HasIndex(c => c.Slug)
+            .IsUnique();
+
+        // Owner Bank & Settlement Details
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .Property(c => c.BankAccountHolder)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .Property(c => c.BankName)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .Property(c => c.AccountNumber)
+            .HasMaxLength(50);
+
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .Property(c => c.IfscCode)
+            .HasMaxLength(20);
+
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .Property(c => c.AccountType)
+            .HasMaxLength(20);
+
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .Property(c => c.UpiId)
+            .HasMaxLength(100);
+
         // Lifecycle and Tenant Statuses
         modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
             .Property(c => c.TenantStatus)
             .HasConversion<string>()
             .HasMaxLength(30)
             .IsRequired()
-            .HasDefaultValue(TenantStatus.Active);
+            .HasDefaultValue(TenantStatus.Active)
+            .HasSentinel((TenantStatus)0);
 
         modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
             .Property(c => c.SetupStatus)
             .HasConversion<string>()
             .HasMaxLength(30)
             .IsRequired()
-            .HasDefaultValue(SetupStatus.Draft);
+            .HasDefaultValue(SetupStatus.Draft)
+            .HasSentinel((SetupStatus)0);
 
         // Table numbers must be unique within a canteen.
         modelBuilder.Entity<CanteenTable>()

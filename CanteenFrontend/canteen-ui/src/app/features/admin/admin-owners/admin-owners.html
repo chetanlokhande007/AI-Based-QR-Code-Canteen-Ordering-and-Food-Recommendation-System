@@ -1,0 +1,228 @@
+<div class="admin-layout">
+
+  <!-- Left Sidebar Navigation -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="22" height="22">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">CanteenHub</span>
+          <span class="brand-badge">PLATFORM ADMIN</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/admin/dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <rect width="7" height="9" x="3" y="3" rx="1" />
+          <rect width="7" height="5" x="14" y="3" rx="1" />
+          <rect width="7" height="9" x="14" y="12" rx="1" />
+          <rect width="7" height="5" x="3" y="16" rx="1" />
+        </svg>
+        <span>Platform Overview</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/canteens">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span>All Canteens</span>
+      </a>
+
+      <a class="nav-item active" routerLink="/admin/owners">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        <span>Owners</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/tables">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <rect width="18" height="18" x="3" y="3" rx="2" />
+          <path d="M3 9h18" />
+          <path d="M9 21V9" />
+          <path d="M14 14h3" />
+          <path d="M14 17h3" />
+        </svg>
+        <span>Tables & QR Codes</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/payments">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <rect width="20" height="14" x="2" y="5" rx="2" />
+          <line x1="2" x2="22" y1="10" y2="10" />
+        </svg>
+        <span>Payments</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/audit-logs">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+        <span>Audit Logs</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-profile-badge">
+        <div class="avatar-circle">PA</div>
+        <div class="user-meta">
+          <span class="user-name">{{ currentUser()?.fullName || 'Platform Administrator' }}</span>
+          <span class="user-role">Platform Admin</span>
+        </div>
+      </div>
+      <button type="button" class="btn-logout" (click)="logout()" title="Sign Out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <h1 class="page-title">Owner Accounts</h1>
+        <p class="page-subtitle">View and manage SaaS customer owner accounts.</p>
+      </div>
+
+      <div class="header-actions">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            placeholder="Search owners by name or email..."
+            class="search-input"
+          />
+        </div>
+
+        <select [(ngModel)]="statusFilter" class="filter-select">
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading owner accounts...</p>
+        </div>
+      } @else if (errorMessage()) {
+        <div class="alert-banner error">
+          <span>{{ errorMessage() }}</span>
+        </div>
+      } @else {
+        <section class="card table-container-card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Owner Name</th>
+                  <th>Email</th>
+                  <th>Canteens</th>
+                  <th>Status</th>
+                  <th>Registered</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (owner of filteredOwners(); track owner.ownerId) {
+                  <tr>
+                    <td>
+                      <div class="owner-cell">
+                        <div class="owner-avatar">{{ owner.fullName.charAt(0).toUpperCase() }}</div>
+                        <span class="owner-name-text"><strong>{{ owner.fullName }}</strong></span>
+                      </div>
+                    </td>
+                    <td class="text-muted">{{ owner.email }}</td>
+                    <td>
+                      <span class="canteens-count-pill">{{ owner.canteensCount }} Canteen{{ owner.canteensCount === 1 ? '' : 's' }}</span>
+                    </td>
+                    <td>
+                      <span class="badge active">{{ owner.status }}</span>
+                    </td>
+                    <td class="text-muted text-sm">{{ owner.createdAt | date:'mediumDate' }}</td>
+                    <td class="text-right">
+                      <button type="button" class="btn-action-view" (click)="viewOwnerDetails(owner)">
+                        View &rarr;
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    </div>
+  </main>
+</div>
+
+<!-- Owner Details Modal -->
+@if (showDetailsModal() && selectedOwner()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <div>
+          <h3>{{ selectedOwner()?.fullName }}</h3>
+          <p class="modal-sub">{{ selectedOwner()?.email }}</p>
+        </div>
+        <button type="button" class="btn-close" (click)="closeModal()">&times;</button>
+      </header>
+
+      <div class="modal-body">
+        <h4 class="modal-section-title">Associated Canteens ({{ selectedOwner()?.canteens?.length || 0 }})</h4>
+        @if (selectedOwner()?.canteens?.length === 0) {
+          <p class="text-muted">No canteens assigned to this owner yet.</p>
+        } @else {
+          <div class="modal-canteens-list">
+            @for (c of selectedOwner()?.canteens; track c.canteenId) {
+              <div class="canteen-item-card">
+                <div class="canteen-item-header">
+                  <strong>{{ c.name }}</strong>
+                  <span class="badge" [class.active]="c.isActive" [class.suspended]="!c.isActive">
+                    {{ c.isActive ? 'Active' : 'Suspended' }}
+                  </span>
+                </div>
+                <p class="canteen-item-loc">{{ c.location }}</p>
+                <div class="canteen-item-footer">
+                  <a [routerLink]="['/admin/canteens', c.canteenId]" class="link-canteen-details" (click)="closeModal()">
+                    Open Details &rarr;
+                  </a>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <footer class="modal-footer">
+        <button type="button" class="btn-primary" (click)="closeModal()">Close</button>
+      </footer>
+    </div>
+  </div>
+}
+
