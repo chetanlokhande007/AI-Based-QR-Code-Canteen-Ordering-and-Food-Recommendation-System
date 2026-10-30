@@ -16,7 +16,7 @@ using CanteenManagementSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ─── Database ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Database â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddDbContext<CanteenDbContext>(options =>
 {
     options.UseNpgsql(
@@ -25,7 +25,7 @@ builder.Services.AddDbContext<CanteenDbContext>(options =>
     options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
 });
 
-// ─── DAL – Repositories ──────────────────────────────────────────────────────
+// â”€â”€â”€ DAL â€“ Repositories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddScoped<ICanteenRepository, CanteenRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -34,7 +34,7 @@ builder.Services.AddScoped<IOwnerRepository, OwnerRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
-// ─── BAL – Services ──────────────────────────────────────────────────────────
+// â”€â”€â”€ BAL â€“ Services â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddScoped<ICanteenService, CanteenService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
@@ -77,7 +77,7 @@ else
 builder.Services.AddScoped<IOrderNotificationService, OrderNotificationService>();
 builder.Services.AddSignalR();
 
-// ─── JWT Authentication ──────────────────────────────────────────────────────
+// â”€â”€â”€ JWT Authentication â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT key is missing.");
 
@@ -140,7 +140,7 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// ─── CORS ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ CORS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Origins are loaded from Cors:AllowedOrigins in appsettings (per-environment).
 // Production values must be set via environment variables or a secret manager.
 const string CorsPolicyName = "AllowFrontend";
@@ -181,10 +181,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ─── API ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddControllers();
 
-// ─── Swagger / Swashbuckle with JWT Bearer Support ───────────────────────────
+// â”€â”€â”€ Swagger / Swashbuckle with JWT Bearer Support â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -229,7 +229,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// ─── Auto-apply migrations on startup (development only) ──────────────────────
+// â”€â”€â”€ Auto-apply migrations on startup (development only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Production migrations must be applied through controlled CI/CD pipelines
 // or EF Core migration bundles to prevent concurrency deadlocks across replicas.
 if (app.Environment.IsDevelopment())
@@ -240,12 +240,13 @@ if (app.Environment.IsDevelopment())
     {
         db.Database.Migrate();
 
-        // Seed development PlatformAdmin if not present
-        if (!db.Owners.Any(o => o.Role == "PlatformAdmin"))
+        // Seed or update development PlatformAdmin
+        var existingAdmin = db.Owners.FirstOrDefault(o => o.Email == "admin@canteen.com" || o.Role == "PlatformAdmin");
+        if (existingAdmin == null)
         {
             var salt = System.Security.Cryptography.RandomNumberGenerator.GetBytes(16);
             var hash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(
-                password: Encoding.UTF8.GetBytes("Admin123!"),
+                password: Encoding.UTF8.GetBytes("Tanu@1328"),
                 salt: salt,
                 iterations: 100_000,
                 hashAlgorithm: System.Security.Cryptography.HashAlgorithmName.SHA256,
@@ -261,10 +262,24 @@ if (app.Environment.IsDevelopment())
             });
             db.SaveChanges();
         }
+        else
+        {
+            var salt = System.Security.Cryptography.RandomNumberGenerator.GetBytes(16);
+            var hash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(
+                password: Encoding.UTF8.GetBytes("Tanu@1328"),
+                salt: salt,
+                iterations: 100_000,
+                hashAlgorithm: System.Security.Cryptography.HashAlgorithmName.SHA256,
+                outputLength: 32);
+            existingAdmin.PasswordHash = $"{Convert.ToBase64String(salt)}.{Convert.ToBase64String(hash)}";
+            existingAdmin.Role = "PlatformAdmin";
+            existingAdmin.Email = "admin@canteen.com";
+            db.SaveChanges();
+        }
     }
 }
 
-// ─── Middleware pipeline ──────────────────────────────────────────────────────
+// â”€â”€â”€ Middleware pipeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // Global exception handler: returns a structured JSON 500 in all environments
 // without leaking internal details (stack traces, EF queries, etc.) to clients.
