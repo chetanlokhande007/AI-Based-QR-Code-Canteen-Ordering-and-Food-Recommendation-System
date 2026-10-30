@@ -49,7 +49,10 @@ public class OrderManagementTests : IClassFixture<TestWebApplicationFactory>
         Assert.NotNull(order);
         Assert.Equal(canteenId, order.CanteenId);
         Assert.Equal(tableId, order.TableId);
-        Assert.Equal(240.00m, order.TotalAmount); // 2 * 120.00
+        Assert.Equal(240.00m, order.SubtotalAmount); // 2 * 120.00 food subtotal
+        Assert.Equal(5.00m, order.PlatformFeeAmount); // 5.00 platform fee
+        Assert.Equal(245.00m, order.TotalAmount); // 240.00 + 5.00
+        Assert.Equal(240.00m, order.CanteenEarningsAmount); // Canteen net food earnings
         Assert.Equal("Pending", order.Status);
         Assert.Equal("Pending", order.PaymentStatus);
         Assert.Single(order.Items);

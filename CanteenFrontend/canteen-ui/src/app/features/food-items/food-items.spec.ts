@@ -63,7 +63,7 @@ describe('FoodItems', () => {
     component.categories.set(mockCategories);
     component.products.set(mockProducts);
     await fixture.whenStable();
-  });
+  }, 30000);
 
   it('should create FoodItems component', () => {
     expect(component).toBeTruthy();

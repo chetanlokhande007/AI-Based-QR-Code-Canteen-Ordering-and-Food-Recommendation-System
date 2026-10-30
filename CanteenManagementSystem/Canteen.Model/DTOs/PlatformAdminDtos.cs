@@ -10,10 +10,68 @@ public class PlatformAdminMetricsDto
     public int ActiveCanteens { get; set; }
     public int SuspendedCanteens { get; set; }
     public int TotalOwners { get; set; }
+
+    // Platform Financial & Earnings Metrics
+    public decimal PlatformEarnings { get; set; }
+    public int TotalOrders { get; set; }
+    public decimal PendingSettlements { get; set; }
+    public decimal GrossMerchandiseValue { get; set; }
+
     public IEnumerable<AdminCanteenItemDto> RecentCanteens { get; set; } = new List<AdminCanteenItemDto>();
     public IEnumerable<MonthlyRegistrationTrendDto> RegistrationTrend { get; set; } = new List<MonthlyRegistrationTrendDto>();
+    public IEnumerable<MonthlyRevenueTrendDto> MonthlyRevenueTrend { get; set; } = new List<MonthlyRevenueTrendDto>();
     public StatusDistributionDto StatusDistribution { get; set; } = new();
     public IEnumerable<PlatformActivityDto> RecentActivities { get; set; } = new List<PlatformActivityDto>();
+    public IEnumerable<AdminCanteenSettlementDto> CanteenSettlements { get; set; } = new List<AdminCanteenSettlementDto>();
+}
+
+public class MonthlyRevenueTrendDto
+{
+    public string Month { get; set; } = string.Empty;
+    public decimal PlatformRevenue { get; set; }
+    public decimal GrossVolume { get; set; }
+    public int OrdersCount { get; set; }
+}
+
+public class AdminCanteenSettlementDto
+{
+    public int CanteenId { get; set; }
+    public string CanteenName { get; set; } = string.Empty;
+    public string OwnerName { get; set; } = string.Empty;
+    public string OwnerEmail { get; set; } = string.Empty;
+    public int TotalOrders { get; set; }
+    public decimal GrossSales { get; set; }
+    public decimal PlatformFeesDeducted { get; set; }
+    public decimal CanteenEarnings { get; set; }
+    public decimal PendingPayableBalance { get; set; }
+    public string? BankName { get; set; }
+    public string? AccountNumberMasked { get; set; }
+    public string? IfscCode { get; set; }
+    public string? UpiId { get; set; }
+    public bool IsBankConfigured { get; set; }
+    public string SettlementStatus { get; set; } = "Pending";
+}
+
+public class PlatformFeeSettingsDto
+{
+    public decimal DefaultFixedFee { get; set; } = 5.00m;
+    public decimal DefaultFeePercentage { get; set; } = 0.00m;
+    public string DefaultFeePolicy { get; set; } = "CustomerPays";
+    public decimal PlatformFeeRefundRatePercentage { get; set; } = 100.00m;
+}
+
+public class UpdatePlatformFeeSettingsDto
+{
+    public decimal? DefaultFixedFee { get; set; }
+    public decimal? DefaultFeePercentage { get; set; }
+    public string? DefaultFeePolicy { get; set; }
+}
+
+public class RecordSettlementPayoutDto
+{
+    public decimal Amount { get; set; }
+    public string ReferenceNumber { get; set; } = string.Empty;
+    public string? Notes { get; set; }
 }
 
 public class MonthlyRegistrationTrendDto

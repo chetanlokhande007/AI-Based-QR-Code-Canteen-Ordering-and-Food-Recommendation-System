@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Canteen.Model.Entities;
 
 namespace Canteen.Model.Entities
 {
@@ -18,7 +17,23 @@ namespace Canteen.Model.Entities
 
         public string PaymentStatus { get; set; } = "Pending";
 
+        // Food Subtotal (Sum of items * quantity)
+        public decimal SubtotalAmount { get; set; }
+
+        // Tax / GST amount
+        public decimal TaxAmount { get; set; }
+
+        // Marketplace Platform Fee (e.g. ₹5.00)
+        public decimal PlatformFeeAmount { get; set; } = 5.00m;
+
+        // Customer Pays or Canteen Absorbs
+        public string PlatformFeePolicy { get; set; } = "CustomerPays";
+
+        // Total amount paid by the customer (Subtotal + Tax + (Policy == CustomerPays ? Fee : 0))
         public decimal TotalAmount { get; set; }
+
+        // Net amount payable to Canteen Owner (Subtotal + Tax - (Policy == CanteenAbsorbs ? Fee : 0))
+        public decimal CanteenEarningsAmount { get; set; }
 
         public string TrackingToken { get; set; } = string.Empty;
 

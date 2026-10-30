@@ -87,6 +87,8 @@ public class CanteenService : ICanteenService
             Landmark = dto.Landmark,
             OperatingHoursJson = dto.OperatingHoursJson,
             ImageUrl = dto.ImageUrl,
+            FeeAbsorptionPolicy = !string.IsNullOrWhiteSpace(dto.FeeAbsorptionPolicy) ? dto.FeeAbsorptionPolicy : "CustomerPays",
+            TaxPercentage = dto.TaxPercentage ?? 0.00m,
             IsActive = true,
             TenantStatus = TenantStatus.Active,
             SetupStatus = !string.IsNullOrWhiteSpace(dto.AddressLine1) ? SetupStatus.Completed : SetupStatus.Draft
@@ -142,6 +144,14 @@ public class CanteenService : ICanteenService
         entity.Landmark = dto.Landmark ?? entity.Landmark;
         entity.OperatingHoursJson = dto.OperatingHoursJson ?? entity.OperatingHoursJson;
         entity.ImageUrl = dto.ImageUrl ?? entity.ImageUrl;
+        if (!string.IsNullOrWhiteSpace(dto.FeeAbsorptionPolicy))
+        {
+            entity.FeeAbsorptionPolicy = dto.FeeAbsorptionPolicy;
+        }
+        if (dto.TaxPercentage.HasValue)
+        {
+            entity.TaxPercentage = dto.TaxPercentage.Value;
+        }
         entity.IsActive = dto.IsActive;
 
         // Advance to Completed if required setup steps (address details) exist
@@ -403,6 +413,8 @@ public class CanteenService : ICanteenService
         Landmark = c.Landmark,
         OperatingHoursJson = c.OperatingHoursJson,
         ImageUrl = c.ImageUrl,
+        FeeAbsorptionPolicy = c.FeeAbsorptionPolicy ?? "CustomerPays",
+        TaxPercentage = c.TaxPercentage,
         IsActive = c.IsActive,
         TenantStatus = c.TenantStatus,
         SetupStatus = c.SetupStatus,

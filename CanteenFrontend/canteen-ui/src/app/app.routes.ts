@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { Login } from './features/auth/login/login';
+import { OwnerLayout } from './features/owner-layout/owner-layout';
 import { Dashboard } from './features/dashboard/dashboard';
 import { CanteenSetup } from './features/canteen-setup/canteen-setup';
 import { MyCanteens } from './features/canteens/my-canteens/my-canteens';
@@ -25,7 +26,7 @@ export const routes: Routes = [
   { path: 'menu', component: CustomerMenu },
   { path: 'c/:slug', component: CustomerMenu },
   
-  // Platform Admin Routes (Protected by adminGuard)
+  // Platform Admin Routes (Protected by adminGuard — Completely Separate Layout)
   { path: 'admin', redirectTo: 'admin/dashboard', pathMatch: 'full' },
   { path: 'admin/dashboard', component: AdminDashboard, canActivate: [adminGuard] },
   { path: 'admin/canteens', component: AdminCanteens, canActivate: [adminGuard] },
@@ -35,19 +36,26 @@ export const routes: Routes = [
   { path: 'admin/payments', component: AdminPaymentsComponent, canActivate: [adminGuard] },
   { path: 'admin/audit-logs', component: AdminAuditLogsComponent, canActivate: [adminGuard] },
 
-  // Canteen Owner Routes (Protected by authGuard)
-  { path: 'dashboard', component: Dashboard, canActivate: [authGuard] },
-  { path: 'owner/dashboard', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'food-items', component: FoodItems, canActivate: [authGuard] },
-  { path: 'dishes', redirectTo: 'food-items', pathMatch: 'full' },
-  { path: 'menu-items', redirectTo: 'food-items', pathMatch: 'full' },
-  { path: 'categories', component: Categories, canActivate: [authGuard] },
-  { path: 'tables', component: TablesComponent, canActivate: [authGuard] },
-  { path: 'tables-qr', redirectTo: 'tables', pathMatch: 'full' },
-  { path: 'my-canteens', component: MyCanteens, canActivate: [authGuard] },
-  { path: 'canteens', redirectTo: 'my-canteens', pathMatch: 'full' },
-  { path: 'canteen-setup', component: CanteenSetup, canActivate: [authGuard] },
-  { path: 'canteen/setup', redirectTo: 'canteen-setup', pathMatch: 'full' },
+  // Canteen Owner Routes (Protected by authGuard via Shared OwnerLayout)
+  {
+    path: '',
+    component: OwnerLayout,
+    canActivate: [authGuard],
+    children: [
+      { path: 'dashboard', component: Dashboard },
+      { path: 'owner/dashboard', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'food-items', component: FoodItems },
+      { path: 'dishes', redirectTo: 'food-items', pathMatch: 'full' },
+      { path: 'menu-items', redirectTo: 'food-items', pathMatch: 'full' },
+      { path: 'categories', component: Categories },
+      { path: 'tables', component: TablesComponent },
+      { path: 'tables-qr', redirectTo: 'tables', pathMatch: 'full' },
+      { path: 'my-canteens', component: MyCanteens },
+      { path: 'canteens', redirectTo: 'my-canteens', pathMatch: 'full' },
+      { path: 'canteen-setup', component: CanteenSetup },
+      { path: 'canteen/setup', redirectTo: 'canteen-setup', pathMatch: 'full' },
+    ]
+  },
   
   { path: '**', redirectTo: 'login' }
 ];

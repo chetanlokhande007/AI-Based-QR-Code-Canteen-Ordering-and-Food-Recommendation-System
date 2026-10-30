@@ -135,13 +135,13 @@ public class OrderService : IOrderService
             }
 
             // 4. Calculate prices strictly on the server (zero client trust)
-            decimal totalAmount = 0;
+            decimal subtotalAmount = 0;
             var orderItems = new List<OrderItem>();
             foreach (var item in consolidatedItems)
             {
                 var product = products[item.ProductId];
                 decimal unitPrice = product.Price;
-                totalAmount += unitPrice * item.Quantity;
+                subtotalAmount += unitPrice * item.Quantity;
 
                 orderItems.Add(new OrderItem
                 {
@@ -149,6 +149,38 @@ public class OrderService : IOrderService
                     Quantity = item.Quantity,
                     UnitPrice = unitPrice
                 });
+            }
+
+            // Read canteen tax and platform fee policy if available
+            decimal taxPercentage = 0;
+            string feePolicy = "CustomerPays";
+            if (_canteenRepo != null)
+            {
+                var canteen = await _canteenRepo.GetByIdAsync(canteenId);
+                if (canteen != null)
+                {
+                    taxPercentage = canteen.TaxPercentage;
+                    feePolicy = string.IsNullOrWhiteSpace(canteen.FeeAbsorptionPolicy) ? "CustomerPays" : canteen.FeeAbsorptionPolicy;
+                }
+            }
+
+            decimal taxAmount = Math.Round(subtotalAmount * (taxPercentage / 100m), 2);
+            decimal platformFeeAmount = 5.00m; // Standard CanteenHub platform fee
+            decimal totalAmount;
+            decimal canteenEarningsAmount;
+
+            if (string.Equals(feePolicy, "CanteenAbsorbs", StringComparison.OrdinalIgnoreCase))
+            {
+                // Customer only pays food + tax; canteen absorbs platform fee from their earnings
+                totalAmount = subtotalAmount + taxAmount;
+                canteenEarningsAmount = Math.Max(0m, (subtotalAmount + taxAmount) - platformFeeAmount);
+            }
+            else
+            {
+                // Customer pays food + tax + platform fee; canteen gets food + tax
+                feePolicy = "CustomerPays";
+                totalAmount = subtotalAmount + taxAmount + platformFeeAmount;
+                canteenEarningsAmount = subtotalAmount + taxAmount;
             }
 
             // 5. Generate human-friendly unique order number and cryptographically random tracking token
@@ -171,7 +203,12 @@ public class OrderService : IOrderService
                 OrderNumber = orderNumber,
                 Status = "Pending",
                 PaymentStatus = "Pending",
+                SubtotalAmount = subtotalAmount,
+                TaxAmount = taxAmount,
+                PlatformFeeAmount = platformFeeAmount,
+                PlatformFeePolicy = feePolicy,
                 TotalAmount = totalAmount,
+                CanteenEarningsAmount = canteenEarningsAmount,
                 TrackingToken = trackingToken,
                 CreatedAt = DateTime.UtcNow,
                 Items = orderItems
@@ -209,6 +246,46 @@ public class OrderService : IOrderService
 
         var entity = await _orderRepo.GetByTrackingTokenAsync(trackingToken, asNoTracking: true);
         return entity is null ? null : ToDto(entity);
+    }
+
+    public async Task<OrderDto?> CancelOrderByTrackingTokenAsync(string trackingToken)
+    {
+        if (string.IsNullOrWhiteSpace(trackingToken))
+        {
+            return null;
+        }
+
+        var order = await _orderRepo.GetByTrackingTokenAsync(trackingToken, asNoTracking: false);
+        if (order is null)
+        {
+            return null;
+        }
+
+        if (!string.Equals(order.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOrderException("Only pending orders can be cancelled. Your order is already being prepared or completed.");
+        }
+
+        if (string.Equals(order.PaymentStatus, "Paid", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOrderException("Paid orders cannot be self-cancelled. Please contact the canteen counter for assistance.");
+        }
+
+        order.Status = "Cancelled";
+        var updated = await _orderRepo.UpdateAsync(order);
+
+        // Restore deducted inventory for all ordered products
+        if (order.Items != null)
+        {
+            foreach (var item in order.Items)
+            {
+                await _productRepo.RestoreStockAsync(order.CanteenId, item.ProductId, item.Quantity);
+            }
+        }
+
+        await _notificationService.NotifyOrderStatusUpdatedAsync(order.OrderId, order.OrderNumber, "Cancelled", DateTime.UtcNow);
+
+        return ToDto(updated);
     }
 
     public async Task<IEnumerable<OrderDto>> GetAllByCanteenAsync(int canteenId)
@@ -281,7 +358,12 @@ public class OrderService : IOrderService
         OrderNumber = o.OrderNumber,
         Status = o.Status,
         PaymentStatus = o.PaymentStatus,
+        SubtotalAmount = o.SubtotalAmount,
+        TaxAmount = o.TaxAmount,
+        PlatformFeeAmount = o.PlatformFeeAmount,
+        PlatformFeePolicy = o.PlatformFeePolicy,
         TotalAmount = o.TotalAmount,
+        CanteenEarningsAmount = o.CanteenEarningsAmount,
         TrackingToken = o.TrackingToken,
         CreatedAt = o.CreatedAt,
         Items = o.Items.Select(i => new OrderItemDto

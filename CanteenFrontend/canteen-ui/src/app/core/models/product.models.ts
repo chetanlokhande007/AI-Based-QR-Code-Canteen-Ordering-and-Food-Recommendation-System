@@ -7,6 +7,7 @@ export interface ProductDto {
   price: number;
   stockQuantity: number;
   isAvailable: boolean;
+  foodType?: string;
   imageUrl?: string;
   createdAt?: string;
 }
@@ -18,6 +19,7 @@ export interface CreateProductRequest {
   description?: string;
   price: number;
   stockQuantity?: number;
+  foodType?: string;
   imageUrl?: string;
 }
 
@@ -29,5 +31,6 @@ export interface UpdateProductRequest {
   price: number;
   stockQuantity: number;
   isAvailable: boolean;
+  foodType?: string;
   imageUrl?: string;
 }

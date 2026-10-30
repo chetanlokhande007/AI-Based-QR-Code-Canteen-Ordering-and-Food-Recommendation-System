@@ -17,7 +17,18 @@ public class OrderDto
 
     public string PaymentStatus { get; set; } = string.Empty;
 
+    // Marketplace breakdown
+    public decimal SubtotalAmount { get; set; }
+
+    public decimal TaxAmount { get; set; }
+
+    public decimal PlatformFeeAmount { get; set; } = 5.00m;
+
+    public string PlatformFeePolicy { get; set; } = "CustomerPays";
+
     public decimal TotalAmount { get; set; }
+
+    public decimal CanteenEarningsAmount { get; set; }
 
     public string TrackingToken { get; set; } = string.Empty;
 

@@ -44,6 +44,13 @@ namespace Canteen.Model.Entities
         // Canteen Banner / Photo
         public string? ImageUrl { get; set; }
 
+        // Marketplace Fee & Tax Configuration
+        // "CustomerPays" (customer charged platform fee) or "CanteenAbsorbs" (canteen absorbs platform fee)
+        public string FeeAbsorptionPolicy { get; set; } = "CustomerPays";
+
+        // Tax / GST rate percentage applicable to this canteen (e.g. 5.0 for 5% GST, default 0)
+        public decimal TaxPercentage { get; set; } = 0.00m;
+
         public bool IsActive { get; set; } = true;
 
         public TenantStatus TenantStatus { get; set; } = TenantStatus.Active;

@@ -11,7 +11,7 @@
         </div>
         <div class="brand-text">
           <span class="brand-title">CanteenHub</span>
-          <span class="brand-badge">PLATFORM ADMIN</span>
+          <span class="brand-badge">SUPER ADMIN</span>
         </div>
       </div>
     </div>
@@ -61,7 +61,7 @@
           <rect width="20" height="14" x="2" y="5" rx="2" />
           <line x1="2" x2="22" y1="10" y2="10" />
         </svg>
-        <span>Payments</span>
+        <span>Payments & Transactions</span>
       </a>
 
       <a class="nav-item" routerLink="/admin/audit-logs">
@@ -78,10 +78,10 @@
 
     <div class="sidebar-footer">
       <div class="user-profile-badge">
-        <div class="avatar-circle">PA</div>
+        <div class="avatar-circle">{{ getInitials(currentUser()?.fullName) }}</div>
         <div class="user-meta">
-          <span class="user-name">{{ currentUser()?.fullName || 'Platform Administrator' }}</span>
-          <span class="user-role">Platform Admin</span>
+          <span class="user-name">{{ currentUser()?.fullName || 'Super Administrator' }}</span>
+          <span class="user-role">Super Admin</span>
         </div>
       </div>
       <button type="button" class="btn-logout" (click)="logout()" title="Sign Out">
@@ -90,6 +90,7 @@
           <polyline points="16 17 21 12 16 7" />
           <line x1="21" y1="12" x2="9" y2="12" />
         </svg>
+        <span>Sign Out</span>
       </button>
     </div>
   </aside>
@@ -99,10 +100,17 @@
     
     <!-- Top Header -->
     <header class="admin-topbar">
-      <div>
-        <h1 class="page-title">Platform Dashboard</h1>
-        <p class="page-subtitle">Real-time overview of all SaaS tenants, active deployments, and owner accounts.</p>
+      <div class="topbar-title-group">
+        <div class="title-with-pill">
+          <h1 class="page-title">Super Admin Dashboard</h1>
+          <span class="system-status-pill">
+            <span class="pulse-dot"></span>
+            All Systems Operational
+          </span>
+        </div>
+        <p class="page-subtitle">All canteens &bull; All transactions &bull; Financial overview</p>
       </div>
+
       <div class="topbar-actions">
         <button type="button" class="btn-refresh" (click)="loadMetrics()" [disabled]="loading()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" [class.spinning]="loading()">
@@ -116,16 +124,32 @@
     <!-- Content Area -->
     <div class="dashboard-content">
 
+      <!-- Success Alert Banner -->
+      @if (successMessage()) {
+        <div class="alert-banner success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+          <span>{{ successMessage() }}</span>
+        </div>
+      }
+
       <!-- Error State -->
       @if (errorMessage()) {
         <div class="alert-banner error">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          <span>{{ errorMessage() }}</span>
-          <button type="button" class="btn-retry" (click)="loadMetrics()">Retry</button>
+          <div class="alert-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <div class="alert-body">
+            <strong>Platform Alert:</strong>
+            <span>{{ errorMessage() }}</span>
+          </div>
+          <button type="button" class="btn-retry" (click)="loadMetrics()">Try Again</button>
         </div>
       }
 
@@ -133,120 +157,172 @@
       @if (loading() && !metrics()) {
         <div class="loading-state">
           <div class="spinner"></div>
-          <p>Loading platform metrics from server...</p>
+          <p class="loading-text">Synchronizing platform financial data from PostgreSQL...</p>
         </div>
       }
 
       <!-- Real Metrics Grid -->
       @if (metrics(); as m) {
-        <!-- 4 Top KPI Cards -->
+        
+        <!-- 4 Top Financial & Platform KPI Cards -->
         <div class="metrics-grid">
           
-          <div class="metric-card">
+          <!-- KPI 1: Platform Earnings -->
+          <div class="metric-card card-earnings">
+            <div class="metric-header">
+              <span class="metric-label">Platform Earnings</span>
+              <div class="metric-icon-bg green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                  <line x1="12" y1="1" x2="12" y2="23" />
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-value-row">
+              <span class="metric-value green-text">₹{{ (m.platformEarnings || 0) | number:'1.2-2' }}</span>
+              <span class="trend-badge green">Net Revenue</span>
+            </div>
+            <div class="metric-footer">
+              <span class="footer-dot green"></span>
+              <span>Platform fees collected from orders</span>
+            </div>
+          </div>
+
+          <!-- KPI 2: Total Canteens -->
+          <div class="metric-card card-canteen">
             <div class="metric-header">
               <span class="metric-label">Total Canteens</span>
               <div class="metric-icon-bg neutral">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
                 </svg>
               </div>
             </div>
-            <div class="metric-value">{{ m.totalCanteens }}</div>
-            <div class="metric-footer">Registered on platform</div>
+            <div class="metric-value-row">
+              <span class="metric-value">{{ m.totalCanteens }}</span>
+              <span class="trend-badge neutral">{{ m.activeCanteens }} Active</span>
+            </div>
+            <div class="metric-footer">
+              <span class="footer-dot neutral"></span>
+              <span>Registered SaaS canteen tenants</span>
+            </div>
           </div>
 
-          <div class="metric-card">
+          <!-- KPI 3: Total Orders -->
+          <div class="metric-card card-orders">
             <div class="metric-header">
-              <span class="metric-label">Active Deployments</span>
-              <div class="metric-icon-bg green">
+              <span class="metric-label">Total Orders</span>
+              <div class="metric-icon-bg blue">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
+                  <circle cx="9" cy="21" r="1" />
+                  <circle cx="20" cy="21" r="1" />
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                 </svg>
               </div>
             </div>
-            <div class="metric-value green-text">{{ m.activeCanteens }}</div>
-            <div class="metric-footer">Accepting orders</div>
-          </div>
-
-          <div class="metric-card">
-            <div class="metric-header">
-              <span class="metric-label">Suspended Canteens</span>
-              <div class="metric-icon-bg red">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-                </svg>
-              </div>
+            <div class="metric-value-row">
+              <span class="metric-value">{{ m.totalOrders }}</span>
+              <span class="trend-badge blue">₹{{ (m.grossMerchandiseValue || 0) | number:'1.2-2' }} GMV</span>
             </div>
-            <div class="metric-value red-text">{{ m.suspendedCanteens }}</div>
-            <div class="metric-footer">Restricted by admin</div>
+            <div class="metric-footer">
+              <span class="footer-dot blue"></span>
+              <span>Total orders processed on platform</span>
+            </div>
           </div>
 
-          <div class="metric-card">
+          <!-- KPI 4: Pending Settlements -->
+          <div class="metric-card card-settlements">
             <div class="metric-header">
-              <span class="metric-label">Registered Owners</span>
+              <span class="metric-label">Pending Settlements</span>
               <div class="metric-icon-bg orange">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
+                  <rect width="20" height="14" x="2" y="5" rx="2" />
+                  <line x1="2" x2="22" y1="10" y2="10" />
                 </svg>
               </div>
             </div>
-            <div class="metric-value">{{ m.totalOwners }}</div>
-            <div class="metric-footer">SaaS customer accounts</div>
+            <div class="metric-value-row">
+              <span class="metric-value orange-text">₹{{ (m.pendingSettlements || 0) | number:'1.2-2' }}</span>
+              <span class="trend-badge orange">Payable</span>
+            </div>
+            <div class="metric-footer">
+              <span class="footer-dot orange"></span>
+              <span>Canteen earnings awaiting payout</span>
+            </div>
           </div>
 
         </div>
 
-        <!-- 3 Insight Cards (Row 2 matching Screen 2) -->
+        <!-- 3 Insight Cards (Row 2) -->
         <div class="insights-grid">
           
-          <!-- Card 1: Registration Trend (Bar chart) -->
-          <div class="insight-card trend-card">
+          <!-- Card 1: Monthly Platform Revenue (Bar chart) -->
+          <div class="insight-card revenue-trend-card">
             <div class="card-header-row">
-              <h3 class="insight-title">Canteen Registration Trend</h3>
-              <span class="badge-sub">Last 6 months</span>
+              <div>
+                <h3 class="insight-title">Monthly Platform Revenue</h3>
+                <p class="insight-subtitle">Net platform fees & volume collected per month</p>
+              </div>
+              <span class="badge-sub">₹0 &bull; ₹2K &bull; ₹4K &bull; ₹6K &bull; ₹8K</span>
             </div>
+
             <div class="bar-chart-container">
-              @for (item of m.registrationTrend || []; track item.month) {
-                <div class="bar-col">
-                  <div class="bar-track">
-                    <div class="bar-fill" [style.height.%]="item.count === 0 ? 8 : (item.count * 15 > 100 ? 100 : item.count * 15)">
-                      <span class="bar-val-pop" *ngIf="item.count > 0">{{ item.count }}</span>
+              <div class="chart-guide-line top"></div>
+              <div class="chart-guide-line middle"></div>
+              <div class="chart-guide-line baseline"></div>
+
+              <div class="bars-wrapper">
+                @for (item of m.monthlyRevenueTrend || []; track item.month) {
+                  <div class="bar-col" [class.current-month]="item.month === 'Oct'">
+                    <div class="bar-track">
+                      <div class="bar-fill" [style.height.%]="getRevenueBarHeight(item.platformRevenue)">
+                        @if (item.platformRevenue > 0) {
+                          <span class="bar-val-pop">₹{{ item.platformRevenue | number:'1.0-0' }}</span>
+                        }
+                      </div>
                     </div>
+                    <span class="bar-label">{{ item.month }}</span>
                   </div>
-                  <span class="bar-label">{{ item.month }}</span>
-                </div>
-              }
+                }
+              </div>
             </div>
           </div>
 
           <!-- Card 2: Status Distribution (Donut ring) -->
           <div class="insight-card donut-card">
-            <h3 class="insight-title">Canteen Status Distribution</h3>
+            <div class="card-header-row">
+              <div>
+                <h3 class="insight-title">Canteen Status Distribution</h3>
+                <p class="insight-subtitle">Deployment health & tenant status</p>
+              </div>
+            </div>
+
             <div class="donut-chart-container">
-              <div class="donut-ring">
-                <div class="donut-inner">
-                  <span class="donut-total">{{ m.statusDistribution?.total || m.totalCanteens }}</span>
-                  <span class="donut-sub">Total</span>
+              <div class="donut-ring-wrapper">
+                <div class="donut-ring" [style.background]="getDonutGradient()">
+                  <div class="donut-inner">
+                    <span class="donut-total">{{ m.statusDistribution?.total || m.totalCanteens }}</span>
+                    <span class="donut-sub">Total</span>
+                  </div>
                 </div>
               </div>
+
               <div class="donut-legend">
                 <div class="legend-row">
                   <span class="dot green"></span>
                   <span class="leg-text">Active</span>
-                  <span class="leg-val">{{ m.statusDistribution?.active || m.activeCanteens }}</span>
+                  <span class="leg-pill green">{{ m.statusDistribution?.active || m.activeCanteens }}</span>
                 </div>
                 <div class="legend-row">
                   <span class="dot red"></span>
                   <span class="leg-text">Suspended</span>
-                  <span class="leg-val">{{ m.statusDistribution?.suspended || m.suspendedCanteens }}</span>
+                  <span class="leg-pill red">{{ m.statusDistribution?.suspended || m.suspendedCanteens }}</span>
                 </div>
                 <div class="legend-row">
                   <span class="dot yellow"></span>
                   <span class="leg-text">Setup In Progress</span>
-                  <span class="leg-val">{{ m.statusDistribution?.setupInProgress || 0 }}</span>
+                  <span class="leg-pill yellow">{{ m.statusDistribution?.setupInProgress || 0 }}</span>
                 </div>
               </div>
             </div>
@@ -255,13 +331,24 @@
           <!-- Card 3: Recent Activity Feed -->
           <div class="insight-card activity-card">
             <div class="card-header-row">
-              <h3 class="insight-title">Recent Activity</h3>
-              <a routerLink="/admin/audit-logs" class="link-view-all">View All &rarr;</a>
+              <div>
+                <h3 class="insight-title">Recent Activity</h3>
+                <p class="insight-subtitle">Live system event telemetry</p>
+              </div>
+              <a routerLink="/admin/audit-logs" class="link-view-all">
+                <span>View All</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </a>
             </div>
+
             <div class="activity-feed-list">
               @for (act of m.recentActivities || []; track act.id) {
                 <div class="activity-feed-item">
-                  <div class="activity-dot" [class.green]="act.type === 'canteen' || act.type === 'activation'" [class.blue]="act.type === 'setup'" [class.red]="act.type === 'suspension'"></div>
+                  <div class="activity-indicator" [class.green]="act.type === 'canteen' || act.type === 'activation'" [class.blue]="act.type === 'setup'" [class.red]="act.type === 'suspension'">
+                    <span class="activity-dot-core"></span>
+                  </div>
                   <div class="activity-body">
                     <p class="activity-title">{{ act.title }}</p>
                     <p class="activity-sub">{{ act.subtitle }}</p>
@@ -274,34 +361,146 @@
 
         </div>
 
-        <!-- Recent Registrations Section -->
+        <!-- Row 3: Canteen Settlements & Balances -->
+        @if (m.canteenSettlements && m.canteenSettlements.length > 0) {
+          <section class="admin-section">
+            <div class="section-header">
+              <div>
+                <div class="section-badge-row">
+                  <h2 class="section-title">Settlement Management & Canteen Balances</h2>
+                  <span class="count-pill">{{ m.canteenSettlements.length }} accounts</span>
+                </div>
+                <p class="section-subtitle">Real-time ledger of canteen payable earnings, platform fee deductions, and bank payouts.</p>
+              </div>
+              <div class="financial-summary-badge">
+                <span>Total Payable: <strong>₹{{ (m.pendingSettlements || 0) | number:'1.2-2' }}</strong></span>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Canteen</th>
+                    <th>Paid Orders</th>
+                    <th>Gross Sales (GMV)</th>
+                    <th>Platform Fees</th>
+                    <th>Net Canteen Earnings</th>
+                    <th>Bank / Payout Destination</th>
+                    <th>Status</th>
+                    <th class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (s of m.canteenSettlements; track s.canteenId) {
+                    <tr class="table-row">
+                      <td>
+                        <div class="canteen-name-cell">
+                          <span class="canteen-name">{{ s.canteenName }}</span>
+                          <span class="owner-email">{{ s.ownerName }} &bull; {{ s.ownerEmail }}</span>
+                        </div>
+                      </td>
+
+                      <td>
+                        <span class="canteen-id-badge">{{ s.totalOrders }} orders</span>
+                      </td>
+
+                      <td class="font-bold">
+                        ₹{{ s.grossSales | number:'1.2-2' }}
+                      </td>
+
+                      <td class="text-emerald font-bold">
+                        ₹{{ s.platformFeesDeducted | number:'1.2-2' }}
+                      </td>
+
+                      <td class="font-bold">
+                        ₹{{ s.canteenEarnings | number:'1.2-2' }}
+                      </td>
+
+                      <td>
+                        @if (s.isBankConfigured) {
+                          <div class="bank-info-cell">
+                            <span class="bank-name">{{ s.bankName || 'Direct Transfer' }}</span>
+                            <span class="bank-acc">{{ s.accountNumberMasked || s.upiId }}</span>
+                          </div>
+                        } @else {
+                          <span class="badge-unconfigured">Bank Not Set</span>
+                        }
+                      </td>
+
+                      <td>
+                        @if (s.pendingPayableBalance > 0) {
+                          <span class="status-pill pending">
+                            <span class="status-dot orange"></span>
+                            <span>Pending Payout</span>
+                          </span>
+                        } @else {
+                          <span class="status-pill active">
+                            <span class="status-dot green"></span>
+                            <span>Settled</span>
+                          </span>
+                        }
+                      </td>
+
+                      <td class="text-right">
+                        @if (s.pendingPayableBalance > 0) {
+                          <button type="button" class="btn-action-payout" (click)="openPayoutModal(s)">
+                            <span>Settle Payout</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                              <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                          </button>
+                        } @else {
+                          <span class="text-muted text-sm">Up to Date</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+        }
+
+        <!-- Row 4: Recent Registrations Section -->
         <section class="admin-section">
           <div class="section-header">
             <div>
-              <h2 class="section-title">Recently Registered Canteens</h2>
+              <div class="section-badge-row">
+                <h2 class="section-title">Recently Registered Canteens</h2>
+                <span class="count-pill">{{ m.recentCanteens.length }} canteens</span>
+              </div>
               <p class="section-subtitle">Real-time audit of the latest canteens deployed on CanteenHub.</p>
             </div>
-            <a routerLink="/admin/canteens" class="btn-text-link">View All Canteens &rarr;</a>
+            <a routerLink="/admin/canteens" class="btn-header-link">
+              <span>View All Canteens</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
           </div>
 
           <div class="table-container">
             <table class="admin-table">
               <thead>
                 <tr>
-                  <th>Canteen ID</th>
-                  <th>Canteen Name</th>
-                  <th>Type & Location</th>
-                  <th>Owner Account</th>
-                  <th>Deployment Status</th>
-                  <th>Registered</th>
-                  <th class="text-right">Actions</th>
+                  <th class="col-id">Canteen ID</th>
+                  <th class="col-canteen">Canteen Name</th>
+                  <th class="col-location">Type & Location</th>
+                  <th class="col-owner">Owner Account</th>
+                  <th class="col-status">Deployment Status</th>
+                  <th class="col-registered">Registered</th>
+                  <th class="col-actions text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 @for (canteen of m.recentCanteens; track canteen.canteenId) {
-                  <tr>
-                    <td class="font-mono text-muted">#{{ canteen.canteenId }}</td>
-                    <td>
+                  <tr class="table-row">
+                    <td class="col-id">
+                      <span class="canteen-id-badge">#{{ canteen.canteenId }}</span>
+                    </td>
+
+                    <td class="col-canteen">
                       <div class="canteen-name-cell">
                         <span class="canteen-name">{{ canteen.name }}</span>
                         @if (canteen.canteenType) {
@@ -309,38 +508,53 @@
                         }
                       </div>
                     </td>
-                    <td>
-                      <div class="location-cell">
-                        <svg class="location-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                          <circle cx="12" cy="10" r="3" />
-                        </svg>
-                        <span>{{ canteen.location }}</span>
+
+                    <td class="col-location">
+                      <div class="location-cell" [title]="canteen.location">
+                        <div class="location-icon-wrapper">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                          </svg>
+                        </div>
+                        <span class="location-text">{{ canteen.location }}</span>
                       </div>
                     </td>
-                    <td>
+
+                    <td class="col-owner">
                       <div class="owner-cell">
-                        <span class="owner-name">{{ canteen.ownerName }}</span>
-                        <span class="owner-email">{{ canteen.ownerEmail }}</span>
+                        <div class="owner-avatar">{{ getInitials(canteen.ownerName) }}</div>
+                        <div class="owner-meta">
+                          <span class="owner-name">{{ canteen.ownerName }}</span>
+                          <span class="owner-email">{{ canteen.ownerEmail }}</span>
+                        </div>
                       </div>
                     </td>
-                    <td>
+
+                    <td class="col-status">
                       @if (canteen.isActive) {
-                        <span class="badge active">
-                          <span class="status-indicator green"></span>
-                          Active
+                        <span class="status-pill active">
+                          <span class="pulse-dot"></span>
+                          <span>Active</span>
                         </span>
                       } @else {
-                        <span class="badge suspended">
-                          <span class="status-indicator red"></span>
-                          Suspended
+                        <span class="status-pill suspended">
+                          <span class="status-dot red"></span>
+                          <span>Suspended</span>
                         </span>
                       }
                     </td>
-                    <td class="text-muted">{{ canteen.createdAt | date:'mediumDate' }}</td>
-                    <td class="text-right">
+
+                    <td class="col-registered text-muted">
+                      <span class="date-text">{{ canteen.createdAt | date:'mediumDate' }}</span>
+                    </td>
+
+                    <td class="col-actions text-right">
                       <a [routerLink]="['/admin/canteens', canteen.canteenId]" class="btn-action">
-                        View Details
+                        <span>View Details</span>
+                        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
                       </a>
                     </td>
                   </tr>
@@ -355,5 +569,78 @@
     </div>
 
   </main>
+
+  <!-- Settlement Payout Modal -->
+  @if (isPayoutModalOpen(); as item) {
+    <div class="modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-row">
+            <div class="modal-icon-bg green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <rect width="20" height="14" x="2" y="5" rx="2" />
+                <line x1="2" x2="22" y1="10" y2="10" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="modal-title">Record Settlement Payout</h3>
+              <p class="modal-subtitle">Transfer payable earnings to canteen bank account</p>
+            </div>
+          </div>
+          <button type="button" class="btn-modal-close" (click)="closePayoutModal()">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="payout-summary-box">
+            <div class="summary-line">
+              <span class="sum-label">Canteen:</span>
+              <span class="sum-val">{{ selectedSettlement()?.canteenName }}</span>
+            </div>
+            <div class="summary-line">
+              <span class="sum-label">Destination Bank:</span>
+              <span class="sum-val">{{ selectedSettlement()?.bankName || 'UPI / Bank Transfer' }} ({{ selectedSettlement()?.accountNumberMasked || selectedSettlement()?.upiId }})</span>
+            </div>
+            <div class="summary-line total">
+              <span class="sum-label">Payable Amount:</span>
+              <span class="sum-val highlight">₹{{ payoutAmount() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Payment Reference Number (UTR / IMPS / Txn ID)</label>
+            <input
+              type="text"
+              class="form-input"
+              [ngModel]="payoutRefNumber()"
+              (ngModelChange)="payoutRefNumber.set($event)"
+              placeholder="e.g. UTR123456789"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Payout Notes / Remarks</label>
+            <input
+              type="text"
+              class="form-input"
+              [ngModel]="payoutNotes()"
+              (ngModelChange)="payoutNotes.set($event)"
+              placeholder="Optional remarks for audit log"
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closePayoutModal()" [disabled]="isProcessingPayout()">Cancel</button>
+          <button type="button" class="btn-confirm-payout" (click)="submitPayout()" [disabled]="isProcessingPayout()">
+            @if (isProcessingPayout()) {
+              <span class="spinner-small"></span> Processing Payout...
+            } @else {
+              Confirm & Mark Settled
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 
 </div>

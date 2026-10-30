@@ -462,6 +462,166 @@ public class RazorpayPaymentService : IPaymentService
         return CryptographicOperations.FixedTimeEquals(computedBytes, receivedBytes);
     }
 
+    /// <summary>
+    /// Creates or reuses a pending Pay at Counter payment.
+    /// </summary>
+    public async Task<PaymentDto> CreateCounterPaymentAsync(int orderId)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId, asNoTracking: false);
+
+        if (order == null)
+            throw new KeyNotFoundException($"Order with ID {orderId} was not found.");
+
+        if (string.Equals(order.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Cannot create payment for a cancelled order.");
+
+        if (string.Equals(order.PaymentStatus, "Paid", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("This order has already been paid.");
+
+        if (order.TotalAmount <= 0)
+            throw new InvalidOperationException("Order total amount must be greater than zero.");
+
+        var existingPayment = await _paymentRepository.GetByOrderIdAsync(order.CanteenId, order.OrderId);
+
+        if (existingPayment != null)
+        {
+            if (string.Equals(existingPayment.Status, "Paid", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("This order has already been paid.");
+
+            if (string.Equals(existingPayment.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.Equals(existingPayment.PaymentMethod, "Counter", StringComparison.OrdinalIgnoreCase))
+                    return MapToDto(existingPayment);
+
+                if (!string.IsNullOrWhiteSpace(existingPayment.RazorpayOrderId))
+                    throw new InvalidOperationException(
+                        "An online payment is already pending. Complete or resolve that payment before choosing Pay at Counter.");
+
+                throw new InvalidOperationException("Another pending payment already exists for this order.");
+            }
+
+            // Reuse a previous failed payment record
+            existingPayment.RazorpayOrderId = null;
+            existingPayment.RazorpayPaymentId = null;
+            existingPayment.RazorpaySignature = null;
+            existingPayment.PaymentMethod = "Counter";
+            existingPayment.Status = "Pending";
+            existingPayment.Amount = order.TotalAmount;
+            existingPayment.Currency = "INR";
+            existingPayment.CreatedAt = DateTime.UtcNow;
+            existingPayment.PaidAt = null;
+            existingPayment.FailureReason = null;
+
+            var updatedPayment = await _paymentRepository.UpdateAsync(existingPayment);
+            return MapToDto(updatedPayment);
+        }
+
+        var counterPayment = new Payment
+        {
+            OrderId = order.OrderId,
+            CanteenId = order.CanteenId,
+            RazorpayOrderId = null,
+            RazorpayPaymentId = null,
+            RazorpaySignature = null,
+            Amount = order.TotalAmount,
+            Currency = "INR",
+            PaymentMethod = "Counter",
+            Status = "Pending",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var createdPayment = await _paymentRepository.AddAsync(counterPayment);
+        return MapToDto(createdPayment);
+    }
+
+
+    /// <summary>
+    /// Confirms that a pending counter payment has been collected.
+    /// </summary>
+    public async Task<PaymentDto> ConfirmCounterPaymentAsync(
+        int canteenId,
+        int orderId)
+    {
+        var payment = await _paymentRepository.GetByOrderIdAsync(
+            canteenId,
+            orderId);
+
+        if (payment == null)
+            throw new KeyNotFoundException("Payment record not found.");
+
+        if (!string.Equals(
+            payment.PaymentMethod,
+            "Counter",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "This order does not have a counter payment.");
+        }
+
+        if (string.Equals(
+            payment.Status,
+            "Paid",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return MapToDto(payment);
+        }
+
+        if (!string.Equals(
+            payment.Status,
+            "Pending",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Only pending counter payments can be confirmed.");
+        }
+
+        var order = await _orderRepository.GetByIdAsync(
+            orderId,
+            asNoTracking: false);
+
+        if (order == null || order.CanteenId != canteenId)
+            throw new KeyNotFoundException("Order not found.");
+
+        if (string.Equals(
+            order.Status,
+            "Cancelled",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Cannot confirm payment for a cancelled order.");
+        }
+
+        payment.Status = "Paid";
+        payment.PaidAt = DateTime.UtcNow;
+        payment.FailureReason = null;
+
+        order.PaymentStatus = "Paid";
+
+        if (string.Equals(
+            order.Status,
+            "Pending",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            order.Status = "Confirmed";
+        }
+
+        await _paymentRepository.UpdatePaymentAndOrderAsync(
+            payment,
+            order);
+
+        if (_notificationService != null)
+        {
+            await _notificationService.NotifyPaymentConfirmedAsync(
+                payment.CanteenId,
+                payment.OrderId,
+                order.OrderNumber,
+                payment.Amount,
+                payment.PaidAt.Value);
+        }
+
+        return MapToDto(payment);
+    }
+
     private static PaymentDto MapToDto(Payment payment)
     {
         return new PaymentDto
@@ -473,6 +633,7 @@ public class RazorpayPaymentService : IPaymentService
             RazorpayPaymentId = payment.RazorpayPaymentId,
             Amount = payment.Amount,
             Currency = payment.Currency,
+            PaymentMethod = payment.PaymentMethod,
             Status = payment.Status,
             CreatedAt = payment.CreatedAt,
             PaidAt = payment.PaidAt,

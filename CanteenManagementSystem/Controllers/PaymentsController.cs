@@ -69,6 +69,35 @@ public class PaymentsController : ControllerBase
     }
 
     /// <summary>
+    /// Creates or reuses a pending Pay at Counter payment for an existing customer order.
+    /// </summary>
+    [HttpPost("api/payments/pay-at-counter")]
+    [ProducesResponseType(typeof(PaymentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> PayAtCounter([FromBody] CreatePaymentOrderDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var response = await _paymentService.CreateCounterPaymentAsync(dto.OrderId);
+            return Ok(response);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Verifies the Razorpay payment signature after successful checkout.
     /// </summary>
     [HttpPost("api/payments/verify")]
@@ -150,4 +179,40 @@ public class PaymentsController : ControllerBase
         var payment = await _paymentService.GetPaymentByOrderIdAsync(canteenId, orderId);
         return payment is null ? NotFound(new { message = "No payment record found for this order." }) : Ok(payment);
     }
+
+    /// <summary>
+    /// Confirms cash collection for a pending counter payment.
+    /// Canteen Owner only.
+    /// </summary>
+    [HttpPost("api/canteens/{canteenId:int}/orders/{orderId:int}/confirm-counter-payment")]
+    [Authorize(Roles = "CanteenOwner")]
+    [ProducesResponseType(typeof(PaymentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ConfirmCounterPayment(
+        int canteenId,
+        int orderId)
+    {
+        if (!await IsAuthorizedAsync(canteenId))
+            return Forbid();
+
+        try
+        {
+            var result = await _paymentService.ConfirmCounterPaymentAsync(
+                canteenId,
+                orderId);
+
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
 }

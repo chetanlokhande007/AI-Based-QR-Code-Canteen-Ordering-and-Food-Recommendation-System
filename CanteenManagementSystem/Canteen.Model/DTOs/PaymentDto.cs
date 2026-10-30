@@ -1,3 +1,4 @@
+
 using System;
 
 namespace Canteen.Model.DTOs;
@@ -10,7 +11,7 @@ public class PaymentDto
 
     public int CanteenId { get; set; }
 
-    public string RazorpayOrderId { get; set; } = string.Empty;
+    public string? RazorpayOrderId { get; set; }
 
     public string? RazorpayPaymentId { get; set; }
 
@@ -18,7 +19,9 @@ public class PaymentDto
 
     public string Currency { get; set; } = "INR";
 
-    public string Status { get; set; } = string.Empty;
+    public string PaymentMethod { get; set; } = "Online";
+
+    public string Status { get; set; } = "Pending";
 
     public DateTime CreatedAt { get; set; }
 

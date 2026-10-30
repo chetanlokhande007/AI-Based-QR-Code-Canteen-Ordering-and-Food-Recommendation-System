@@ -91,6 +91,30 @@ public class OrdersController : ControllerBase
         return order is null ? NotFound() : Ok(order);
     }
 
+    /// <summary>Cancel a pending order securely using its unguessable tracking token (Customer access).</summary>
+    [HttpPost("api/orders/track/{trackingToken}/cancel")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CancelOrder(string trackingToken)
+    {
+        if (string.IsNullOrWhiteSpace(trackingToken))
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            var order = await _orderService.CancelOrderByTrackingTokenAsync(trackingToken);
+            return order is null ? NotFound(new { message = "Order not found." }) : Ok(order);
+        }
+        catch (InvalidOrderException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     /// <summary>Get all orders for a canteen (Owner only).</summary>
     [HttpGet("api/canteens/{canteenId:int}/orders")]
     [Authorize(Roles = "CanteenOwner")]

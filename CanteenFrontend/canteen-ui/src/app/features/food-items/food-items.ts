@@ -49,7 +49,9 @@ export class FoodItems implements OnInit, OnDestroy {
   readonly isCanteenSelectorOpen = signal<boolean>(false);
 
   // Filters & Search
-  searchTerm = '';
+  readonly searchTermSignal = signal<string>('');
+  get searchTerm(): string { return this.searchTermSignal(); }
+  set searchTerm(val: string) { this.searchTermSignal.set(val || ''); }
   selectedCategory = signal<number | 'all'>('all');
   selectedType = signal<'all' | 'veg' | 'non-veg'>('all');
   selectedStatus = signal<'all' | 'active' | 'inactive'>('all');
@@ -117,7 +119,7 @@ export class FoodItems implements OnInit, OnDestroy {
   // Filtered & Sorted List
   readonly filteredProducts = computed(() => {
     let list = [...this.products()];
-    const query = this.searchTerm.trim().toLowerCase();
+    const query = this.searchTermSignal().trim().toLowerCase();
     const cat = this.selectedCategory();
     const type = this.selectedType();
     const status = this.selectedStatus();

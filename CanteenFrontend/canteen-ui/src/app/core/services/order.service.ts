@@ -27,6 +27,10 @@ export class OrderService {
     return this.http.get<OrderDto>(`${this.baseUrl}/orders/track/${encodeURIComponent(trackingToken)}`);
   }
 
+  cancelOrder(trackingToken: string): Observable<OrderDto> {
+    return this.http.post<OrderDto>(`${this.baseUrl}/orders/track/${encodeURIComponent(trackingToken)}/cancel`, {});
+  }
+
   updateOrderStatus(canteenId: number, orderId: number, status: string): Observable<OrderDto> {
     return this.http.patch<OrderDto>(`${this.baseUrl}/canteens/${canteenId}/orders/${orderId}/status`, { status });
   }

@@ -43,7 +43,9 @@ export class TablesComponent implements OnInit, OnDestroy {
   readonly isSwitching = signal<boolean>(false);
 
   // Search and filter signals
-  searchTerm = '';
+  readonly searchTermSignal = signal<string>('');
+  get searchTerm(): string { return this.searchTermSignal(); }
+  set searchTerm(val: string) { this.searchTermSignal.set(val || ''); }
   readonly selectedStatusFilter = signal<'all' | 'available' | 'in-use'>('all');
 
   // Modal signals
@@ -84,7 +86,7 @@ export class TablesComponent implements OnInit, OnDestroy {
   readonly filteredTables = computed(() => {
     let list = [...this.tables()];
 
-    const query = this.searchTerm.trim();
+    const query = this.searchTermSignal().trim();
     if (query) {
       list = list.filter(t => t.tableNumber.toString().includes(query));
     }

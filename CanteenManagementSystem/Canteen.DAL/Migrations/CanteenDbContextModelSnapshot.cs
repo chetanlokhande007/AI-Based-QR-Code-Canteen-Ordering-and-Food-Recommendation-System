@@ -73,6 +73,13 @@ namespace Canteen.DAL.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<string>("FeeAbsorptionPolicy")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasDefaultValue("CustomerPays");
+
                     b.Property<string>("IfscCode")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
@@ -118,6 +125,12 @@ namespace Canteen.DAL.Migrations
 
                     b.Property<string>("State")
                         .HasColumnType("text");
+
+                    b.Property<decimal>("TaxPercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasDefaultValue(0.00m);
 
                     b.Property<string>("TenantStatus")
                         .IsRequired()
@@ -210,6 +223,12 @@ namespace Canteen.DAL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrderId"));
 
+                    b.Property<decimal>("CanteenEarningsAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasDefaultValue(0.00m);
+
                     b.Property<int>("CanteenId")
                         .HasColumnType("integer");
 
@@ -228,13 +247,38 @@ namespace Canteen.DAL.Migrations
                         .HasColumnType("character varying(30)")
                         .HasDefaultValue("Pending");
 
+                    b.Property<decimal>("PlatformFeeAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasDefaultValue(5.00m);
+
+                    b.Property<string>("PlatformFeePolicy")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasDefaultValue("CustomerPays");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<decimal>("SubtotalAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasDefaultValue(0.00m);
+
                     b.Property<int>("TableId")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("TaxAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasDefaultValue(0.00m);
 
                     b.Property<decimal>("TotalAmount")
                         .HasPrecision(18, 2)
@@ -370,8 +414,11 @@ namespace Canteen.DAL.Migrations
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("RazorpayOrderId")
+                    b.Property<string>("PaymentMethod")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RazorpayOrderId")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 

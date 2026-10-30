@@ -57,6 +57,8 @@ public class CanteensController : ControllerBase
             PostalCode = dto.PostalCode,
             OperatingHoursJson = dto.OperatingHoursJson,
             ImageUrl = dto.ImageUrl,
+            FeeAbsorptionPolicy = dto.FeeAbsorptionPolicy,
+            TaxPercentage = dto.TaxPercentage,
             IsActive = dto.IsActive
         });
     }
@@ -88,6 +90,8 @@ public class CanteensController : ControllerBase
             PostalCode = dto.PostalCode,
             OperatingHoursJson = dto.OperatingHoursJson,
             ImageUrl = dto.ImageUrl,
+            FeeAbsorptionPolicy = dto.FeeAbsorptionPolicy,
+            TaxPercentage = dto.TaxPercentage,
             IsActive = dto.IsActive
         });
     }

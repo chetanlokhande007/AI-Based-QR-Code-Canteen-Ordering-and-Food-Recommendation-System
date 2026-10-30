@@ -32,6 +32,8 @@ export interface CanteenDto {
   landmark?: string;
   operatingHoursJson?: string;
   imageUrl?: string;
+  feeAbsorptionPolicy?: 'CustomerPays' | 'CanteenAbsorbs' | string;
+  taxPercentage?: number;
   isActive: boolean;
   tenantStatus?: 'Active' | 'Suspended' | 'TrialExpired';
   setupStatus?: 'Draft' | 'Completed';
@@ -52,6 +54,8 @@ export interface PublicCanteenDto {
   postalCode?: string;
   operatingHoursJson?: string;
   imageUrl?: string;
+  feeAbsorptionPolicy?: 'CustomerPays' | 'CanteenAbsorbs' | string;
+  taxPercentage?: number;
   isActive: boolean;
 }
 

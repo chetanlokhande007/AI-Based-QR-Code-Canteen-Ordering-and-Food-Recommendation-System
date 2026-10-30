@@ -11,6 +11,9 @@ import {
   AdminOwnerItem,
   AdminPaymentOverview,
   PlatformAdminMetrics,
+  AdminCanteenSettlement,
+  EarningsOverview,
+  PlatformFeeSettings,
   UpdateCanteenStatusRequest
 } from '../models/admin.models';
 import { CanteenTableDto } from '../models/table.models';
@@ -68,5 +71,25 @@ export class AdminService {
 
   getOwnerDetails(ownerId: number): Observable<AdminOwnerDetails> {
     return this.http.get<AdminOwnerDetails>(`${this.baseUrl}/owners/${ownerId}`);
+  }
+
+  getEarningsOverview(): Observable<EarningsOverview> {
+    return this.http.get<EarningsOverview>(`${this.baseUrl}/earnings/overview`);
+  }
+
+  getSettlements(): Observable<AdminCanteenSettlement[]> {
+    return this.http.get<AdminCanteenSettlement[]>(`${this.baseUrl}/settlements`);
+  }
+
+  getFeeSettings(): Observable<PlatformFeeSettings> {
+    return this.http.get<PlatformFeeSettings>(`${this.baseUrl}/fee-settings`);
+  }
+
+  updateFeeSettings(dto: { defaultFixedFee?: number; defaultFeePolicy?: string }): Observable<PlatformFeeSettings> {
+    return this.http.put<PlatformFeeSettings>(`${this.baseUrl}/fee-settings`, dto);
+  }
+
+  recordPayout(canteenId: number, dto: { amount: number; referenceNumber: string; notes?: string }): Observable<{ success: boolean; message: string; settledAt: string }> {
+    return this.http.post<{ success: boolean; message: string; settledAt: string }>(`${this.baseUrl}/settlements/${canteenId}/payout`, dto);
   }
 }

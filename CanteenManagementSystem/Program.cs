@@ -45,13 +45,28 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddHttpClient<RazorpayPaymentService>();
 var useMockPayment = builder.Configuration.GetValue<bool>("Razorpay:UseMock");
-if (useMockPayment)
+var razorpayKeyId = builder.Configuration["Razorpay:KeyId"];
+var razorpaySecret = builder.Configuration["Razorpay:KeySecret"];
+
+bool shouldUseMock = useMockPayment 
+    || string.IsNullOrWhiteSpace(razorpayKeyId) 
+    || string.IsNullOrWhiteSpace(razorpaySecret)
+    || razorpayKeyId.Contains("REPLACE", StringComparison.OrdinalIgnoreCase) 
+    || razorpayKeyId.Contains("mock", StringComparison.OrdinalIgnoreCase)
+    || razorpaySecret.Contains("REPLACE", StringComparison.OrdinalIgnoreCase)
+    || razorpaySecret.Contains("mock", StringComparison.OrdinalIgnoreCase);
+
+if (builder.Environment.IsProduction())
 {
-    if (builder.Environment.IsProduction())
+    if (shouldUseMock)
     {
-        throw new InvalidOperationException("Mock payment provider is strictly forbidden in Production environment.");
+        throw new InvalidOperationException("Mock payment provider is strictly forbidden in Production environment. Please configure valid Razorpay production credentials.");
     }
 
+    builder.Services.AddScoped<IPaymentService, RazorpayPaymentService>();
+}
+else if (shouldUseMock)
+{
     builder.Services.AddScoped<IPaymentService, MockPaymentService>();
 }
 else

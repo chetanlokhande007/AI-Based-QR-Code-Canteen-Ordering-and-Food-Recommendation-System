@@ -58,7 +58,8 @@ public class OrderNotificationService : IOrderNotificationService
     {
         try
         {
-            var groupName = $"canteen_{canteenId}";
+            var canteenGroup = $"canteen_{canteenId}";
+            var orderGroup = $"order_{orderId}";
             var payload = new PaymentConfirmedNotificationDto
             {
                 OrderId = orderId,
@@ -68,8 +69,15 @@ public class OrderNotificationService : IOrderNotificationService
                 PaidAt = paidAt
             };
 
-            await _hubContext.Clients.Group(groupName).SendAsync("PaymentConfirmed", payload);
-            _logger.LogInformation("Dispatched 'PaymentConfirmed' notification to group {GroupName} for Order {OrderId}.", groupName, orderId);
+            // Dispatch to both the canteen kitchen group and the customer order tracking group
+            await _hubContext.Clients.Group(canteenGroup).SendAsync("PaymentConfirmed", payload);
+            await _hubContext.Clients.Group(orderGroup).SendAsync("PaymentConfirmed", payload);
+
+            _logger.LogInformation(
+                "Dispatched 'PaymentConfirmed' notification to kitchen ({CanteenGroup}) and customer ({OrderGroup}) for Order {OrderId}.",
+                canteenGroup,
+                orderGroup,
+                orderId);
         }
         catch (Exception ex)
         {

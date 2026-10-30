@@ -131,6 +131,19 @@ public class CanteenDbContext : DbContext
             .Property(c => c.UpiId)
             .HasMaxLength(100);
 
+        // Marketplace Fee & Tax Configuration
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .Property(c => c.FeeAbsorptionPolicy)
+            .HasMaxLength(30)
+            .IsRequired()
+            .HasDefaultValue("CustomerPays");
+
+        modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
+            .Property(c => c.TaxPercentage)
+            .HasPrecision(5, 2)
+            .IsRequired()
+            .HasDefaultValue(0.00m);
+
         // Lifecycle and Tenant Statuses
         modelBuilder.Entity<Canteen.Model.Entities.Canteen>()
             .Property(c => c.TenantStatus)
@@ -251,8 +264,38 @@ public class CanteenDbContext : DbContext
             .HasDefaultValue("Pending");
 
         modelBuilder.Entity<Order>()
+            .Property(o => o.SubtotalAmount)
+            .HasPrecision(18, 2)
+            .IsRequired()
+            .HasDefaultValue(0.00m);
+
+        modelBuilder.Entity<Order>()
+            .Property(o => o.TaxAmount)
+            .HasPrecision(18, 2)
+            .IsRequired()
+            .HasDefaultValue(0.00m);
+
+        modelBuilder.Entity<Order>()
+            .Property(o => o.PlatformFeeAmount)
+            .HasPrecision(18, 2)
+            .IsRequired()
+            .HasDefaultValue(5.00m);
+
+        modelBuilder.Entity<Order>()
+            .Property(o => o.PlatformFeePolicy)
+            .HasMaxLength(30)
+            .IsRequired()
+            .HasDefaultValue("CustomerPays");
+
+        modelBuilder.Entity<Order>()
             .Property(o => o.TotalAmount)
             .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Order>()
+            .Property(o => o.CanteenEarningsAmount)
+            .HasPrecision(18, 2)
+            .IsRequired()
+            .HasDefaultValue(0.00m);
 
         modelBuilder.Entity<Order>()
             .Property(o => o.TrackingToken)
@@ -320,7 +363,7 @@ public class CanteenDbContext : DbContext
 
             entity.Property(p => p.RazorpayOrderId)
                 .HasMaxLength(100)
-                .IsRequired();
+                .IsRequired(false);
 
             entity.Property(p => p.RazorpayPaymentId)
                 .HasMaxLength(100);

@@ -35,6 +35,10 @@ namespace Canteen.Model.DTOs
         public string? OperatingHoursJson { get; set; }
         public string? ImageUrl { get; set; }
 
+        // Marketplace Fee & Tax Settings
+        public string FeeAbsorptionPolicy { get; set; } = "CustomerPays";
+        public decimal TaxPercentage { get; set; } = 0.00m;
+
         public bool IsActive { get; set; }
         public TenantStatus TenantStatus { get; set; } = TenantStatus.Active;
         public SetupStatus SetupStatus { get; set; } = SetupStatus.Draft;
@@ -57,6 +61,8 @@ namespace Canteen.Model.DTOs
         public string? PostalCode { get; set; }
         public string? OperatingHoursJson { get; set; }
         public string? ImageUrl { get; set; }
+        public string FeeAbsorptionPolicy { get; set; } = "CustomerPays";
+        public decimal TaxPercentage { get; set; } = 0.00m;
         public bool IsActive { get; set; }
     }
 
@@ -126,6 +132,9 @@ namespace Canteen.Model.DTOs
 
         public string? OperatingHoursJson { get; set; }
         public string? ImageUrl { get; set; }
+
+        public string? FeeAbsorptionPolicy { get; set; }
+        public decimal? TaxPercentage { get; set; }
     }
 
     public class UpdateCanteenDto
@@ -175,6 +184,9 @@ namespace Canteen.Model.DTOs
 
         public string? OperatingHoursJson { get; set; }
         public string? ImageUrl { get; set; }
+
+        public string? FeeAbsorptionPolicy { get; set; }
+        public decimal? TaxPercentage { get; set; }
 
         public bool IsActive { get; set; }
     }

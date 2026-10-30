@@ -1,3 +1,4 @@
+
 using System;
 
 namespace Canteen.Model.Entities;
@@ -10,7 +11,8 @@ public class Payment
 
     public int CanteenId { get; set; }
 
-    public string RazorpayOrderId { get; set; } = string.Empty;
+    // Nullable because counter payments do not have a Razorpay order.
+    public string? RazorpayOrderId { get; set; }
 
     public string? RazorpayPaymentId { get; set; }
 
@@ -20,6 +22,10 @@ public class Payment
 
     public string Currency { get; set; } = "INR";
 
+    // Online or Counter
+    public string PaymentMethod { get; set; } = "Online";
+
+    // Pending, Paid, Failed, Refunded
     public string Status { get; set; } = "Pending";
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -28,6 +34,5 @@ public class Payment
 
     public string? FailureReason { get; set; }
 
-    // Navigation property
     public Order Order { get; set; } = null!;
 }

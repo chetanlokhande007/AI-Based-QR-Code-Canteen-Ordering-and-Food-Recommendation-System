@@ -1,0 +1,315 @@
+<div class="owner-layout-shell" (click)="closeCanteenSelector()">
+
+  <!-- ========================================================================
+       Left Sidebar Navigation (Unified Enterprise SaaS CanteenHub Sidebar)
+       ======================================================================== -->
+  <aside class="sidebar-container" (click)="$event.stopPropagation()">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="brand-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M18 2h-3a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h3" />
+            <path d="M6 2v14a3 3 0 0 0 3 3h3" />
+            <line x1="6" y1="6" x2="12" y2="6" />
+            <line x1="6" y1="10" x2="12" y2="10" />
+          </svg>
+        </div>
+        <div class="brand-text-block">
+          <span class="brand-title">CanteenHub</span>
+          <span class="brand-subtitle">SMART CANTEEN OS</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Canteen Setup (Shown if owner has not finished setup) -->
+      @if (!currentUser()?.canteenId) {
+      <a class="nav-item setup-prompt-item" routerLink="/canteen-setup" routerLinkActive="active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span class="nav-label">Canteen Setup</span>
+      </a>
+      }
+
+      <!-- My Canteens -->
+      <a class="nav-item" routerLink="/my-canteens" routerLinkActive="active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span class="nav-label">My Canteens</span>
+      </a>
+
+      <!-- Dashboard -->
+      <a class="nav-item" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="7" height="9" x="3" y="3" rx="1" />
+          <rect width="7" height="5" x="14" y="3" rx="1" />
+          <rect width="7" height="9" x="14" y="12" rx="1" />
+          <rect width="7" height="5" x="3" y="16" rx="1" />
+        </svg>
+        <span class="nav-label">Dashboard</span>
+      </a>
+
+      <!-- Food Items -->
+      <a class="nav-item" routerLink="/food-items" routerLinkActive="active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+          <path d="M7 2v20" />
+          <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+        </svg>
+        <span class="nav-label">Food Items</span>
+      </a>
+
+      <!-- Categories -->
+      <a class="nav-item" routerLink="/categories" routerLinkActive="active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+        </svg>
+        <span class="nav-label">Categories</span>
+      </a>
+
+      <!-- Tables & QR Codes -->
+      <a class="nav-item" routerLink="/tables" routerLinkActive="active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="5" height="5" x="3" y="3" rx="1" />
+          <rect width="5" height="5" x="16" y="3" rx="1" />
+          <rect width="5" height="5" x="3" y="16" rx="1" />
+          <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+          <path d="M21 21v.01" />
+          <path d="M12 7v3a2 2 0 0 1-2 2H7" />
+          <path d="M3 12h.01" />
+          <path d="M12 3h.01" />
+          <path d="M12 16v.01" />
+          <path d="M16 12h1" />
+        </svg>
+        <span class="nav-label">Tables & QR Codes</span>
+      </a>
+
+      <!-- Orders -->
+      <a class="nav-item" routerLink="/dashboard" [queryParams]="{ section: 'orders' }">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <rect width="8" height="4" x="8" y="2" rx="1" />
+        </svg>
+        <span class="nav-label">Orders</span>
+      </a>
+
+      <!-- Kitchen Display -->
+      <a class="nav-item" routerLink="/dashboard" [queryParams]="{ section: 'kitchen' }">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m13 2-2 2.5h3L12 7" />
+          <path d="M10 14v4" />
+          <path d="M14 14v4" />
+          <path d="M11 4h2" />
+          <rect width="18" height="12" x="3" y="8" rx="2" />
+        </svg>
+        <span class="nav-label">Kitchen Display</span>
+      </a>
+
+      <!-- Payments -->
+      <a class="nav-item" routerLink="/dashboard" [queryParams]="{ section: 'payments' }">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="20" height="14" x="2" y="5" rx="2" />
+          <line x1="2" x2="22" y1="10" y2="10" />
+        </svg>
+        <span class="nav-label">Payments</span>
+      </a>
+
+      <!-- Reports -->
+      <a class="nav-item" routerLink="/dashboard" [queryParams]="{ section: 'reports' }">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 3v18h18" />
+          <path d="m19 9-5 5-4-4-3 3" />
+        </svg>
+        <span class="nav-label">Reports</span>
+      </a>
+
+      <!-- Staff Management -->
+      <a class="nav-item" routerLink="/dashboard" [queryParams]="{ section: 'staff' }">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        <span class="nav-label">Staff Management</span>
+      </a>
+
+      <!-- Inventory -->
+      <a class="nav-item" routerLink="/dashboard" [queryParams]="{ section: 'inventory' }">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+          <path d="m3.3 7 8.7 5 8.7-5" />
+          <path d="M12 22V12" />
+        </svg>
+        <span class="nav-label">Inventory</span>
+      </a>
+
+      <!-- Settings -->
+      <a class="nav-item" routerLink="/dashboard" [queryParams]="{ section: 'settings' }">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+        <span class="nav-label">Settings</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ========================================================================
+       Main Viewport (Top Header + Dynamic Page Router Outlet)
+       ======================================================================== -->
+  <div class="main-viewport">
+
+    <!-- Top Navigation Header -->
+    <header class="top-nav-bar" (click)="$event.stopPropagation()">
+      <div class="top-nav-left">
+        <div class="brand-badge-box">
+          <div class="brand-square-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M18 2h-3a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h3" />
+              <path d="M6 2v14a3 3 0 0 0 3 3h3" />
+              <line x1="6" y1="6" x2="12" y2="6" />
+              <line x1="6" y1="10" x2="12" y2="10" />
+            </svg>
+          </div>
+          <div class="brand-text-block-top">
+            <span class="top-brand-name">CanteenHub</span>
+            <span class="top-brand-sub">SMART CANTEEN OS</span>
+          </div>
+        </div>
+        <span class="status-pill">
+          <span class="pulse-dot"></span>
+          Live Connected
+        </span>
+      </div>
+
+      <div class="top-nav-right">
+        <!-- Active Canteen Selector Dropdown -->
+        <div class="canteen-selector-wrapper">
+          <button type="button" class="btn-canteen-selector" (click)="toggleCanteenSelector($event)" title="Switch Active Canteen">
+            <div class="selector-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            </div>
+            <div class="selector-text-col">
+              <span class="selector-prefix">Current canteen:</span>
+              <span class="selector-active-name">{{ currentCanteenName() }}</span>
+            </div>
+            <svg class="chevron-icon" [class.rotated]="isCanteenSelectorOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          <!-- Dropdown Popover Menu -->
+          @if (isCanteenSelectorOpen()) {
+            <div class="canteen-dropdown-popover" (click)="$event.stopPropagation()">
+              <div class="dropdown-header-row">
+                <span class="dropdown-title">Your Canteens</span>
+                <span class="dropdown-count">{{ canteens().length }} total</span>
+              </div>
+
+              <div class="dropdown-items-scroll">
+                @for (c of canteens(); track c.canteenId) {
+                  <button type="button" class="canteen-dropdown-item" [class.selected]="c.canteenId === currentUser()?.canteenId" (click)="switchCanteen(c)">
+                    <div class="item-store-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                      </svg>
+                    </div>
+                    <div class="item-meta">
+                      <div class="item-name-row">
+                        <span class="item-name">{{ c.name }}</span>
+                        @if (c.canteenId === currentUser()?.canteenId) {
+                          <span class="current-badge">Active</span>
+                        }
+                      </div>
+                      <span class="item-loc">{{ c.location }}</span>
+                    </div>
+                    <span class="item-status-pill" [class.status-active]="c.status === 'Active'" [class.status-pending]="c.status === 'Setup Pending'">
+                      {{ c.status }}
+                    </span>
+                  </button>
+                }
+              </div>
+
+              <div class="dropdown-footer-row">
+                <a routerLink="/my-canteens" (click)="closeCanteenSelector()" class="btn-dropdown-manage">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                    <rect width="7" height="9" x="3" y="3" rx="1" />
+                    <rect width="7" height="5" x="14" y="3" rx="1" />
+                    <rect width="7" height="9" x="14" y="12" rx="1" />
+                    <rect width="7" height="5" x="3" y="16" rx="1" />
+                  </svg>
+                  <span>Manage All Canteens</span>
+                </a>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Theme Toggle -->
+        <button type="button" class="top-nav-icon-btn" (click)="toggleTheme()" [title]="activeTheme() === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
+          @if (activeTheme() === 'light') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          }
+        </button>
+
+        <!-- Notification Bell -->
+        <button type="button" class="top-nav-icon-btn notification-btn" title="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+        </button>
+
+        <!-- User Chip & Role -->
+        <div class="user-pill-container">
+          <div class="user-avatar-circle">{{ ownerInitials }}</div>
+          <div class="user-text-col">
+            <span class="user-full-name">{{ currentUser()?.fullName || 'Owner' }}</span>
+            <span class="user-role-label">{{ currentCanteenName() }}</span>
+          </div>
+        </div>
+
+        <!-- Sign Out Button -->
+        <button type="button" class="btn-signout" (click)="logout()" title="Sign Out">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Viewport Content (Router Outlet for Owner Pages) -->
+    <div class="owner-page-viewport">
+      <router-outlet></router-outlet>
+    </div>
+
+  </div>
+
+</div>
+

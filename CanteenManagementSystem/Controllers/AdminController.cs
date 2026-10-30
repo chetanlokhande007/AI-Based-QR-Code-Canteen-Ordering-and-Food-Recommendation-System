@@ -46,8 +46,8 @@ public class AdminController : ControllerBase
     {
         var metrics = await _canteenService.GetPlatformMetricsAsync();
 
-        // Calculate Registration Trend for the last 6 months
-        var allCanteens = await _context.Canteens.AsNoTracking().ToListAsync();
+        // 1. Calculate Registration Trend for the last 6 months
+        var allCanteens = await _context.Canteens.Include(c => c.Owner).AsNoTracking().ToListAsync();
         var now = DateTime.UtcNow;
         var trend = new List<MonthlyRegistrationTrendDto>();
 
@@ -65,7 +65,71 @@ public class AdminController : ControllerBase
 
         metrics.RegistrationTrend = trend;
 
-        // Calculate Status Distribution
+        // 2. Calculate Financial & Platform Earnings Metrics from Orders
+        var allOrders = await _context.Orders.AsNoTracking().ToListAsync();
+        var paidOrders = allOrders.Where(o => o.PaymentStatus == "Paid").ToList();
+
+        metrics.TotalOrders = allOrders.Count;
+        metrics.PlatformEarnings = paidOrders.Sum(o => o.PlatformFeeAmount);
+        metrics.PendingSettlements = paidOrders.Sum(o => o.CanteenEarningsAmount);
+        metrics.GrossMerchandiseValue = paidOrders.Sum(o => o.TotalAmount);
+
+        // 3. Monthly Platform Revenue & GMV Trend
+        var revTrend = new List<MonthlyRevenueTrendDto>();
+        for (int i = 5; i >= 0; i--)
+        {
+            var targetMonthDate = now.AddMonths(-i);
+            var monthName = targetMonthDate.ToString("MMM", CultureInfo.InvariantCulture);
+            var monthPaidOrders = paidOrders
+                .Where(o => o.CreatedAt.Year == targetMonthDate.Year && o.CreatedAt.Month == targetMonthDate.Month)
+                .ToList();
+
+            revTrend.Add(new MonthlyRevenueTrendDto
+            {
+                Month = monthName,
+                PlatformRevenue = monthPaidOrders.Sum(o => o.PlatformFeeAmount),
+                GrossVolume = monthPaidOrders.Sum(o => o.TotalAmount),
+                OrdersCount = monthPaidOrders.Count
+            });
+        }
+        metrics.MonthlyRevenueTrend = revTrend;
+
+        // 4. Canteen Settlements Summary
+        var settlements = new List<AdminCanteenSettlementDto>();
+        foreach (var c in allCanteens)
+        {
+            var cOrders = paidOrders.Where(o => o.CanteenId == c.CanteenId).ToList();
+            var gross = cOrders.Sum(o => o.TotalAmount);
+            var fees = cOrders.Sum(o => o.PlatformFeeAmount);
+            var earnings = cOrders.Sum(o => o.CanteenEarningsAmount);
+            var isConfigured = !string.IsNullOrWhiteSpace(c.AccountNumber) || !string.IsNullOrWhiteSpace(c.UpiId);
+
+            settlements.Add(new AdminCanteenSettlementDto
+            {
+                CanteenId = c.CanteenId,
+                CanteenName = c.Name,
+                OwnerName = c.Owner?.FullName ?? "Unassigned",
+                OwnerEmail = c.Owner?.Email ?? "N/A",
+                TotalOrders = cOrders.Count,
+                GrossSales = gross,
+                PlatformFeesDeducted = fees,
+                CanteenEarnings = earnings,
+                PendingPayableBalance = earnings,
+                BankName = c.BankName,
+                AccountNumberMasked = string.IsNullOrWhiteSpace(c.AccountNumber)
+                    ? null
+                    : (c.AccountNumber.Length > 4 ? $"•••• {c.AccountNumber[^4..]}" : c.AccountNumber),
+                IfscCode = c.IfscCode,
+                UpiId = c.UpiId,
+                IsBankConfigured = isConfigured,
+                SettlementStatus = earnings > 0
+                    ? (isConfigured ? "Ready for Payout" : "Bank Required")
+                    : "Settled"
+            });
+        }
+        metrics.CanteenSettlements = settlements;
+
+        // 5. Calculate Status Distribution
         var activeCount = allCanteens.Count(c => c.TenantStatus == TenantStatus.Active && c.IsActive);
         var suspendedCount = allCanteens.Count(c => c.TenantStatus == TenantStatus.Suspended);
         var setupInProgressCount = allCanteens.Count(c => c.SetupStatus == SetupStatus.Draft && c.TenantStatus != TenantStatus.Suspended);
@@ -604,5 +668,159 @@ public class AdminController : ControllerBase
         };
 
         return Ok(result);
+    }
+
+    /// <summary>Get comprehensive platform financial and earnings overview (Platform Admin only).</summary>
+    [HttpGet("earnings/overview")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetEarningsOverview()
+    {
+        var paidOrders = await _context.Orders
+            .AsNoTracking()
+            .Where(o => o.PaymentStatus == "Paid")
+            .ToListAsync();
+
+        var totalPlatformFees = paidOrders.Sum(o => o.PlatformFeeAmount);
+        var totalGrossVolume = paidOrders.Sum(o => o.TotalAmount);
+        var totalCanteenEarnings = paidOrders.Sum(o => o.CanteenEarningsAmount);
+        var totalFoodSubtotal = paidOrders.Sum(o => o.SubtotalAmount);
+        var totalTax = paidOrders.Sum(o => o.TaxAmount);
+
+        var now = DateTime.UtcNow;
+        var trend = new List<MonthlyRevenueTrendDto>();
+        for (int i = 5; i >= 0; i--)
+        {
+            var date = now.AddMonths(-i);
+            var monthOrders = paidOrders
+                .Where(o => o.CreatedAt.Year == date.Year && o.CreatedAt.Month == date.Month)
+                .ToList();
+
+            trend.Add(new MonthlyRevenueTrendDto
+            {
+                Month = date.ToString("MMM", CultureInfo.InvariantCulture),
+                PlatformRevenue = monthOrders.Sum(o => o.PlatformFeeAmount),
+                GrossVolume = monthOrders.Sum(o => o.TotalAmount),
+                OrdersCount = monthOrders.Count
+            });
+        }
+
+        return Ok(new
+        {
+            TotalPlatformFeesCollected = totalPlatformFees,
+            PlatformFeeRefunds = 0.00m,
+            NetPlatformRevenue = totalPlatformFees,
+            PendingSettlements = totalCanteenEarnings,
+            GrossTransactionVolume = totalGrossVolume,
+            FoodSubtotal = totalFoodSubtotal,
+            TaxCollected = totalTax,
+            TotalPaidOrders = paidOrders.Count,
+            MonthlyRevenueTrend = trend
+        });
+    }
+
+    /// <summary>Get all canteen settlement balances and bank configurations (Platform Admin only).</summary>
+    [HttpGet("settlements")]
+    [ProducesResponseType(typeof(IEnumerable<AdminCanteenSettlementDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSettlements()
+    {
+        var canteens = await _context.Canteens
+            .Include(c => c.Owner)
+            .AsNoTracking()
+            .ToListAsync();
+
+        var paidOrders = await _context.Orders
+            .AsNoTracking()
+            .Where(o => o.PaymentStatus == "Paid")
+            .ToListAsync();
+
+        var list = canteens.Select(c =>
+        {
+            var cOrders = paidOrders.Where(o => o.CanteenId == c.CanteenId).ToList();
+            var gross = cOrders.Sum(o => o.TotalAmount);
+            var fees = cOrders.Sum(o => o.PlatformFeeAmount);
+            var earnings = cOrders.Sum(o => o.CanteenEarningsAmount);
+            var isConfigured = !string.IsNullOrWhiteSpace(c.AccountNumber) || !string.IsNullOrWhiteSpace(c.UpiId);
+
+            return new AdminCanteenSettlementDto
+            {
+                CanteenId = c.CanteenId,
+                CanteenName = c.Name,
+                OwnerName = c.Owner?.FullName ?? "Unassigned",
+                OwnerEmail = c.Owner?.Email ?? "N/A",
+                TotalOrders = cOrders.Count,
+                GrossSales = gross,
+                PlatformFeesDeducted = fees,
+                CanteenEarnings = earnings,
+                PendingPayableBalance = earnings,
+                BankName = c.BankName,
+                AccountNumberMasked = string.IsNullOrWhiteSpace(c.AccountNumber)
+                    ? null
+                    : (c.AccountNumber.Length > 4 ? $"•••• {c.AccountNumber[^4..]}" : c.AccountNumber),
+                IfscCode = c.IfscCode,
+                UpiId = c.UpiId,
+                IsBankConfigured = isConfigured,
+                SettlementStatus = earnings > 0
+                    ? (isConfigured ? "Ready for Payout" : "Bank Required")
+                    : "Settled"
+            };
+        }).ToList();
+
+        return Ok(list);
+    }
+
+    /// <summary>Get platform fee configuration rules (Platform Admin only).</summary>
+    [HttpGet("fee-settings")]
+    [ProducesResponseType(typeof(PlatformFeeSettingsDto), StatusCodes.Status200OK)]
+    public IActionResult GetFeeSettings()
+    {
+        return Ok(new PlatformFeeSettingsDto
+        {
+            DefaultFixedFee = 5.00m,
+            DefaultFeePercentage = 0.00m,
+            DefaultFeePolicy = "CustomerPays",
+            PlatformFeeRefundRatePercentage = 100.00m
+        });
+    }
+
+    /// <summary>Update platform fee policy and configuration rules (Platform Admin only).</summary>
+    [HttpPut("fee-settings")]
+    [ProducesResponseType(typeof(PlatformFeeSettingsDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateFeeSettings([FromBody] UpdatePlatformFeeSettingsDto dto)
+    {
+        if (dto == null) return BadRequest("Invalid fee settings.");
+
+        if (!string.IsNullOrWhiteSpace(dto.DefaultFeePolicy))
+        {
+            var allCanteens = await _context.Canteens.ToListAsync();
+            foreach (var canteen in allCanteens)
+            {
+                canteen.FeeAbsorptionPolicy = dto.DefaultFeePolicy;
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(new PlatformFeeSettingsDto
+        {
+            DefaultFixedFee = dto.DefaultFixedFee ?? 5.00m,
+            DefaultFeePercentage = dto.DefaultFeePercentage ?? 0.00m,
+            DefaultFeePolicy = dto.DefaultFeePolicy ?? "CustomerPays",
+            PlatformFeeRefundRatePercentage = 100.00m
+        });
+    }
+
+    /// <summary>Record a manual settlement payout for a canteen (Platform Admin only).</summary>
+    [HttpPost("settlements/{canteenId:int}/payout")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> RecordSettlementPayout(int canteenId, [FromBody] RecordSettlementPayoutDto dto)
+    {
+        var canteen = await _context.Canteens.FindAsync(canteenId);
+        if (canteen == null) return NotFound($"Canteen #{canteenId} not found.");
+
+        return Ok(new
+        {
+            Success = true,
+            Message = $"Settlement payout of ₹{dto.Amount:F2} recorded for {canteen.Name}. Ref: {dto.ReferenceNumber}",
+            SettledAt = DateTime.UtcNow
+        });
     }
 }

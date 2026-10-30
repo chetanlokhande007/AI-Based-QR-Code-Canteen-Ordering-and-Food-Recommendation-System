@@ -5,10 +5,61 @@ export interface PlatformAdminMetrics {
   activeCanteens: number;
   suspendedCanteens: number;
   totalOwners: number;
+  // Platform Financial & Earnings Metrics
+  platformEarnings: number;
+  totalOrders: number;
+  pendingSettlements: number;
+  grossMerchandiseValue: number;
   recentCanteens: AdminCanteenItem[];
   registrationTrend?: MonthlyRegistrationTrend[];
+  monthlyRevenueTrend?: MonthlyRevenueTrend[];
   statusDistribution?: StatusDistribution;
   recentActivities?: PlatformActivity[];
+  canteenSettlements?: AdminCanteenSettlement[];
+}
+
+export interface MonthlyRevenueTrend {
+  month: string;
+  platformRevenue: number;
+  grossVolume: number;
+  ordersCount: number;
+}
+
+export interface AdminCanteenSettlement {
+  canteenId: number;
+  canteenName: string;
+  ownerName: string;
+  ownerEmail: string;
+  totalOrders: number;
+  grossSales: number;
+  platformFeesDeducted: number;
+  canteenEarnings: number;
+  pendingPayableBalance: number;
+  bankName?: string;
+  accountNumberMasked?: string;
+  ifscCode?: string;
+  upiId?: string;
+  isBankConfigured: boolean;
+  settlementStatus: string;
+}
+
+export interface PlatformFeeSettings {
+  defaultFixedFee: number;
+  defaultFeePercentage: number;
+  defaultFeePolicy: string;
+  platformFeeRefundRatePercentage: number;
+}
+
+export interface EarningsOverview {
+  totalPlatformFeesCollected: number;
+  platformFeeRefunds: number;
+  netPlatformRevenue: number;
+  pendingSettlements: number;
+  grossTransactionVolume: number;
+  foodSubtotal: number;
+  taxCollected: number;
+  totalPaidOrders: number;
+  monthlyRevenueTrend: MonthlyRevenueTrend[];
 }
 
 export interface MonthlyRegistrationTrend {

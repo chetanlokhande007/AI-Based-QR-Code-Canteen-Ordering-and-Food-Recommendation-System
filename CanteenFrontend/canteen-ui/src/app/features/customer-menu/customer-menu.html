@@ -95,8 +95,29 @@
             }
           </div>
           <div class="receipt-divider"></div>
+          @if (order.subtotalAmount) {
+            <div class="receipt-subtotal-row">
+              <span>Food Subtotal</span>
+              <span>₹{{ order.subtotalAmount | number:'1.2-2' }}</span>
+            </div>
+            @if (order.taxAmount && order.taxAmount > 0) {
+              <div class="receipt-subtotal-row">
+                <span>Tax / GST</span>
+                <span>₹{{ order.taxAmount | number:'1.2-2' }}</span>
+              </div>
+            }
+            <div class="receipt-subtotal-row">
+              <span>CanteenHub Platform Fee</span>
+              @if (order.platformFeePolicy === 'CanteenAbsorbs') {
+                <span class="text-free">FREE (Paid by Canteen)</span>
+              } @else {
+                <span>₹{{ (order.platformFeeAmount || 5.00) | number:'1.2-2' }}</span>
+              }
+            </div>
+            <div class="receipt-divider"></div>
+          }
           <div class="receipt-total-row">
-            <span>Total Amount</span>
+            <span>Total Payable</span>
             <span class="total-value">₹{{ order.totalAmount | number:'1.2-2' }}</span>
           </div>
           <div class="payment-status-row">
@@ -107,9 +128,128 @@
           </div>
         </div>
 
-        <button class="btn-new-order" (click)="placeNewOrder()">
-          Order More Items
-        </button>
+        <!-- Pending Payment Action Card -->
+        @if (order.paymentStatus !== 'Paid') {
+          <div class="pending-payment-action-card">
+            @if (paymentError()) {
+              <div class="payment-error-alert">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>{{ paymentError() }}</span>
+              </div>
+            }
+
+            @if (selectedPaymentMethod() === 'online') {
+              <div class="online-payment-prompt">
+                <p class="prompt-text">Complete your payment securely with UPI, PhonePe, GPay, or Card.</p>
+                <button
+                  class="btn-pay-online-now"
+                  [disabled]="isPaymentProcessing()"
+                  (click)="initiateOnlinePayment(order.orderId)"
+                >
+                  @if (isPaymentProcessing()) {
+                    <span class="spinner-small"></span> Opening Payment Window...
+                  } @else {
+                    Pay ₹{{ order.totalAmount | number:'1.2-2' }} Online Now
+                  }
+                </button>
+                <button class="btn-link-switch" (click)="switchToCounterPayment()">
+                  Switch to Pay Cash at Counter
+                </button>
+              </div>
+            } @else {
+              <div class="counter-payment-prompt">
+                <div class="counter-cash-icon">💵</div>
+                <div class="counter-cash-details">
+                  <h4 class="counter-cash-title">Pay Cash at Counter</h4>
+                  <p class="counter-cash-text">
+                    Please visit the canteen billing counter and pay <strong>₹{{ order.totalAmount | number:'1.2-2' }}</strong>.
+                    The cashier will confirm your payment and your order will begin preparation immediately.
+                  </p>
+                </div>
+                <button class="btn-link-switch" (click)="selectedPaymentMethod.set('online'); initiateOnlinePayment(order.orderId)">
+                  Pay Online (UPI / Card) Instead
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Real-Time Cash/Online Payment Confirmation Card -->
+        @if (paymentSuccessNotification(); as notif) {
+          <div class="payment-success-card">
+            <div class="payment-success-header">
+              <div class="payment-success-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="20" height="20">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+              <div class="payment-success-title-block">
+                <span class="payment-success-eyebrow">Payment Notification • Verified</span>
+                <h3 class="payment-success-title">Payment Successful!</h3>
+              </div>
+            </div>
+            <p class="payment-success-desc">
+              Your payment has been successfully confirmed and recorded.
+            </p>
+            <div class="payment-success-meta-grid">
+              <div class="meta-item">
+                <span class="meta-label">Order Number</span>
+                <span class="meta-value">#{{ notif.orderNumber }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Payment Method</span>
+                <span class="meta-badge-counter">{{ selectedPaymentMethod() === 'online' ? 'Online (UPI/Cards)' : 'Pay at Counter' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Amount</span>
+                <span class="meta-value">₹{{ notif.amount | number:'1.2-2' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Status</span>
+                <span class="meta-badge-paid">Paid</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        <div class="tracking-action-buttons">
+          @if (order.status === 'Pending' && order.paymentStatus !== 'Paid') {
+            <button
+              class="btn-cancel-order"
+              [disabled]="isCancellingOrder()"
+              (click)="cancelOrder()"
+            >
+              @if (isCancellingOrder()) {
+                <span class="spinner-small"></span> Cancelling Order...
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+                Cancel Order & Return to Menu
+              }
+            </button>
+          }
+
+          <div class="tracking-secondary-buttons">
+            <button class="btn-back-menu" (click)="backToMenu()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+              </svg>
+              Back to Menu
+            </button>
+
+            <button class="btn-new-order" (click)="placeNewOrder()">
+              Order More Items
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   }
@@ -140,32 +280,32 @@
       </div>
 
       <!-- Search Bar -->
-      <div class="search-bar-wrapper">
-        <div class="search-input-box">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            class="search-input"
-            placeholder="Search snacks, meals, drinks..."
-            [ngModel]="searchQuery()"
-            (ngModelChange)="searchQuery.set($event)"
-          />
-        </div>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          type="text"
+          placeholder="Search by food name, description..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          class="search-input"
+        />
+        @if (searchQuery()) {
+          <button class="clear-search-btn" (click)="searchQuery.set('')">✕</button>
+        }
       </div>
 
-      <!-- Horizontal Category Pills Scroll -->
-      <div class="categories-scroll-wrapper">
+      <!-- Categories Filter Pills Bar -->
+      <div class="categories-bar">
         <button
           class="cat-pill"
           [class.active]="selectedCategory() === 'all'"
           (click)="selectCategory('all')"
         >
-          All Items ({{ products().length }})
+          All Items
         </button>
-
         @for (cat of categories(); track cat.categoryId) {
           <button
             class="cat-pill"
@@ -178,67 +318,68 @@
       </div>
     </header>
 
-    <!-- Product Catalog Grid -->
-    <main class="menu-main">
-      <div class="catalog-section">
-        @if (filteredProducts().length === 0) {
-          <div class="no-items-box">
-            <p class="no-items-text">No items found matching your selection.</p>
-          </div>
-        } @else {
-          <div class="products-grid">
-            @for (product of filteredProducts(); track product.productId) {
-              <div class="product-card" [class.sold-out]="!product.isAvailable || product.stockQuantity <= 0">
-                <div class="product-image-container">
-                  @if (product.imageUrl) {
-                    <img class="product-img" [src]="product.imageUrl" [alt]="product.name" />
-                  } @else {
-                    <div class="product-img-placeholder">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
-                        <path d="M7 2v20" />
-                        <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
-                      </svg>
-                    </div>
-                  }
-                  @if (!product.isAvailable || product.stockQuantity <= 0) {
-                    <div class="sold-out-overlay">Sold Out</div>
-                  }
-                </div>
-
-                <div class="product-details">
-                  <div class="product-title-row">
-                    <h3 class="product-name">{{ product.name }}</h3>
+    <!-- Product Grid Catalog -->
+    <main class="menu-body">
+      @if (filteredProducts().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon-box">🍽️</div>
+          <h3>No items found</h3>
+          <p>Try selecting another category or clear your search.</p>
+        </div>
+      } @else {
+        <div class="products-grid">
+          @for (product of filteredProducts(); track product.productId) {
+            <div class="product-card" [class.out-of-stock]="product.stockQuantity <= 0">
+              <div class="product-image-container">
+                @if (product.imageUrl) {
+                  <img [src]="product.imageUrl" [alt]="product.name" class="product-img" loading="lazy" />
+                } @else {
+                  <div class="product-img-fallback">
+                    <span>{{ product.foodType === 'NonVeg' || product.foodType === 'Non-Veg' ? '🍗' : '🥗' }}</span>
                   </div>
-                  @if (product.description) {
-                    <p class="product-desc">{{ product.description }}</p>
-                  }
-                  <div class="product-footer">
-                    <span class="product-price">₹{{ product.price | number:'1.2-2' }}</span>
+                }
+                <span class="food-type-badge" [ngClass]="(product.foodType || 'Veg').toLowerCase()">
+                  <span class="diet-dot"></span>
+                  {{ product.foodType || 'Veg' }}
+                </span>
+              </div>
 
-                    @if (product.isAvailable && product.stockQuantity > 0) {
-                      @if (getItemQuantityInCart(product.productId) > 0) {
-                        <div class="stepper-btn-group">
-                          <button class="step-btn" (click)="removeFromCart(product.productId)">-</button>
-                          <span class="step-count">{{ getItemQuantityInCart(product.productId) }}</span>
-                          <button class="step-btn" (click)="addToCart(product)">+</button>
-                        </div>
-                      } @else {
-                        <button class="btn-add-cart" (click)="addToCart(product)">
-                          + Add
-                        </button>
-                      }
+              <div class="product-details">
+                <div class="product-title-row">
+                  <h3 class="product-name">{{ product.name }}</h3>
+                </div>
+                <p class="product-desc">{{ product.description || 'Freshly prepared upon your order.' }}</p>
+                <div class="product-bottom-row">
+                  <div class="product-price-block">
+                    <span class="currency-symbol">₹</span>
+                    <span class="price-val">{{ product.price | number:'1.2-2' }}</span>
+                  </div>
+
+                  <!-- Add to Cart or Stepper Controls -->
+                  <div class="action-btn-container">
+                    @if (product.stockQuantity <= 0) {
+                      <span class="sold-out-badge">Sold Out</span>
+                    } @else if (getItemQuantityInCart(product.productId) === 0) {
+                      <button class="btn-add-item" (click)="addToCart(product)">
+                        ADD +
+                      </button>
+                    } @else {
+                      <div class="item-stepper">
+                        <button class="step-btn" (click)="removeFromCart(product.productId)">-</button>
+                        <span class="step-val">{{ getItemQuantityInCart(product.productId) }}</span>
+                        <button class="step-btn" (click)="addToCart(product)">+</button>
+                      </div>
                     }
                   </div>
                 </div>
               </div>
-            }
-          </div>
-        }
-      </div>
+            </div>
+          }
+        </div>
+      }
     </main>
 
-    <!-- Floating Cart Bar (Appears when items are in cart) -->
+    <!-- Floating Checkout Bar -->
     @if (totalCartItems() > 0) {
       <div class="floating-cart-bar">
         <div class="cart-summary-text">
@@ -294,17 +435,71 @@
           <div class="drawer-footer">
             <div class="bill-breakdown">
               <div class="bill-row">
-                <span>Subtotal</span>
-                <span>₹{{ totalCartAmount() | number:'1.2-2' }}</span>
+                <span>Food Subtotal</span>
+                <span>₹{{ cartSubtotal() | number:'1.2-2' }}</span>
               </div>
+              @if (cartTaxAmount() > 0) {
+                <div class="bill-row">
+                  <span>Tax ({{ canteen()?.taxPercentage }}% GST)</span>
+                  <span>₹{{ cartTaxAmount() | number:'1.2-2' }}</span>
+                </div>
+              }
               <div class="bill-row">
-                <span>Convenience / Taxes</span>
-                <span class="text-free">FREE</span>
+                <span>CanteenHub Platform Fee</span>
+                @if (isPlatformFeeAbsorbed()) {
+                  <span class="text-free">FREE (Paid by Canteen)</span>
+                } @else {
+                  <span>₹{{ platformFeeAmount() | number:'1.2-2' }}</span>
+                }
               </div>
               <div class="bill-divider"></div>
               <div class="bill-row total">
-                <span>Grand Total</span>
+                <span>Total Payable</span>
                 <span>₹{{ totalCartAmount() | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <!-- Payment Method Selection -->
+            <div class="payment-method-selector">
+              <span class="payment-selector-label">Choose Payment Method</span>
+              <div class="payment-options-grid">
+                <button
+                  type="button"
+                  class="payment-option-card"
+                  [class.selected]="selectedPaymentMethod() === 'online'"
+                  (click)="selectedPaymentMethod.set('online')"
+                >
+                  <div class="option-icon-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                      <rect x="2" y="5" width="20" height="14" rx="2" />
+                      <line x1="2" y1="10" x2="22" y2="10" />
+                    </svg>
+                  </div>
+                  <div class="option-text-block">
+                    <span class="option-title">Pay Online</span>
+                    <span class="option-sub">UPI, GPay, Cards</span>
+                  </div>
+                  <div class="radio-indicator"></div>
+                </button>
+
+                <button
+                  type="button"
+                  class="payment-option-card"
+                  [class.selected]="selectedPaymentMethod() === 'counter'"
+                  (click)="selectedPaymentMethod.set('counter')"
+                >
+                  <div class="option-icon-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                      <line x1="12" y1="1" x2="12" y2="23" />
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                  </div>
+                  <div class="option-text-block">
+                    <span class="option-title">Pay at Counter</span>
+                    <span class="option-sub">Cash at till</span>
+                  </div>
+                  <div class="radio-indicator"></div>
+                </button>
               </div>
             </div>
 

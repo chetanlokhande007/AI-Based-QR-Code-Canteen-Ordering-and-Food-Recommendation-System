@@ -48,12 +48,12 @@ public class PaymentTests : IClassFixture<TestWebApplicationFactory>
         });
 
         // 3. Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var errorBody = await response.Content.ReadAsStringAsync(); Assert.True(response.IsSuccessStatusCode, errorBody);
         var paymentOrder = await response.Content.ReadFromJsonAsync<PaymentOrderResponseDto>();
         Assert.NotNull(paymentOrder);
         Assert.Equal(orderId, paymentOrder.OrderId);
-        Assert.Equal(300.00m, paymentOrder.Amount);
-        Assert.Equal(30000, paymentOrder.AmountInPaise); // 300 * 100 paise
+        Assert.Equal(totalAmount, paymentOrder.Amount);
+        Assert.Equal((long)(totalAmount * 100), paymentOrder.AmountInPaise);
         Assert.Equal("INR", paymentOrder.Currency);
         Assert.False(string.IsNullOrWhiteSpace(paymentOrder.RazorpayOrderId));
     }
@@ -83,6 +83,82 @@ public class PaymentTests : IClassFixture<TestWebApplicationFactory>
             OrderId = orderId
         });
         Assert.Equal(HttpStatusCode.BadRequest, cancelledResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task PayAtCounter_WithValidOrder_CreatesPendingCounterPayment()
+    {
+        // 1. Arrange order
+        var (orderId, totalAmount, canteenId) = await SetupOrderAsync("pay_counter", 120.00m, 1);
+
+        // 2. Act: Request pay at counter
+        var response = await _client.PostAsJsonAsync("/api/payments/pay-at-counter", new CreatePaymentOrderDto
+        {
+            OrderId = orderId
+        });
+
+        // 3. Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var payment = await response.Content.ReadFromJsonAsync<PaymentDto>();
+        Assert.NotNull(payment);
+        Assert.Equal(orderId, payment.OrderId);
+        Assert.Equal(totalAmount, payment.Amount);
+        Assert.Equal("Counter", payment.PaymentMethod);
+        Assert.Equal("Pending", payment.Status);
+        Assert.Null(payment.RazorpayOrderId);
+    }
+
+    [Fact]
+    public async Task ConfirmCounterPayment_WithValidOwner_ConfirmsPaymentAndOrder()
+    {
+        // 1. Arrange order and get canteenId
+        var (orderId, totalAmount, canteenId) = await SetupOrderAsync("confirm_counter", 80.00m, 1);
+
+        // 2. Customer chooses Pay at Counter
+        var counterRes = await _client.PostAsJsonAsync("/api/payments/pay-at-counter", new CreatePaymentOrderDto
+        {
+            OrderId = orderId
+        });
+        counterRes.EnsureSuccessStatusCode();
+
+        // 3. Authenticate as the canteen's owner
+        string ownerToken;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CanteenDbContext>();
+            var canteen = await db.Canteens.Include(c => c.Owner).FirstOrDefaultAsync(c => c.CanteenId == canteenId);
+            var loginRes = await _client.PostAsJsonAsync("/api/auth/login", new
+            {
+                Email = canteen!.Owner.Email,
+                Password = "Password123!"
+            });
+            loginRes.EnsureSuccessStatusCode();
+            var loginData = await loginRes.Content.ReadFromJsonAsync<AuthResponseDto>();
+            ownerToken = loginData!.Token;
+        }
+
+        // 4. Act: Owner confirms cash payment at counter
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ownerToken);
+        var confirmRes = await _client.PostAsync($"/api/canteens/{canteenId}/orders/{orderId}/confirm-counter-payment", null);
+
+        // 5. Assert
+        Assert.Equal(HttpStatusCode.OK, confirmRes.StatusCode);
+        var payment = await confirmRes.Content.ReadFromJsonAsync<PaymentDto>();
+        Assert.NotNull(payment);
+        Assert.Equal(orderId, payment.OrderId);
+        Assert.Equal("Counter", payment.PaymentMethod);
+        Assert.Equal("Paid", payment.Status);
+        Assert.NotNull(payment.PaidAt);
+
+        // 6. Verify order status in DB
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CanteenDbContext>();
+            var order = await db.Orders.FindAsync(orderId);
+            Assert.NotNull(order);
+            Assert.Equal("Paid", order.PaymentStatus);
+            Assert.Equal("Confirmed", order.Status);
+        }
     }
 
     [Fact]

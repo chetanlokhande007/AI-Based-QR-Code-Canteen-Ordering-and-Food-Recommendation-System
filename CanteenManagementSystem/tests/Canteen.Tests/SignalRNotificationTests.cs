@@ -379,7 +379,7 @@ public class SignalRNotificationTests : IClassFixture<TestWebApplicationFactory>
         Assert.Equal(result.OrderId, sentOrder.OrderId);
         Assert.Equal(3, sentOrder.CanteenId);
         Assert.Equal("Pending", sentOrder.Status);
-        Assert.Equal(160m, sentOrder.TotalAmount);
+        Assert.Equal(result.TotalAmount, sentOrder.TotalAmount);
     }
 
     [Fact]
