@@ -113,7 +113,7 @@ export class Login implements OnInit {
   fillAdminCredentials(): void {
     this.activeTab.set('login');
     this.email = 'admin@canteen.com';
-    this.password = 'Admin123!';
+    this.password = 'Tanu@1328';
     this.errorMessage.set('');
     this.successMessage.set('Demo Admin credentials applied! Click "Sign In" to open Platform Admin Dashboard.');
     this.cdr.markForCheck();

