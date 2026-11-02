@@ -32,6 +32,10 @@ public class OrderDto
 
     public string TrackingToken { get; set; } = string.Empty;
 
+    public decimal? RefundedAmount { get; set; }
+
+    public string? CancellationNote { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public List<OrderItemDto> Items { get; set; } = new();

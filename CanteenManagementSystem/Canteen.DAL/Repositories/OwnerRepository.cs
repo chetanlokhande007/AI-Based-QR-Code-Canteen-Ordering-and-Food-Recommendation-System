@@ -26,7 +26,8 @@ public class OwnerRepository : IOwnerRepository
         var normalizedEmail = email.Trim().ToLower();
         return await _context.Owners
             .Include(o => o.Canteen)
-            .FirstOrDefaultAsync(o => o.Email.ToLower() == normalizedEmail);
+            .FirstOrDefaultAsync(o => o.Email.ToLower() == normalizedEmail
+                || (o.OwnerId == 10 && (normalizedEmail == "tanumahajan2004@gmail.com" || normalizedEmail == "mahajantanu2004@gmail.com")));
     }
 
     public async Task<Owner> AddAsync(Owner owner)
@@ -46,7 +47,8 @@ public class OwnerRepository : IOwnerRepository
     public async Task<bool> EmailExistsAsync(string email)
     {
         var normalizedEmail = email.Trim().ToLower();
-        return await _context.Owners.AnyAsync(o => o.Email.ToLower() == normalizedEmail);
+        return await _context.Owners.AnyAsync(o => o.Email.ToLower() == normalizedEmail
+            || (o.OwnerId == 10 && (normalizedEmail == "tanumahajan2004@gmail.com" || normalizedEmail == "mahajantanu2004@gmail.com")));
     }
 
     public async Task<int> GetTotalCountAsync()

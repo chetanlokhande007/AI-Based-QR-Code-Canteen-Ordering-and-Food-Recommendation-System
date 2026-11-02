@@ -20,6 +20,8 @@ export interface OrderDto {
   totalAmount: number;
   canteenEarningsAmount?: number;
   trackingToken: string;
+  refundedAmount?: number;
+  cancellationNote?: string;
   createdAt: string;
   items: OrderItemDto[];
 }

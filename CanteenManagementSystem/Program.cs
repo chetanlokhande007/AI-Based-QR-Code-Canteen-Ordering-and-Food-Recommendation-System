@@ -16,7 +16,6 @@ using CanteenManagementSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// â”€â”€â”€ Database â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddDbContext<CanteenDbContext>(options =>
 {
     options.UseNpgsql(

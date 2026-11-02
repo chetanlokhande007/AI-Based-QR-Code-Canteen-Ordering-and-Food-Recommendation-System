@@ -14,9 +14,9 @@
 
     <div class="header-actions">
       @if (lastNewOrderAlert()) {
-        <div class="new-order-toast" (click)="lastNewOrderAlert.set(null)">
-          🔔 New Order <strong>#{{ lastNewOrderAlert() }}</strong> just placed!
-        </div>
+      <div class="new-order-toast" (click)="lastNewOrderAlert.set(null)">
+        🔔 New Order <strong>{{ lastNewOrderAlert() }}</strong> just placed!
+      </div>
       }
       <button class="refresh-btn" [disabled]="loading()" (click)="loadOrders()">
         ↻ Refresh Orders
@@ -50,13 +50,10 @@
     <div class="toolbar">
       <div class="tabs">
         @for (tab of tabs; track tab) {
-          <button
-            type="button"
-            [class.active]="selectedTab() === tab"
-            (click)="selectTab(tab)">
-            {{ tab }}
-            <span class="tab-badge">{{ getTabCount(tab) }}</span>
-          </button>
+        <button type="button" [class.active]="selectedTab() === tab" (click)="selectTab(tab)">
+          {{ tab }}
+          <span class="tab-badge">{{ getTabCount(tab) }}</span>
+        </button>
         }
       </div>
 
@@ -65,143 +62,130 @@
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
-        <input
-          type="text"
-          placeholder="Search by order #, table #, or food..."
-          [ngModel]="searchText()"
-          (ngModelChange)="searchText.set($event)"
-        />
+        <input type="text" placeholder="Search by order , table , or food..." [ngModel]="searchText()"
+          (ngModelChange)="searchText.set($event)" />
         @if (searchText()) {
-          <button class="clear-search" (click)="searchText.set('')">✕</button>
+        <button class="clear-search" (click)="searchText.set('')">✕</button>
         }
       </div>
     </div>
 
     @if (loading()) {
-      <div class="message loading-message">
-        <div class="spinner"></div>
-        <p>Loading live canteen orders...</p>
-      </div>
+    <div class="message loading-message">
+      <div class="spinner"></div>
+      <p>Loading live canteen orders...</p>
+    </div>
     }
 
     @if (errorMessage()) {
-      <div class="error-message">{{ errorMessage() }}</div>
+    <div class="error-message">{{ errorMessage() }}</div>
     }
 
     @if (!loading() && filteredOrders().length === 0) {
-      <div class="message empty-message">
-        <span class="empty-icon">🍽️</span>
-        <h3>No orders found</h3>
-        <p>No orders currently match your filter or search criteria.</p>
-      </div>
+    <div class="message empty-message">
+      <span class="empty-icon">🍽️</span>
+      <h3>No orders found</h3>
+      <p>No orders currently match your filter or search criteria.</p>
+    </div>
     }
 
     @if (!loading() && filteredOrders().length > 0) {
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Order ID & Time</th>
-              <th>Table</th>
-              <th>Food Items</th>
-              <th>Total Amount</th>
-              <th>Payment Status</th>
-              <th>Kitchen Status</th>
-              <th>Kitchen Actions</th>
-            </tr>
-          </thead>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID & Time</th>
+            <th>Table</th>
+            <th>Food Items</th>
+            <th>Total Amount</th>
+            <th>Payment Status</th>
+            <th>Kitchen Status</th>
+            <th>Kitchen Actions</th>
+          </tr>
+        </thead>
 
-          <tbody>
-            @for (order of filteredOrders(); track order.orderId) {
-              <tr [class.is-new]="order.status === 'Pending' || order.status === 'Received'">
-                <td>
-                  <div class="order-id-cell">
-                    <strong>#{{ order.orderNumber }}</strong>
-                    <span class="order-time">{{ order.createdAt | date:'shortTime' }}</span>
-                  </div>
-                </td>
+        <tbody>
+          @for (order of filteredOrders(); track order.orderId) {
+          <tr [class.is-new]="order.status === 'Pending' || order.status === 'Received'">
+            <td>
+              <div class="order-id-cell">
+                <strong>{{ order.orderNumber }}</strong>
+                <span class="order-time">{{ order.createdAt | date:'shortTime' }}</span>
+              </div>
+            </td>
 
-                <td>
-                  <span class="table-badge">Table #{{ order.tableId }}</span>
-                </td>
+            <td>
+              <span class="table-badge">Table {{ order.tableId }}</span>
+            </td>
 
-                <td>
-                  <div class="items-list">
-                    @for (item of order.items; track item.productId) {
-                      <div class="item-entry">
-                        <span class="item-qty">{{ item.quantity }}x</span>
-                        <span class="item-name">{{ item.productName || 'Product #' + item.productId }}</span>
-                        <span class="item-price">₹{{ item.subtotal | number:'1.2-2' }}</span>
-                      </div>
-                    }
-                  </div>
-                </td>
+            <td>
+              <div class="items-list">
+                @for (item of order.items; track item.productId) {
+                <div class="item-entry">
+                  <span class="item-qty">{{ item.quantity }}x</span>
+                  <span class="item-name">{{ item.productName || 'Product ' + item.productId }}</span>
+                  <span class="item-price">₹{{ item.subtotal | number:'1.2-2' }}</span>
+                </div>
+                }
+              </div>
+            </td>
 
-                <td class="amount-cell">
-                  <div class="amount-val">₹{{ order.totalAmount | number:'1.2-2' }}</div>
-                  @if (order.platformFeePolicy === 'CanteenAbsorbs') {
-                    <span class="fee-note">Fee absorbed by Canteen</span>
-                  }
-                </td>
+            <td class="amount-cell">
+              <div class="amount-val">₹{{ order.totalAmount | number:'1.2-2' }}</div>
+              @if (order.platformFeePolicy === 'CanteenAbsorbs') {
+              <span class="fee-note">Fee absorbed by Canteen</span>
+              }
+            </td>
 
-                <td>
-                  <div class="payment-cell">
-                    <span class="payment-status" [class.paid]="order.paymentStatus === 'Paid'">
-                      {{ order.paymentStatus === 'Paid' ? '✓ Paid' : '⏳ Pending' }}
-                    </span>
+            <td>
+              <div class="payment-cell">
+                <span class="payment-status" [class.paid]="order.paymentStatus === 'Paid'">
+                  {{ order.paymentStatus === 'Paid' ? '✓ Paid' : '⏳ Pending' }}
+                </span>
 
-                    @if (order.paymentStatus !== 'Paid') {
-                      <button
-                        type="button"
-                        class="btn-collect-cash"
-                        [disabled]="collectingPaymentOrderId() === order.orderId"
-                        (click)="collectCashPayment(order)">
-                        {{ collectingPaymentOrderId() === order.orderId ? 'Collecting...' : '💵 Collect Cash' }}
-                      </button>
-                    }
-                  </div>
-                </td>
+                @if (order.paymentStatus !== 'Paid') {
+                <button type="button" class="btn-collect-cash" [disabled]="collectingPaymentOrderId() === order.orderId"
+                  (click)="collectCashPayment(order)">
+                  {{ collectingPaymentOrderId() === order.orderId ? 'Collecting...' : '💵 Collect Cash' }}
+                </button>
+                }
+              </div>
+            </td>
 
-                <td>
-                  <span class="status" [ngClass]="getStatusClass(order.status)">
-                    {{ getDisplayStatus(order.status) }}
-                  </span>
-                </td>
+            <td>
+              <span class="status" [ngClass]="getStatusClass(order.status)">
+                {{ getDisplayStatus(order.status) }}
+              </span>
+            </td>
 
-                <td>
-                  <div class="actions-cell">
-                    @if (getNextStatus(order.status); as nextStatus) {
-                      <button
-                        type="button"
-                        class="action-btn"
-                        [disabled]="updatingOrderId() === order.orderId"
-                        (click)="updateStatus(order)">
-                        {{ updatingOrderId() === order.orderId
-                          ? 'Updating...'
-                          : getActionLabel(order.status) }}
-                      </button>
-                    } @else if (order.status === 'Completed') {
-                      <span class="completed-badge">✓ Completed</span>
-                    } @else if (order.status === 'Cancelled') {
-                      <span class="cancelled-badge">✕ Cancelled</span>
-                    }
+            <td>
+              <div class="actions-cell">
+                @if (getNextStatus(order.status); as nextStatus) {
+                <button type="button" class="action-btn" [disabled]="updatingOrderId() === order.orderId"
+                  (click)="updateStatus(order)">
+                  {{ updatingOrderId() === order.orderId
+                  ? 'Updating...'
+                  : getActionLabel(order.status) }}
+                </button>
+                } @else if (order.status === 'Completed') {
+                <span class="completed-badge">✓ Completed</span>
+                } @else if (order.status === 'Cancelled') {
+                <span class="cancelled-badge">✕ Cancelled</span>
+                }
 
-                    @if ((order.status === 'Pending' || order.status === 'Received') && order.paymentStatus !== 'Paid') {
-                      <button
-                        type="button"
-                        class="btn-cancel-order"
-                        [disabled]="updatingOrderId() === order.orderId"
-                        (click)="cancelOrder(order)">
-                        Cancel
-                      </button>
-                    }
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+                @if ((order.status === 'Pending' || order.status === 'Received') && order.paymentStatus !== 'Paid') {
+                <button type="button" class="btn-cancel-order" [disabled]="updatingOrderId() === order.orderId"
+                  (click)="cancelOrder(order)">
+                  Cancel
+                </button>
+                }
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
     }
 
   </div>
