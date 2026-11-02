@@ -97,7 +97,7 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> CancelOrder(string trackingToken)
+    public async Task<IActionResult> CancelOrder(string trackingToken, [FromBody] CancelOrderRequestDto? dto = null)
     {
         if (string.IsNullOrWhiteSpace(trackingToken))
         {
@@ -106,7 +106,7 @@ public class OrdersController : ControllerBase
 
         try
         {
-            var order = await _orderService.CancelOrderByTrackingTokenAsync(trackingToken);
+            var order = await _orderService.CancelOrderByTrackingTokenAsync(trackingToken, dto?.Reason);
             return order is null ? NotFound(new { message = "Order not found." }) : Ok(order);
         }
         catch (InvalidOrderException ex)

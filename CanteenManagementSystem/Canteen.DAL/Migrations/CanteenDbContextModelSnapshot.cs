@@ -153,6 +153,46 @@ namespace Canteen.DAL.Migrations
                     b.ToTable("Canteens");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.CanteenCancellationPolicy", b =>
+                {
+                    b.Property<int>("CanteenPolicyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CanteenPolicyId"));
+
+                    b.Property<int>("AppliedPlatformPolicyVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CustomCutoffMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CustomPolicyNotice")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("EnableCustomerCancellation")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PredefinedCancellationReasonsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CanteenPolicyId");
+
+                    b.HasIndex("CanteenId")
+                        .IsUnique();
+
+                    b.ToTable("CanteenCancellationPolicies");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.CanteenTable", b =>
                 {
                     b.Property<int>("TableId")
@@ -215,6 +255,117 @@ namespace Canteen.DAL.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.IngredientWastage", b =>
+                {
+                    b.Property<int>("WastageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("WastageId"));
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("EstimatedCost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("IngredientId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int?>("RecordedByOwnerId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("WastageId");
+
+                    b.HasIndex("IngredientId");
+
+                    b.HasIndex("CanteenId", "CreatedAt");
+
+                    b.ToTable("IngredientWastages");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.InventoryIngredient", b =>
+                {
+                    b.Property<int>("IngredientId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IngredientId"));
+
+                    b.Property<string>("BaseUnit")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("CostPerBaseUnit")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("CurrentStock")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("MinimumStockLevel")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("ReorderLevel")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<decimal>("ReservedStock")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("IngredientId");
+
+                    b.HasIndex("CanteenId", "IsActive");
+
+                    b.HasIndex("CanteenId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("InventoryIngredients");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.Order", b =>
                 {
                     b.Property<int>("OrderId")
@@ -222,6 +373,18 @@ namespace Canteen.DAL.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrderId"));
+
+                    b.Property<int>("AppliedPolicyVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
+                    b.Property<DateTime?>("CancellationCutoffTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<decimal>("CanteenEarningsAmount")
                         .ValueGeneratedOnAdd()
@@ -301,6 +464,69 @@ namespace Canteen.DAL.Migrations
                     b.HasIndex("CanteenId", "TableId");
 
                     b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.OrderCancellation", b =>
+                {
+                    b.Property<int>("CancellationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CancellationId"));
+
+                    b.Property<int?>("ActorOwnerId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CancelledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("FoodRefundAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("InitiatedByRole")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("PlatformFeeRefundAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("PlatformPolicyVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PreviousOrderStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("StockRestored")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("TotalRefundAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("CancellationId");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("CanteenId", "CancelledAt");
+
+                    b.ToTable("OrderCancellations");
                 });
 
             modelBuilder.Entity("Canteen.Model.Entities.OrderItem", b =>
@@ -479,6 +705,73 @@ namespace Canteen.DAL.Migrations
                     b.ToTable("PaymentWebhookEvents");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.PlatformCancellationPolicy", b =>
+                {
+                    b.Property<int>("PolicyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PolicyId"));
+
+                    b.Property<bool>("AllowCancellationBeforePreparation")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("AllowCustomerCancellation")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomerCancellationRefundMode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("EffectiveDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("PolicyVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PrePreparationCutoffMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("RefundPlatformFeeOnCanteenCancellation")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("StrictlyProhibitCancellationAfterPreparation")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("UpdatedByOwnerId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("PolicyId");
+
+                    b.HasIndex("PolicyVersion");
+
+                    b.ToTable("PlatformCancellationPolicies");
+
+                    b.HasData(
+                        new
+                        {
+                            PolicyId = 1,
+                            AllowCancellationBeforePreparation = true,
+                            AllowCustomerCancellation = true,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CustomerCancellationRefundMode = "RefundFoodSubtotalOnly",
+                            EffectiveDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            PolicyVersion = 1,
+                            PrePreparationCutoffMinutes = 5,
+                            RefundPlatformFeeOnCanteenCancellation = true,
+                            StrictlyProhibitCancellationAfterPreparation = true,
+                            UpdatedByOwnerId = 8
+                        });
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.Product", b =>
                 {
                     b.Property<int>("ProductId")
@@ -536,6 +829,322 @@ namespace Canteen.DAL.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.Recipe", b =>
+                {
+                    b.Property<int>("RecipeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RecipeId"));
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PreparationNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ServingSize")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("RecipeId");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique();
+
+                    b.HasIndex("CanteenId", "ProductId")
+                        .IsUnique();
+
+                    b.ToTable("Recipes");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.RecipeIngredient", b =>
+                {
+                    b.Property<int>("RecipeIngredientId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RecipeIngredientId"));
+
+                    b.Property<int>("IngredientId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<int>("RecipeId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.HasKey("RecipeIngredientId");
+
+                    b.HasIndex("IngredientId");
+
+                    b.HasIndex("RecipeId", "IngredientId")
+                        .IsUnique();
+
+                    b.ToTable("RecipeIngredients");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.RecommendationEvent", b =>
+                {
+                    b.Property<int>("EventId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("EventId"));
+
+                    b.Property<string>("AnonymousSessionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RecommendationCategory")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("EventId");
+
+                    b.HasIndex("CanteenId", "CreatedAt");
+
+                    b.HasIndex("ProductId", "EventType");
+
+                    b.ToTable("RecommendationEvents");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.Refund", b =>
+                {
+                    b.Property<int>("RefundId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RefundId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("FailureMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("GatewayRefundId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("InitiatedByOwnerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("InitiatedByRole")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("RefundMethod")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("RefundId");
+
+                    b.HasIndex("GatewayRefundId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("PaymentId");
+
+                    b.HasIndex("CanteenId", "OrderId");
+
+                    b.ToTable("Refunds");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.StockReservation", b =>
+                {
+                    b.Property<int>("ReservationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReservationId"));
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ConsumedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ReleasedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("ReservationId");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("CanteenId", "Status");
+
+                    b.ToTable("StockReservations");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.StockReservationItem", b =>
+                {
+                    b.Property<int>("ReservationItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReservationItemId"));
+
+                    b.Property<int>("IngredientId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReservationId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("ReservedQuantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.HasKey("ReservationItemId");
+
+                    b.HasIndex("IngredientId");
+
+                    b.HasIndex("ReservationId", "IngredientId")
+                        .IsUnique();
+
+                    b.ToTable("StockReservationItems");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.StockTransaction", b =>
+                {
+                    b.Property<int>("TransactionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TransactionId"));
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedByOwnerId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("IngredientId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("NewStock")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("PreviousStock")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ReferenceNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("TransactionId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("CanteenId", "CreatedAt");
+
+                    b.HasIndex("IngredientId", "CreatedAt");
+
+                    b.ToTable("StockTransactions");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.Canteen", b =>
                 {
                     b.HasOne("Canteen.Model.Entities.Owner", "Owner")
@@ -544,6 +1153,17 @@ namespace Canteen.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.CanteenCancellationPolicy", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithOne("CancellationPolicy")
+                        .HasForeignKey("Canteen.Model.Entities.CanteenCancellationPolicy", "CanteenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
                 });
 
             modelBuilder.Entity("Canteen.Model.Entities.CanteenTable", b =>
@@ -568,6 +1188,36 @@ namespace Canteen.DAL.Migrations
                     b.Navigation("Canteen");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.IngredientWastage", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany("Wastages")
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.InventoryIngredient", "Ingredient")
+                        .WithMany("Wastages")
+                        .HasForeignKey("IngredientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+
+                    b.Navigation("Ingredient");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.InventoryIngredient", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany("Ingredients")
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.Order", b =>
                 {
                     b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
@@ -586,6 +1236,25 @@ namespace Canteen.DAL.Migrations
                     b.Navigation("Canteen");
 
                     b.Navigation("Table");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.OrderCancellation", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany("Cancellations")
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.Order", "Order")
+                        .WithOne("CancellationAudit")
+                        .HasForeignKey("Canteen.Model.Entities.OrderCancellation", "OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Canteen.Model.Entities.OrderItem", b =>
@@ -648,11 +1317,177 @@ namespace Canteen.DAL.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.Recipe", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany("Recipes")
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.Product", "Product")
+                        .WithOne("Recipe")
+                        .HasForeignKey("Canteen.Model.Entities.Recipe", "ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.RecipeIngredient", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.InventoryIngredient", "Ingredient")
+                        .WithMany("RecipeIngredients")
+                        .HasForeignKey("IngredientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.Recipe", "Recipe")
+                        .WithMany("Ingredients")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ingredient");
+
+                    b.Navigation("Recipe");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.RecommendationEvent", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany("RecommendationEvents")
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.Product", "Product")
+                        .WithMany("RecommendationEvents")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.Refund", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany("Refunds")
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.Order", "Order")
+                        .WithMany("Refunds")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.Payment", "Payment")
+                        .WithMany("Refunds")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Payment");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.StockReservation", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany("StockReservations")
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.Order", "Order")
+                        .WithOne("StockReservation")
+                        .HasForeignKey("Canteen.Model.Entities.StockReservation", "OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.StockReservationItem", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.InventoryIngredient", "Ingredient")
+                        .WithMany("ReservationItems")
+                        .HasForeignKey("IngredientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.StockReservation", "Reservation")
+                        .WithMany("Items")
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ingredient");
+
+                    b.Navigation("Reservation");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.StockTransaction", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany("StockTransactions")
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.InventoryIngredient", "Ingredient")
+                        .WithMany("Transactions")
+                        .HasForeignKey("IngredientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.Order", "Order")
+                        .WithMany("StockTransactions")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Canteen");
+
+                    b.Navigation("Ingredient");
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.Canteen", b =>
                 {
+                    b.Navigation("CancellationPolicy");
+
+                    b.Navigation("Cancellations");
+
+                    b.Navigation("Ingredients");
+
                     b.Navigation("Products");
 
+                    b.Navigation("Recipes");
+
+                    b.Navigation("RecommendationEvents");
+
+                    b.Navigation("Refunds");
+
+                    b.Navigation("StockReservations");
+
+                    b.Navigation("StockTransactions");
+
                     b.Navigation("Tables");
+
+                    b.Navigation("Wastages");
                 });
 
             modelBuilder.Entity("Canteen.Model.Entities.Category", b =>
@@ -660,14 +1495,55 @@ namespace Canteen.DAL.Migrations
                     b.Navigation("Products");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.InventoryIngredient", b =>
+                {
+                    b.Navigation("RecipeIngredients");
+
+                    b.Navigation("ReservationItems");
+
+                    b.Navigation("Transactions");
+
+                    b.Navigation("Wastages");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.Order", b =>
                 {
+                    b.Navigation("CancellationAudit");
+
                     b.Navigation("Items");
+
+                    b.Navigation("Refunds");
+
+                    b.Navigation("StockReservation");
+
+                    b.Navigation("StockTransactions");
                 });
 
             modelBuilder.Entity("Canteen.Model.Entities.Owner", b =>
                 {
                     b.Navigation("Canteens");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.Payment", b =>
+                {
+                    b.Navigation("Refunds");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.Product", b =>
+                {
+                    b.Navigation("Recipe");
+
+                    b.Navigation("RecommendationEvents");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.Recipe", b =>
+                {
+                    b.Navigation("Ingredients");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.StockReservation", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

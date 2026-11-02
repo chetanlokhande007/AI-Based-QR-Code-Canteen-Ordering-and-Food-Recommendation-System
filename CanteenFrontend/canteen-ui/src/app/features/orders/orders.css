@@ -598,3 +598,291 @@ tr.is-new {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Canteen Owner Cancellation Modal
+   ========================================================================== */
+
+.canteen-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.canteen-modal-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.canteen-modal-header {
+  padding: 16px 20px;
+  background: #FEF2F2;
+  border-bottom: 1px solid #FEE2E2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-header-icon-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-warning-icon {
+  font-size: 1.5rem;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #991B1B;
+}
+
+.modal-subtitle {
+  font-size: 0.78rem;
+  color: #B91C1C;
+  font-weight: 500;
+}
+
+.btn-modal-close {
+  background: none;
+  border: none;
+  color: #991B1B;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: background 0.15s;
+}
+
+.btn-modal-close:hover {
+  background: #FEE2E2;
+}
+
+.canteen-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Refund Notice */
+.modal-refund-notice {
+  padding: 12px 14px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-refund-notice.paid {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+}
+
+.modal-refund-notice.unpaid {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+}
+
+.modal-refund-notice .notice-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-refund-notice.paid .notice-badge {
+  color: #15803D;
+}
+
+.modal-refund-notice.unpaid .notice-badge {
+  color: #64748B;
+}
+
+.modal-refund-notice .notice-text {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #334155;
+  line-height: 1.4;
+}
+
+/* Inventory Notice */
+.modal-inventory-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+  border-radius: 10px;
+}
+
+.modal-inventory-notice .inv-icon {
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+
+.modal-inventory-notice .inv-text {
+  font-size: 0.78rem;
+  color: #1E40AF;
+  line-height: 1.35;
+}
+
+/* Reasons */
+.modal-reason-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-reason-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.reason-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reason-option-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #E2E8F0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.reason-option-item:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+.reason-option-item.active {
+  background: #FEF2F2;
+  border-color: #F87171;
+}
+
+.reason-option-item input[type="radio"] {
+  accent-color: #DC2626;
+  width: 15px;
+  height: 15px;
+}
+
+.reason-option-item .option-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.custom-reason-box {
+  margin-top: 4px;
+}
+
+.custom-reason-box textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+}
+
+.custom-reason-box textarea:focus {
+  border-color: #DC2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Footer */
+.canteen-modal-footer {
+  padding: 14px 20px;
+  background: #F8FAFC;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-modal-secondary {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1.5px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-modal-secondary:hover:not(:disabled) {
+  background: #F1F5F9;
+  color: #1E293B;
+}
+
+.btn-modal-danger {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #DC2626;
+  color: #FFFFFF;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+  transition: all 0.15s;
+}
+
+.btn-modal-danger:hover:not(:disabled) {
+  background: #B91C1C;
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.35);
+}
+
+.btn-modal-secondary:disabled,
+.btn-modal-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

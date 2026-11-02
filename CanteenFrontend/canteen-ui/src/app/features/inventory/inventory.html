@@ -1,0 +1,547 @@
+<div class="inventory-container">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-titles">
+      <h1 class="page-title">Inventory & Stock Management</h1>
+      <p class="page-subtitle">Track raw culinary ingredients, monitor low-stock thresholds, and audit stock movements.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="loadData()" [disabled]="loading()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+        </svg>
+        Refresh
+      </button>
+      <button class="btn btn-warning" (click)="openRecordWastageModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        Record Wastage
+      </button>
+      <button class="btn btn-primary" (click)="openAddIngredientModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Ingredient
+      </button>
+    </div>
+  </header>
+
+  <!-- Notification Banners -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <span class="alert-icon">✓</span>
+      <span>{{ successMessage() }}</span>
+      <button class="alert-close" (click)="successMessage.set(null)">✕</button>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      <span class="alert-icon">⚠</span>
+      <span>{{ errorMessage() }}</span>
+      <button class="alert-close" (click)="errorMessage.set(null)">✕</button>
+    </div>
+  }
+
+  <!-- KPI Metric Summary Cards -->
+  <section class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon-box kpi-blue">📦</div>
+      <div class="kpi-info">
+        <span class="kpi-label">Total Ingredients</span>
+        <span class="kpi-value">{{ summary()?.totalIngredients ?? ingredients().length }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-box kpi-green">💰</div>
+      <div class="kpi-info">
+        <span class="kpi-label">Stock Value</span>
+        <span class="kpi-value">₹{{ (summary()?.totalStockValue ?? 0) | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card" [class.alert-border]="(summary()?.lowStockCount ?? 0) > 0">
+      <div class="kpi-icon-box kpi-yellow">⚠️</div>
+      <div class="kpi-info">
+        <span class="kpi-label">Low Stock Items</span>
+        <span class="kpi-value warning-text">{{ summary()?.lowStockCount ?? 0 }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card" [class.danger-border]="(summary()?.outOfStockCount ?? 0) > 0">
+      <div class="kpi-icon-box kpi-red">🚫</div>
+      <div class="kpi-info">
+        <span class="kpi-label">Out of Stock</span>
+        <span class="kpi-value danger-text">{{ summary()?.outOfStockCount ?? 0 }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-box kpi-purple">🔒</div>
+      <div class="kpi-info">
+        <span class="kpi-label">Reserved Units</span>
+        <span class="kpi-value">{{ (summary()?.totalReservedStockUnits ?? 0) | number:'1.2-2' }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Segmented Navigation Tabs -->
+  <nav class="inventory-tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'ingredients'" (click)="setTab('ingredients')">
+      Ingredients ({{ ingredients().length }})
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'transactions'" (click)="setTab('transactions')">
+      Stock Movements
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'wastages'" (click)="setTab('wastages')">
+      Wastage Log
+    </button>
+    <button class="tab-btn alert-tab" [class.active]="activeTab() === 'alerts'" (click)="setTab('alerts')">
+      Low Stock Alerts
+      @if ((summary()?.lowStockCount ?? 0) > 0) {
+        <span class="badge badge-warning">{{ summary()?.lowStockCount }}</span>
+      }
+    </button>
+  </nav>
+
+  <!-- TAB 1: INGREDIENTS LIST -->
+  @if (activeTab() === 'ingredients') {
+    <section class="tab-content">
+      <!-- Search & Filters -->
+      <div class="filter-bar">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search ingredients by name or category..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          />
+        </div>
+
+        <div class="filter-controls">
+          <select [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event)" class="form-select">
+            <option value="all">All Categories</option>
+            @for (cat of categoriesList(); track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+
+          <select [ngModel]="selectedStockFilter()" (ngModelChange)="selectedStockFilter.set($event)" class="form-select">
+            <option value="all">All Stock Levels</option>
+            <option value="low">Low Stock Only</option>
+            <option value="out">Out of Stock Only</option>
+            <option value="active">Active Only</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Ingredients Data Table -->
+      <div class="table-card">
+        @if (loading()) {
+          <div class="table-loading">
+            <div class="spinner"></div>
+            <p>Loading ingredient catalog...</p>
+          </div>
+        } @else if (filteredIngredients().length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">🥬</div>
+            <h3>No ingredients found</h3>
+            <p>Create your first ingredient or adjust your search filters to start tracking stock.</p>
+            <button class="btn btn-primary" (click)="openAddIngredientModal()">+ Add New Ingredient</button>
+          </div>
+        } @else {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ingredient</th>
+                <th>Category</th>
+                <th>Current Stock</th>
+                <th>Reserved</th>
+                <th>Available</th>
+                <th>Cost / Unit</th>
+                <th>Total Value</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of filteredIngredients(); track item.ingredientId) {
+                <tr [class.row-low-stock]="item.isLowStock" [class.row-out-stock]="item.isOutOfStock">
+                  <td class="font-medium">
+                    <div class="item-name-block">
+                      <span>{{ item.name }}</span>
+                      @if (item.isLowStock) {
+                        <span class="status-pill warning-pill">Low Stock</span>
+                      } @else if (item.isOutOfStock) {
+                        <span class="status-pill danger-pill">Out of Stock</span>
+                      }
+                    </div>
+                  </td>
+                  <td><span class="category-pill">{{ item.category }}</span></td>
+                  <td class="font-bold">{{ item.currentStock | number:'1.2-3' }} <span class="unit-text">{{ item.baseUnit }}</span></td>
+                  <td class="text-muted">{{ item.reservedStock | number:'1.2-3' }} <span class="unit-text">{{ item.baseUnit }}</span></td>
+                  <td class="font-bold available-col">{{ item.availableStock | number:'1.2-3' }} <span class="unit-text">{{ item.baseUnit }}</span></td>
+                  <td>₹{{ item.costPerBaseUnit | number:'1.2-4' }}</td>
+                  <td>₹{{ item.totalStockValue | number:'1.2-2' }}</td>
+                  <td>
+                    @if (item.isActive) {
+                      <span class="badge-dot badge-active">Active</span>
+                    } @else {
+                      <span class="badge-dot badge-inactive">Inactive</span>
+                    }
+                  </td>
+                  <td class="text-right action-buttons">
+                    <button class="btn-sm btn-outline-primary" title="Purchase or adjust stock" (click)="openAdjustStockModal(item)">
+                      Adjust
+                    </button>
+                    <button class="btn-sm btn-outline-warning" title="Record wasted quantity" (click)="openRecordWastageModal(item)">
+                      Waste
+                    </button>
+                    <button class="btn-sm btn-outline-secondary" title="Edit ingredient" (click)="openEditIngredientModal(item)">
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- TAB 2: STOCK TRANSACTIONS -->
+  @if (activeTab() === 'transactions') {
+    <section class="tab-content">
+      <div class="table-card">
+        @if (transactions().length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No transactions recorded yet</h3>
+            <p>Every stock purchase, manual adjustment, kitchen preparation, and wastage will appear here.</p>
+          </div>
+        } @else {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Ingredient</th>
+                <th>Type</th>
+                <th>Quantity Change</th>
+                <th>Previous → New Stock</th>
+                <th>Reference #</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tx of transactions(); track tx.transactionId) {
+                <tr>
+                  <td class="text-muted">{{ tx.createdAt | date:'medium' }}</td>
+                  <td class="font-medium">{{ tx.ingredientName }}</td>
+                  <td>
+                    <span class="tx-badge tx-{{ tx.transactionType.toLowerCase() }}">{{ tx.transactionType }}</span>
+                  </td>
+                  <td class="font-bold" [class.text-green]="tx.quantity > 0" [class.text-red]="tx.quantity < 0">
+                    {{ tx.quantity > 0 ? '+' : '' }}{{ tx.quantity | number:'1.2-3' }} {{ tx.baseUnit }}
+                  </td>
+                  <td>{{ tx.previousStock | number:'1.2-3' }} → {{ tx.newStock | number:'1.2-3' }} {{ tx.baseUnit }}</td>
+                  <td>{{ tx.referenceNumber || '—' }}</td>
+                  <td>{{ tx.reason }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- TAB 3: WASTAGE LOG -->
+  @if (activeTab() === 'wastages') {
+    <section class="tab-content">
+      <div class="table-card">
+        @if (wastages().length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">🗑️</div>
+            <h3>No kitchen wastage recorded</h3>
+            <p>Spoilage, expired items, and kitchen prep waste can be logged and audited here.</p>
+            <button class="btn btn-warning" (click)="openRecordWastageModal()">Record Wastage</button>
+          </div>
+        } @else {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Ingredient</th>
+                <th>Wasted Quantity</th>
+                <th>Reason Code</th>
+                <th>Estimated Cost Write-off</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (w of wastages(); track w.wastageId) {
+                <tr>
+                  <td class="text-muted">{{ w.createdAt | date:'medium' }}</td>
+                  <td class="font-medium">{{ w.ingredientName }}</td>
+                  <td class="danger-text font-bold">{{ w.quantity | number:'1.2-3' }} {{ w.baseUnit }}</td>
+                  <td><span class="reason-pill">{{ w.reason }}</span></td>
+                  <td class="font-bold">₹{{ w.estimatedCost | number:'1.2-2' }}</td>
+                  <td>{{ w.notes || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- TAB 4: LOW STOCK ALERTS -->
+  @if (activeTab() === 'alerts') {
+    <section class="tab-content">
+      <div class="table-card">
+        @if ((summary()?.lowStockIngredients?.length ?? 0) === 0) {
+          <div class="empty-state success-state">
+            <div class="empty-icon">✅</div>
+            <h3>All inventory is well-stocked!</h3>
+            <p>No ingredients have fallen below their configured minimum stock threshold.</p>
+          </div>
+        } @else {
+          <div class="alert-banner-warning">
+            ⚠️ <strong>{{ summary()?.lowStockCount }} items</strong> require your attention. Available stock is at or below minimum threshold.
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ingredient</th>
+                <th>Available Stock</th>
+                <th>Min Safe Level</th>
+                <th>Reorder Level</th>
+                <th>Cost / Unit</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of summary()?.lowStockIngredients ?? []; track item.ingredientId) {
+                <tr class="row-low-stock">
+                  <td class="font-medium">{{ item.name }}</td>
+                  <td class="font-bold danger-text">{{ item.availableStock | number:'1.2-3' }} {{ item.baseUnit }}</td>
+                  <td>{{ item.minimumStockLevel | number:'1.2-3' }} {{ item.baseUnit }}</td>
+                  <td>{{ item.reorderLevel | number:'1.2-3' }} {{ item.baseUnit }}</td>
+                  <td>₹{{ item.costPerBaseUnit | number:'1.2-4' }}</td>
+                  <td class="text-right">
+                    <button class="btn-sm btn-primary" (click)="openAdjustStockModal(item)">
+                      + Restock Now
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </section>
+  }
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: ADD / EDIT INGREDIENT                                              -->
+<!-- ========================================================================= -->
+@if (showIngredientModal()) {
+  <div class="modal-backdrop" (click)="closeModals()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditingIngredient ? 'Edit Ingredient' : 'Add New Ingredient' }}</h2>
+        <button class="modal-close-btn" (click)="closeModals()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Ingredient Name *</label>
+          <input type="text" [(ngModel)]="ingredientForm.name" placeholder="e.g. Basmati Rice, Fresh Milk, Chicken Breast" class="form-input" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label>Category *</label>
+            <input type="text" [(ngModel)]="ingredientForm.category" placeholder="e.g. Grains, Dairy, Produce, Meat" class="form-input" />
+          </div>
+
+          <div class="form-group col-6">
+            <label>Base Measurement Unit *</label>
+            <select [(ngModel)]="ingredientForm.baseUnit" class="form-select">
+              <option value="g">Gram (g)</option>
+              <option value="kg">Kilogram (kg)</option>
+              <option value="ml">Millilitre (ml)</option>
+              <option value="L">Litre (L)</option>
+              <option value="pcs">Pieces (pcs)</option>
+            </select>
+          </div>
+        </div>
+
+        @if (!isEditingIngredient) {
+          <div class="form-group">
+            <label>Initial Physical Stock (in {{ ingredientForm.baseUnit }})</label>
+            <input type="number" [(ngModel)]="ingredientForm.initialStock" min="0" step="0.1" class="form-input" />
+          </div>
+        }
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label>Minimum Stock Alert Level ({{ ingredientForm.baseUnit }})</label>
+            <input type="number" [(ngModel)]="ingredientForm.minimumStockLevel" min="0" step="0.1" class="form-input" />
+          </div>
+
+          <div class="form-group col-6">
+            <label>Reorder Benchmark ({{ ingredientForm.baseUnit }})</label>
+            <input type="number" [(ngModel)]="ingredientForm.reorderLevel" min="0" step="0.1" class="form-input" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Purchase Cost per {{ ingredientForm.baseUnit }} (₹)</label>
+          <input type="number" [(ngModel)]="ingredientForm.costPerBaseUnit" min="0" step="0.001" placeholder="₹ cost per unit" class="form-input" />
+          <span class="input-helper">Used to calculate recipe dish cost and gross profit margin.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveIngredient()" [disabled]="loading() || !ingredientForm.name.trim()">
+          {{ loading() ? 'Saving...' : (isEditingIngredient ? 'Update Ingredient' : 'Create Ingredient') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL: ADJUST STOCK / PURCHASE                                            -->
+<!-- ========================================================================= -->
+@if (showAdjustModal() && selectedIngredientForAdjust) {
+  <div class="modal-backdrop" (click)="closeModals()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Adjust Stock: {{ selectedIngredientForAdjust.name }}</h2>
+        <button class="modal-close-btn" (click)="closeModals()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="stock-status-banner">
+          <div>Current Stock: <strong>{{ selectedIngredientForAdjust.currentStock }} {{ selectedIngredientForAdjust.baseUnit }}</strong></div>
+          <div>Reserved for Orders: <strong>{{ selectedIngredientForAdjust.reservedStock }} {{ selectedIngredientForAdjust.baseUnit }}</strong></div>
+        </div>
+
+        <div class="form-group">
+          <label>Adjustment Operation</label>
+          <div class="radio-pill-group">
+            <label class="radio-pill" [class.active]="adjustForm.operationType === 'Purchase'">
+              <input type="radio" [(ngModel)]="adjustForm.operationType" value="Purchase" />
+              <span>Purchase / Stock Inflow (+)</span>
+            </label>
+            <label class="radio-pill" [class.active]="adjustForm.operationType === 'Adjustment'">
+              <input type="radio" [(ngModel)]="adjustForm.operationType" value="Adjustment" />
+              <span>Stock Count Audit (±)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>{{ adjustForm.operationType === 'Purchase' ? 'Quantity Purchased' : 'Stock Quantity' }} ({{ selectedIngredientForAdjust.baseUnit }}) *</label>
+          <input type="number" [(ngModel)]="adjustForm.quantity" step="0.1" class="form-input" />
+        </div>
+
+        @if (adjustForm.operationType === 'Adjustment') {
+          <div class="form-group checkbox-row">
+            <label>
+              <input type="checkbox" [(ngModel)]="adjustForm.isAbsoluteCount" />
+              <span>Set this as the new total stock count (Absolute physical count)</span>
+            </label>
+          </div>
+        }
+
+        <div class="form-group">
+          <label>Invoice / Reference # (Optional)</label>
+          <input type="text" [(ngModel)]="adjustForm.referenceNumber" placeholder="e.g. BILL-4421, PO-900" class="form-input" />
+        </div>
+
+        <div class="form-group">
+          <label>Reason for Adjustment *</label>
+          <input type="text" [(ngModel)]="adjustForm.reason" placeholder="e.g. Weekly vendor delivery, Physical inventory recount" class="form-input" />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+        <button class="btn btn-primary" (click)="submitAdjustStock()" [disabled]="loading() || !adjustForm.reason.trim()">
+          {{ loading() ? 'Updating...' : 'Save Stock Movement' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL: RECORD WASTAGE                                                     -->
+<!-- ========================================================================= -->
+@if (showWastageModal()) {
+  <div class="modal-backdrop" (click)="closeModals()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Record Kitchen Wastage</h2>
+        <button class="modal-close-btn" (click)="closeModals()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Select Ingredient *</label>
+          <select [ngModel]="selectedIngredientForWastage" (ngModelChange)="selectedIngredientForWastage = $event" class="form-select">
+            @for (ing of ingredients(); track ing.ingredientId) {
+              <option [ngValue]="ing">{{ ing.name }} (Available: {{ ing.availableStock }} {{ ing.baseUnit }})</option>
+            }
+          </select>
+        </div>
+
+        @if (selectedIngredientForWastage) {
+          <div class="form-group">
+            <label>Wasted Quantity ({{ selectedIngredientForWastage.baseUnit }}) *</label>
+            <input type="number" [(ngModel)]="wastageForm.quantity" min="0.1" [max]="selectedIngredientForWastage.availableStock" step="0.1" class="form-input" />
+            <span class="input-helper">Estimated financial write-off: ₹{{ (wastageForm.quantity * selectedIngredientForWastage.costPerBaseUnit) | number:'1.2-2' }}</span>
+          </div>
+        }
+
+        <div class="form-group">
+          <label>Wastage Reason *</label>
+          <select [(ngModel)]="wastageForm.reason" class="form-select">
+            <option value="Spoiled">Spoiled / Rotten</option>
+            <option value="Expired">Expired</option>
+            <option value="PrepWaste">Kitchen Preparation Waste</option>
+            <option value="Damaged">Damaged in Transit / Storage</option>
+            <option value="Burnt">Burnt / Overcooked</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Chef Notes (Optional)</label>
+          <textarea [(ngModel)]="wastageForm.notes" rows="2" placeholder="Explain circumstances of loss..." class="form-textarea"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+        <button class="btn btn-warning" (click)="submitWastage()" [disabled]="loading() || !selectedIngredientForWastage || wastageForm.quantity <= 0">
+          {{ loading() ? 'Writing off...' : 'Record Wastage Write-off' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+

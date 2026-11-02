@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Canteen.Model.Entities
 {
@@ -30,5 +31,9 @@ namespace Canteen.Model.Entities
         public Canteen Canteen { get; set; } = null!;
 
         public Category Category { get; set; } = null!;
+
+        public Recipe? Recipe { get; set; }
+
+        public ICollection<RecommendationEvent> RecommendationEvents { get; set; } = new List<RecommendationEvent>();
     }
 }

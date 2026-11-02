@@ -8,7 +8,9 @@ import { CategoryService } from '../../core/services/category.service';
 import { ProductService } from '../../core/services/product.service';
 import { OrderService } from '../../core/services/order.service';
 import { SignalRService } from '../../core/services/signalr.service';
-import { PaymentService } from '../../core/services/payment.service';
+import { PaymentService } from '../../core/services/payment.service';
+import { RecommendationService } from '../../core/services/recommendation.service';
+import { FoodRecommendation, CartAddonRecommendation } from '../../core/models/recommendation.models';
 import { PublicCanteenDto } from '../../core/models/canteen.models';
 import { CategoryDto } from '../../core/models/category.models';
 import { ProductDto } from '../../core/models/product.models';
@@ -35,7 +37,8 @@ export class CustomerMenu implements OnInit, OnDestroy {
   private readonly productService = inject(ProductService);
   private readonly orderService = inject(OrderService);
   private readonly signalRService = inject(SignalRService);
-  private readonly paymentService = inject(PaymentService);
+  private readonly paymentService = inject(PaymentService);
+  private readonly recommendationService = inject(RecommendationService);
 
   private readonly subscriptions = new Subscription();
 
@@ -52,7 +55,14 @@ export class CustomerMenu implements OnInit, OnDestroy {
   readonly categories = signal<CategoryDto[]>([]);
   readonly products = signal<ProductDto[]>([]);
   readonly selectedCategory = signal<number | 'all'>('all');
-  readonly searchQuery = signal<string>('');
+  readonly searchQuery = signal<string>('');
+
+  // AI Recommendation Signals
+  readonly recommendations = signal<FoodRecommendation[]>([]);
+  readonly loadingRecommendations = signal<boolean>(false);
+  readonly cartAddons = signal<CartAddonRecommendation[]>([]);
+  readonly loadingCartAddons = signal<boolean>(false);
+  private readonly recordedImpressionIds = new Set<number>();
 
   // Cart State
   readonly cart = signal<CartItem[]>([]);
@@ -64,7 +74,19 @@ export class CustomerMenu implements OnInit, OnDestroy {
   readonly selectedPaymentMethod = signal<'online' | 'counter'>('online');
   readonly isPaymentProcessing = signal<boolean>(false);
   readonly isCancellingOrder = signal<boolean>(false);
-  readonly paymentError = signal<string | null>(null);
+  readonly paymentError = signal<string | null>(null);
+
+  // Cancellation Modal State
+  readonly isCancelModalOpen = signal<boolean>(false);
+  readonly selectedCancelReason = signal<string>('Ordered by mistake');
+  readonly customCancelReason = signal<string>('');
+  readonly predefinedCancelReasons = [
+    'Ordered by mistake',
+    'Waiting time is too long',
+    'Changed my mind / Need to leave',
+    'Need to modify items or table',
+    'Other'
+  ];
 
   // Active Placed Order (Tracking View)
   readonly activeOrder = signal<OrderDto | null>(null);
@@ -239,18 +261,19 @@ export class CustomerMenu implements OnInit, OnDestroy {
           next: ({ categories, products }: { categories: CategoryDto[]; products: ProductDto[] }) => {
             this.categories.set(categories || []);
             this.products.set((products || []).filter((p: ProductDto) => p.isAvailable));
-            this.loading.set(false);
+            this.loading.set(false);
+            this.loadRecommendations(canteen.canteenId);
           },
           error: (err) => {
             console.error('Failed to load menu data by slug:', err);
-            this.errorMessage.set('Unable to load canteen menu items.');
+            this.errorMessage.set('Unable to load canteen menu items.');
             this.loading.set(false);
           }
         });
       },
       error: (err) => {
         console.error('Failed to load canteen by slug:', err);
-        this.errorMessage.set('Canteen not found or currently unavailable.');
+        this.errorMessage.set('Canteen not found or currently unavailable.');
         this.loading.set(false);
       }
     });
@@ -269,13 +292,14 @@ export class CustomerMenu implements OnInit, OnDestroy {
         this.canteen.set(canteen);
         this.categories.set(categories || []);
         this.products.set((products || []).filter((p: ProductDto) => p.isAvailable));
-        this.loading.set(false);
+        this.loading.set(false);
+        this.loadRecommendations(canteen.canteenId);
       },
       error: (err) => {
         console.error('Failed to load menu data:', err);
-        this.errorMessage.set(
-          'Unable to load canteen menu. Please verify your internet connection or ask the canteen staff.'
-        );
+        this.errorMessage.set(
+          'Unable to load canteen menu. Please verify your internet connection or ask the canteen staff.'
+        );
         this.loading.set(false);
       }
     });
@@ -321,10 +345,11 @@ export class CustomerMenu implements OnInit, OnDestroy {
     }
   }
 
-  openCartDrawer(): void {
-    if (this.cart().length > 0) {
-      this.isCartDrawerOpen.set(true);
-    }
+  openCartDrawer(): void {
+    if (this.cart().length > 0) {
+      this.isCartDrawerOpen.set(true);
+      this.loadCartAddons();
+    }
   }
 
   closeCartDrawer(): void {
@@ -354,9 +379,20 @@ export class CustomerMenu implements OnInit, OnDestroy {
 
     this.orderService.createOrder(this.qrToken(), payload).subscribe({
       next: (order) => {
-        this.isSubmittingOrder.set(false);
-        this.isCartDrawerOpen.set(false);
-        this.cart.set([]);
+                this.isSubmittingOrder.set(false);
+        this.isCartDrawerOpen.set(false);
+        
+        // Record privacy-preserving telemetry for ordered items
+        const orderedItems = [...this.cart()];
+        for (const item of orderedItems) {
+          this.recommendationService.recordEvent(order.canteenId, {
+            productId: item.product.productId,
+            eventType: 'Ordered',
+            recommendationCategory: 'OrderPlaced'
+          }).subscribe({ error: () => {} });
+        }
+
+        this.cart.set([]);
         this.activeOrder.set(order);
 
         // Persist active order in localStorage for accidental tab reload recovery
@@ -523,48 +559,58 @@ export class CustomerMenu implements OnInit, OnDestroy {
     });
   }
 
-  cancelOrder(): void {
-    const current = this.activeOrder();
-    if (!current) return;
-
-    let confirmMsg = 'Are you sure you want to cancel this order?';
-    if (current.paymentStatus === 'Paid') {
-      const fee = current.platformFeeAmount || 5.00;
-      const refund = Math.max(0, current.totalAmount - fee);
-      confirmMsg = `Are you sure you want to cancel this order?\n\nRefund breakdown:\n• Food refund: ₹${refund.toFixed(2)}\n• Platform fee: ₹${fee.toFixed(2)} (Non-refundable per policy)\n\nOnly pending orders can be cancelled. Proceed?`;
-    }
-
-    if (!confirm(confirmMsg)) {
-      return;
-    }
-
-    this.isCancellingOrder.set(true);
-    this.paymentError.set(null);
-
-    this.orderService.cancelOrder(current.trackingToken).subscribe({
-      next: (cancelledOrder) => {
-        this.isCancellingOrder.set(false);
-        this.activeOrder.set(cancelledOrder || null);
-        this.paymentError.set(null);
-        this.paymentSuccessNotification.set(null);
-        try {
-          localStorage.removeItem(ACTIVE_ORDER_STORAGE_KEY);
-        } catch {}
-
-        if (cancelledOrder?.paymentStatus === 'Refunded') {
-          const fee = cancelledOrder.platformFeeAmount || 5.00;
-          const refund = cancelledOrder.refundedAmount || Math.max(0, cancelledOrder.totalAmount - fee);
-          alert(`Order cancelled successfully.\n\nRefund of ₹${refund.toFixed(2)} has been initiated.\nPlatform fee of ₹${fee.toFixed(2)} is non-refundable per platform policy.`);
-        }
-      },
-      error: (err) => {
-        this.isCancellingOrder.set(false);
-        const msg = err?.error?.message || 'Could not cancel order. Please ask canteen staff.';
-        this.paymentError.set(msg);
-      }
-    });
-  }
-
+  openCancelModal(): void {
+    this.selectedCancelReason.set(this.predefinedCancelReasons[0]);
+    this.customCancelReason.set('');
+    this.isCancelModalOpen.set(true);
+  }
+
+  closeCancelModal(): void {
+    this.isCancelModalOpen.set(false);
+  }
+
+  cancelOrder(): void {
+    this.openCancelModal();
+  }
+
+  confirmCancellation(): void {
+    const current = this.activeOrder();
+    if (!current) return;
+
+    const selected = this.selectedCancelReason();
+    const reason = selected === 'Other'
+      ? (this.customCancelReason().trim() || 'Other reason')
+      : selected;
+
+    this.isCancellingOrder.set(true);
+    this.paymentError.set(null);
+
+    this.orderService.cancelOrder(current.trackingToken, reason).subscribe({
+      next: (cancelledOrder) => {
+        this.isCancellingOrder.set(false);
+        this.isCancelModalOpen.set(false);
+        this.activeOrder.set(cancelledOrder || null);
+        this.paymentError.set(null);
+        this.paymentSuccessNotification.set(null);
+        try {
+          localStorage.removeItem(ACTIVE_ORDER_STORAGE_KEY);
+        } catch {}
+
+        if (cancelledOrder?.paymentStatus === 'Refunded') {
+          const fee = cancelledOrder.platformFeeAmount || 5.00;
+          const refund = cancelledOrder.refundedAmount || Math.max(0, cancelledOrder.totalAmount - fee);
+          alert(`Order #${cancelledOrder.orderNumber} cancelled successfully.\n\nRefund of ₹${refund.toFixed(2)} has been initiated.\nPlatform fee of ₹${fee.toFixed(2)} is non-refundable per platform policy.`);
+        }
+      },
+      error: (err) => {
+        this.isCancellingOrder.set(false);
+        this.isCancelModalOpen.set(false);
+        const msg = err?.error?.message || 'Could not cancel order. Please ask canteen staff.';
+        this.paymentError.set(msg);
+      }
+    });
+  }
+
   backToMenu(): void {
     this.activeOrder.set(null);
     this.paymentError.set(null);
@@ -591,4 +637,140 @@ export class CustomerMenu implements OnInit, OnDestroy {
       this.loadMenuData(this.canteenId());
     }
   }
-}
+
+  // AI Recommendation Engine Methods
+  loadRecommendations(canteenId: number): void {
+    if (!canteenId) return;
+    this.loadingRecommendations.set(true);
+    this.recommendationService.getMenuRecommendations(canteenId).subscribe({
+      next: (recs) => {
+        this.recommendations.set(recs || []);
+        this.loadingRecommendations.set(false);
+        this.recordImpressions(canteenId, recs || []);
+      },
+      error: (err) => {
+        console.warn('Failed to load menu recommendations:', err);
+        this.loadingRecommendations.set(false);
+      }
+    });
+  }
+
+  private recordImpressions(canteenId: number, recs: FoodRecommendation[]): void {
+    for (const rec of recs) {
+      if (!this.recordedImpressionIds.has(rec.productId)) {
+        this.recordedImpressionIds.add(rec.productId);
+        this.recommendationService.recordEvent(canteenId, {
+          productId: rec.productId,
+          eventType: 'Impression',
+          recommendationCategory: rec.recommendationCategory || 'Popular'
+        }).subscribe({ error: () => {} });
+      }
+    }
+  }
+
+  onRecommendationClick(rec: FoodRecommendation): void {
+    this.recommendationService.recordEvent(this.canteenId(), {
+      productId: rec.productId,
+      eventType: 'Click',
+      recommendationCategory: rec.recommendationCategory || 'Popular'
+    }).subscribe({ error: () => {} });
+  }
+
+  addRecommendationToCart(rec: FoodRecommendation): void {
+    this.onRecommendationClick(rec);
+    this.recommendationService.recordEvent(this.canteenId(), {
+      productId: rec.productId,
+      eventType: 'AddToCart',
+      recommendationCategory: rec.recommendationCategory || 'Popular'
+    }).subscribe({ error: () => {} });
+
+    const existingProduct = this.products().find((p) => p.productId === rec.productId);
+    if (existingProduct) {
+      this.addToCart(existingProduct);
+    } else {
+      const fallbackProd: ProductDto = {
+        productId: rec.productId,
+        canteenId: this.canteenId(),
+        categoryId: 0,
+        name: rec.name,
+        description: rec.description,
+        price: rec.price,
+        imageUrl: rec.imageUrl || undefined,
+        foodType: (rec.foodType as any) || 'Veg',
+        isAvailable: true,
+        stockQuantity: rec.availablePortions > 0 ? rec.availablePortions : 99,
+        createdAt: new Date().toISOString()
+      };
+      this.addToCart(fallbackProd);
+    }
+  }
+
+  loadCartAddons(): void {
+    const canteenId = this.canteenId();
+    const productIds = this.cart().map((item) => item.product.productId);
+    if (!canteenId || productIds.length === 0) {
+      this.cartAddons.set([]);
+      return;
+    }
+
+    this.loadingCartAddons.set(true);
+    this.recommendationService.getCartAddons(canteenId, {
+      cartProductIds: productIds,
+      limit: 4
+    }).subscribe({
+      next: (addons) => {
+        // Exclude items that are already in the cart
+        const filtered = (addons || []).filter(
+          (a) => !productIds.includes(a.productId)
+        );
+        this.cartAddons.set(filtered);
+        this.loadingCartAddons.set(false);
+      },
+      error: (err) => {
+        console.warn('Failed to load cart addons:', err);
+        this.loadingCartAddons.set(false);
+      }
+    });
+  }
+
+  addCartAddonToCart(addon: CartAddonRecommendation): void {
+    this.recommendationService.recordEvent(this.canteenId(), {
+      productId: addon.productId,
+      eventType: 'AddToCart',
+      recommendationCategory: 'CartAddon'
+    }).subscribe({ error: () => {} });
+
+    const existingProduct = this.products().find((p) => p.productId === addon.productId);
+    if (existingProduct) {
+      this.addToCart(existingProduct);
+    } else {
+      const fallbackProd: ProductDto = {
+        productId: addon.productId,
+        canteenId: this.canteenId(),
+        categoryId: 0,
+        name: addon.name,
+        description: `Pairs well with ${addon.pairedWithProductName}`,
+        price: addon.price,
+        imageUrl: addon.imageUrl || undefined,
+        foodType: (addon.foodType as any) || 'Veg',
+        isAvailable: true,
+        stockQuantity: addon.availablePortions > 0 ? addon.availablePortions : 99,
+        createdAt: new Date().toISOString()
+      };
+      this.addToCart(fallbackProd);
+    }
+
+    // Refresh cross-sell list for updated cart
+    setTimeout(() => this.loadCartAddons(), 100);
+  }
+
+  getBadgeClass(category: string): string {
+    const cat = (category || '').toLowerCase();
+    if (cat.includes('breakfast')) return 'badge-breakfast';
+    if (cat.includes('lunch')) return 'badge-lunch';
+    if (cat.includes('snack')) return 'badge-snacks';
+    if (cat.includes('dinner')) return 'badge-dinner';
+    if (cat.includes('value')) return 'badge-value';
+    return 'badge-popular';
+  }
+}

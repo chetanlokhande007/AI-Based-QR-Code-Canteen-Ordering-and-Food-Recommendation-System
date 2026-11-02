@@ -250,17 +250,17 @@
 
       <div class="tracking-action-buttons">
         @if (order.status === 'Pending' || order.status === 'Received') {
-        <button class="btn-cancel-order" [disabled]="isCancellingOrder()" (click)="cancelOrder()">
-          @if (isCancellingOrder()) {
-          <span class="spinner-small"></span> Cancelling Order...
-          } @else {
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="15" y1="9" x2="9" y2="15" />
-            <line x1="9" y1="9" x2="15" y2="15" />
-          </svg>
-          Cancel Order & Return to Menu
-          }
+        <button class="btn-cancel-order" [disabled]="isCancellingOrder()" (click)="openCancelModal()">
+          @if (isCancellingOrder()) {
+          <span class="spinner-small"></span> Cancelling Order...
+          } @else {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+          Cancel Order
+          }
         </button>
         <p class="cancellation-policy-note">
           ℹ️ <strong>Cancellation Policy:</strong> Platform fee (₹{{ (order.platformFeeAmount || 5.00) | number:'1.2-2' }}) is non-refundable upon cancellation.
@@ -337,8 +337,73 @@
     </div>
   </header>
 
-  <!-- Product Grid Catalog -->
-  <main class="menu-body">
+    <!-- Product Grid Catalog -->
+  <main class="menu-body">
+
+    <!-- AI Recommendation Shelf (Time-of-Day & Trending Highlights) -->
+    @if (recommendations().length > 0 && selectedCategory() === 'all' && !searchQuery()) {
+    <section class="recommendations-shelf">
+      <div class="shelf-header">
+        <div class="shelf-title-group">
+          <span class="ai-sparkle-pill">
+            <span class="sparkle-icon">✨</span> AI RECOMMENDED
+          </span>
+          <h2 class="shelf-title">Trending & Chef's Picks</h2>
+        </div>
+        <span class="shelf-subtitle">Freshly prepared & popular right now</span>
+      </div>
+
+      <div class="recommendations-scroll-container">
+        @for (rec of recommendations(); track rec.productId) {
+        <div class="recommendation-card" (click)="onRecommendationClick(rec)">
+          <div class="rec-card-image-wrap">
+            @if (rec.imageUrl) {
+            <img [src]="rec.imageUrl" [alt]="rec.name" class="rec-card-img" loading="lazy" />
+            } @else {
+            <div class="rec-card-fallback-img">
+              <span>{{ rec.foodType === 'NonVeg' || rec.foodType === 'Non-Veg' ? '🍗' : '🥗' }}</span>
+            </div>
+            }
+            <span class="rec-badge" [ngClass]="getBadgeClass(rec.recommendationCategory)">
+              {{ rec.badgeText }}
+            </span>
+            <span class="rec-food-type-dot" [ngClass]="(rec.foodType || 'Veg').toLowerCase()"></span>
+          </div>
+
+          <div class="rec-card-content">
+            <div class="rec-card-title-row">
+              <h4 class="rec-card-title">{{ rec.name }}</h4>
+              @if (rec.availablePortions <= 5 && rec.availablePortions > 0) {
+              <span class="rec-portions-tag">
+                Only {{ rec.availablePortions }} left
+              </span>
+              }
+            </div>
+            <p class="rec-card-desc">{{ rec.description || 'Customer favorite on our menu.' }}</p>
+            <div class="rec-card-footer">
+              <div class="rec-price">₹{{ rec.price | number:'1.2-2' }}</div>
+              <div class="rec-action">
+                @if (rec.availablePortions <= 0) {
+                <span class="sold-out-badge-small">Sold Out</span>
+                } @else if (getItemQuantityInCart(rec.productId) === 0) {
+                <button class="btn-add-rec" (click)="$event.stopPropagation(); addRecommendationToCart(rec)">
+                  + ADD
+                </button>
+                } @else {
+                <div class="item-stepper-small" (click)="$event.stopPropagation()">
+                  <button class="step-btn-small" (click)="removeFromCart(rec.productId)">-</button>
+                  <span class="step-val-small">{{ getItemQuantityInCart(rec.productId) }}</span>
+                  <button class="step-btn-small" (click)="addRecommendationToCart(rec)">+</button>
+                </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </section>
+    }
     @if (filteredProducts().length === 0) {
     <div class="empty-state">
       <div class="empty-icon-box">🍽️</div>
@@ -447,9 +512,38 @@
             <span class="cart-item-subtotal">₹{{ (item.product.price * item.quantity) | number:'1.2-2' }}</span>
           </div>
         </div>
-        }
-      </div>
-
+                }
+
+        <!-- Smart Basket Cross-Sell / Frequently Ordered Together -->
+        @if (cartAddons().length > 0) {
+        <div class="cart-addons-section">
+          <div class="addons-header">
+            <span class="addons-title">✨ Complete Your Meal</span>
+            <span class="addons-subtitle">Frequently ordered with your items</span>
+          </div>
+          <div class="addons-list">
+            @for (addon of cartAddons(); track addon.productId) {
+            <div class="addon-item-card">
+              <div class="addon-info">
+                <div class="addon-name-row">
+                  <span class="addon-name">{{ addon.name }}</span>
+                  <span class="addon-diet-badge" [ngClass]="(addon.foodType || 'Veg').toLowerCase()"></span>
+                </div>
+                <div class="addon-meta">
+                  <span class="addon-pair-hint">Pairs with {{ addon.pairedWithProductName }} ({{ addon.pairConfidencePercentage }}% match)</span>
+                </div>
+                <div class="addon-price">₹{{ addon.price | number:'1.2-2' }}</div>
+              </div>
+              <button class="btn-add-addon" (click)="addCartAddonToCart(addon)">
+                + Add
+              </button>
+            </div>
+            }
+          </div>
+        </div>
+        }
+      </div>
+
       <div class="drawer-footer">
         <div class="bill-breakdown">
           <div class="bill-row">
@@ -526,4 +620,101 @@
   </div>
   }
   }
+
+  <!-- Customer Order Cancellation Modal -->
+  @if (isCancelModalOpen() && activeOrder(); as order) {
+  <div class="cancel-modal-backdrop" (click)="closeCancelModal()">
+    <div class="cancel-modal-card" (click)="$event.stopPropagation()">
+      <div class="cancel-modal-header">
+        <div class="cancel-modal-title-group">
+          <span class="cancel-modal-icon">⚠️</span>
+          <div>
+            <h3 class="cancel-modal-title">Cancel Order #{{ order.orderNumber }}</h3>
+            <p class="cancel-modal-subtitle">Table {{ (tableId() || order.tableId) ? 'Table #' + (tableId() || order.tableId) : 'Takeaway' }} • Total: ₹{{ order.totalAmount | number:'1.2-2' }}</p>
+          </div>
+        </div>
+        <button class="btn-modal-close" (click)="closeCancelModal()" [disabled]="isCancellingOrder()">✕</button>
+      </div>
+
+      <div class="cancel-modal-body">
+        <!-- Refund Notice Card -->
+        @if (order.paymentStatus === 'Paid') {
+        <div class="refund-estimate-box">
+          <div class="refund-estimate-header">
+            <span class="refund-estimate-icon">💳</span>
+            <div>
+              <span class="refund-estimate-label">Refund Policy Breakdown</span>
+              <span class="refund-estimate-tag">Instant Calculation</span>
+            </div>
+          </div>
+          <div class="refund-estimate-grid">
+            <div class="refund-calc-row">
+              <span class="calc-label">Paid Order Total</span>
+              <span class="calc-val">₹{{ order.totalAmount | number:'1.2-2' }}</span>
+            </div>
+            <div class="refund-calc-row refund-highlight">
+              <span class="calc-label">Food & Tax Refund (100%)</span>
+              <span class="calc-val text-success">+ ₹{{ (order.totalAmount - (order.platformFeeAmount || 5.00)) | number:'1.2-2' }}</span>
+            </div>
+            <div class="refund-calc-row fee-highlight">
+              <span class="calc-label">Platform Fee (Non-refundable)</span>
+              <span class="calc-val text-muted">- ₹{{ (order.platformFeeAmount || 5.00) | number:'1.2-2' }}</span>
+            </div>
+          </div>
+          <p class="refund-disclaimer">
+            Refund will be processed back to your original payment method automatically within 2-5 business days.
+          </p>
+        </div>
+        } @else {
+        <div class="counter-cancel-notice">
+          <span class="notice-icon">ℹ️</span>
+          <p>
+            Your order is pending cash payment at the counter. Cancelling will immediately release reserved ingredients back to the kitchen inventory. No payment has been deducted.
+          </p>
+        </div>
+        }
+
+        <!-- Cancellation Reason Selection -->
+        <div class="cancel-reasons-block">
+          <label class="cancel-reasons-title">Why do you need to cancel this order?</label>
+          <div class="reasons-list">
+            @for (reason of predefinedCancelReasons; track reason) {
+            <label class="reason-radio-label" [class.selected]="selectedCancelReason() === reason">
+              <input type="radio" name="cancelReason" [value]="reason" [checked]="selectedCancelReason() === reason" (change)="selectedCancelReason.set(reason)" />
+              <span class="radio-custom"></span>
+              <span class="reason-text">{{ reason }}</span>
+            </label>
+            }
+          </div>
+
+          @if (selectedCancelReason() === 'Other') {
+          <div class="custom-reason-input-group">
+            <label class="input-label" for="customReason">Please provide specific details:</label>
+            <textarea
+              id="customReason"
+              class="form-control reason-textarea"
+              rows="2"
+              placeholder="Tell us what happened so we can improve..."
+              [ngModel]="customCancelReason()"
+              (ngModelChange)="customCancelReason.set($event)"></textarea>
+          </div>
+          }
+        </div>
+      </div>
+
+      <div class="cancel-modal-footer">
+        <button class="btn-cancel-keep" (click)="closeCancelModal()" [disabled]="isCancellingOrder()">
+          Keep Order
+        </button>
+        <button class="btn-cancel-confirm" (click)="confirmCancellation()" [disabled]="isCancellingOrder()">
+          @if (isCancellingOrder()) {
+          <span class="spinner-small"></span> Cancelling...
+          } @else {
+          Confirm & Cancel Order
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+  }
 </div>

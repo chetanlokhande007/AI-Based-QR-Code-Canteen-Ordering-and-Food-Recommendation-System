@@ -173,9 +173,9 @@
                 <span class="cancelled-badge">✕ Cancelled</span>
                 }
 
-                @if ((order.status === 'Pending' || order.status === 'Received') && order.paymentStatus !== 'Paid') {
+                @if (order.status !== 'Completed' && order.status !== 'Cancelled') {
                 <button type="button" class="btn-cancel-order" [disabled]="updatingOrderId() === order.orderId"
-                  (click)="cancelOrder(order)">
+                  (click)="openCanteenCancelModal(order)">
                   Cancel
                 </button>
                 }
@@ -189,4 +189,106 @@
     }
 
   </div>
+
+  <!-- Canteen Owner Order Cancellation Modal -->
+  @if (cancellingOrder(); as order) {
+  <div class="canteen-modal-backdrop" (click)="closeCanteenCancelModal()">
+    <div class="canteen-modal-card" (click)="$event.stopPropagation()">
+      <div class="canteen-modal-header">
+        <div class="modal-header-icon-title">
+          <span class="modal-warning-icon">⚠️</span>
+          <div>
+            <h3 class="modal-title">Cancel Order #{{ order.orderNumber }}</h3>
+            <span class="modal-subtitle">Table {{ order.tableId ? 'Table #' + order.tableId : 'Takeaway' }} • Current Status: {{ getDisplayStatus(order.status) }}</span>
+          </div>
+        </div>
+        <button class="btn-modal-close" (click)="closeCanteenCancelModal()" [disabled]="updatingOrderId() !== null">✕</button>
+      </div>
+
+      <div class="canteen-modal-body">
+        <!-- Impact Summary Notice -->
+        @if (order.paymentStatus === 'Paid') {
+        <div class="modal-refund-notice paid">
+          <div class="notice-badge">100% Full Refund Policy</div>
+          <p class="notice-text">
+            Because this cancellation is initiated by the kitchen/canteen, the customer will receive an <strong>automatic 100% full refund of ₹{{ order.totalAmount | number:'1.2-2' }}</strong> (including food, taxes, and platform fees).
+          </p>
+        </div>
+        } @else {
+        <div class="modal-refund-notice unpaid">
+          <div class="notice-badge">Unpaid Counter Order</div>
+          <p class="notice-text">
+            No payment has been collected for this order. It will be marked cancelled with zero charges to the customer.
+          </p>
+        </div>
+        }
+
+        <!-- Inventory Impact Notice -->
+        <div class="modal-inventory-notice">
+          @if (order.status === 'InPreparation' || order.status === 'Preparing') {
+          <span class="inv-icon">📦</span>
+          <span class="inv-text">
+            <strong>Post-Prep Cancellation:</strong> Food prep is active. Expended ingredients will be automatically recorded in <em>Kitchen Ingredient Wastage</em>.
+          </span>
+          } @else {
+          <span class="inv-icon">🔄</span>
+          <span class="inv-text">
+            <strong>Pre-Prep Cancellation:</strong> Reserved ingredient quantities will be immediately restored to available stock.
+          </span>
+          }
+        </div>
+
+        <!-- Cancellation Reason Selection -->
+        <div class="modal-reason-group">
+          <label class="modal-reason-label">Select reason for cancellation:</label>
+          <div class="reason-options-list">
+            @for (reason of predefinedCanteenCancelReasons; track reason) {
+            <label class="reason-option-item" [class.active]="canteenCancelReason() === reason">
+              <input
+                type="radio"
+                name="canteenCancelReason"
+                [value]="reason"
+                [checked]="canteenCancelReason() === reason"
+                (change)="canteenCancelReason.set(reason)" />
+              <span class="option-text">{{ reason }}</span>
+            </label>
+            }
+          </div>
+
+          @if (canteenCancelReason() === 'Other') {
+          <div class="custom-reason-box">
+            <textarea
+              class="form-control"
+              rows="2"
+              placeholder="Specify the reason for cancellation..."
+              [ngModel]="canteenCustomReason()"
+              (ngModelChange)="canteenCustomReason.set($event)"></textarea>
+          </div>
+          }
+        </div>
+      </div>
+
+      <div class="canteen-modal-footer">
+        <button
+          type="button"
+          class="btn-modal-secondary"
+          (click)="closeCanteenCancelModal()"
+          [disabled]="updatingOrderId() !== null">
+          Back
+        </button>
+        <button
+          type="button"
+          class="btn-modal-danger"
+          (click)="confirmCanteenCancel()"
+          [disabled]="updatingOrderId() !== null">
+          @if (updatingOrderId() === order.orderId) {
+          <span class="spinner-small"></span> Cancelling Order...
+          } @else {
+          Confirm & Cancel Order
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+  }
 </div>

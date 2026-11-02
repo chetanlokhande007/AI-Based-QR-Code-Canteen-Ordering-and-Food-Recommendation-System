@@ -67,5 +67,31 @@ namespace Canteen.Model.Entities
 
         public ICollection<Product> Products { get; set; }
             = new List<Product>();
+
+        public CanteenCancellationPolicy? CancellationPolicy { get; set; }
+
+        public ICollection<OrderCancellation> Cancellations { get; set; }
+            = new List<OrderCancellation>();
+
+        public ICollection<Refund> Refunds { get; set; }
+            = new List<Refund>();
+
+        public ICollection<InventoryIngredient> Ingredients { get; set; }
+            = new List<InventoryIngredient>();
+
+        public ICollection<Recipe> Recipes { get; set; }
+            = new List<Recipe>();
+
+        public ICollection<StockTransaction> StockTransactions { get; set; }
+            = new List<StockTransaction>();
+
+        public ICollection<IngredientWastage> Wastages { get; set; }
+            = new List<IngredientWastage>();
+
+        public ICollection<StockReservation> StockReservations { get; set; }
+            = new List<StockReservation>();
+
+        public ICollection<RecommendationEvent> RecommendationEvents { get; set; }
+            = new List<RecommendationEvent>();
     }
 }

@@ -37,6 +37,13 @@ namespace Canteen.Model.Entities
 
         public string TrackingToken { get; set; } = string.Empty;
 
+        // ─── Cancellation Policy Snapshot at Order Creation ─────────────────
+        public int AppliedPolicyVersion { get; set; } = 1;
+
+        public DateTime? CancellationCutoffTime { get; set; }
+
+        public string? CancellationReason { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
@@ -46,5 +53,15 @@ namespace Canteen.Model.Entities
 
         public ICollection<OrderItem> Items { get; set; }
             = new List<OrderItem>();
+
+        public OrderCancellation? CancellationAudit { get; set; }
+
+        public ICollection<Refund> Refunds { get; set; }
+            = new List<Refund>();
+
+        public StockReservation? StockReservation { get; set; }
+
+        public ICollection<StockTransaction> StockTransactions { get; set; }
+            = new List<StockTransaction>();
     }
 }

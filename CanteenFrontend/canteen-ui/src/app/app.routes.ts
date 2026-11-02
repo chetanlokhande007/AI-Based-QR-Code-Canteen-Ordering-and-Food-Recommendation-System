@@ -1,3 +1,5 @@
+import { RecipesComponent } from './features/recipes/recipes';
+import { RecommendationsComponent } from './features/recommendations/recommendations';
 import { Routes } from '@angular/router';
 import { Login } from './features/auth/login/login';
 import { OwnerLayout } from './features/owner-layout/owner-layout';
@@ -9,6 +11,7 @@ import { FoodItems } from './features/food-items/food-items';
 import { Categories } from './features/categories/categories';
 import { TablesComponent } from './features/tables/tables';
 import { Orders } from './features/orders/orders';
+import { InventoryComponent } from './features/inventory/inventory';
 import { AdminDashboard } from './features/admin/admin-dashboard/admin-dashboard';
 import { AdminCanteens } from './features/admin/admin-canteens/admin-canteens';
 import { AdminCanteenDetailsComponent } from './features/admin/admin-canteen-details/admin-canteen-details';
@@ -27,7 +30,7 @@ export const routes: Routes = [
   { path: 'menu', component: CustomerMenu },
   { path: 'c/:slug', component: CustomerMenu },
   
-  // Platform Admin Routes (Protected by adminGuard â€” Completely Separate Layout)
+  // Platform Admin Routes (Protected by adminGuard — Completely Separate Layout)
   { path: 'admin', redirectTo: 'admin/dashboard', pathMatch: 'full' },
   { path: 'admin/dashboard', component: AdminDashboard, canActivate: [adminGuard] },
   { path: 'admin/canteens', component: AdminCanteens, canActivate: [adminGuard] },
@@ -49,6 +52,14 @@ export const routes: Routes = [
       { path: 'food-items', component: FoodItems },
       { path: 'dishes', redirectTo: 'food-items', pathMatch: 'full' },
       { path: 'menu-items', redirectTo: 'food-items', pathMatch: 'full' },
+      { path: 'inventory', component: InventoryComponent },
+      { path: 'stock', redirectTo: 'inventory', pathMatch: 'full' },
+      { path: 'recipes', component: RecipesComponent },
+      { path: 'recipe', redirectTo: 'recipes', pathMatch: 'full' },
+      { path: 'food-costing', redirectTo: 'recipes', pathMatch: 'full' },
+      { path: 'recommendations', component: RecommendationsComponent },
+      { path: 'ai-recommendations', redirectTo: 'recommendations', pathMatch: 'full' },
+      { path: 'recommendation-insights', redirectTo: 'recommendations', pathMatch: 'full' },
       { path: 'categories', component: Categories },
       { path: 'tables', component: TablesComponent },
       { path: 'tables-qr', redirectTo: 'tables', pathMatch: 'full' },

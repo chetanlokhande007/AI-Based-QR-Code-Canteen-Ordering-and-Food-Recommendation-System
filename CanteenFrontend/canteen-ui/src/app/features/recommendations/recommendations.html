@@ -1,0 +1,273 @@
+<div class="recommendations-container">
+
+  <!-- Header Section -->
+  <header class="page-header">
+    <div class="header-titles">
+      <div class="title-with-badge">
+        <h1>AI Food Recommendations & Analytics</h1>
+        <span class="badge-tag">Smart Canteen AI</span>
+      </div>
+      <p class="subtitle">
+        Monitor real-time recommendation performance, customer conversion velocity, basket association mining, and live meal period rankings.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="refreshAll()" [disabled]="loading()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+        Refresh Insights
+      </button>
+    </div>
+  </header>
+
+  <!-- Alerts / Messages -->
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <span>{{ errorMessage() }}</span>
+      <button class="btn-close" (click)="errorMessage.set(null)">×</button>
+    </div>
+  }
+
+  <!-- Time Period Filter Tabs -->
+  <div class="filter-bar">
+    <span class="filter-label">Performance Window:</span>
+    <div class="filter-btn-group">
+      <button class="btn-filter" [class.active]="selectedDays() === 7" (click)="onDaysFilterChange(7)">
+        Last 7 Days
+      </button>
+      <button class="btn-filter" [class.active]="selectedDays() === 30" (click)="onDaysFilterChange(30)">
+        Last 30 Days
+      </button>
+      <button class="btn-filter" [class.active]="selectedDays() === 90" (click)="onDaysFilterChange(90)">
+        Last 90 Days
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Analyzing recommendation interactions and conversion metrics...</p>
+    </div>
+  }
+
+  @else if (insights()) {
+    <!-- KPI Overview Grid -->
+    <section class="kpi-grid">
+      <!-- Total Impressions -->
+      <div class="kpi-card">
+        <div class="kpi-icon icon-blue">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-label">Recommendations Shown</span>
+          <h3 class="kpi-value">{{ insights()?.totalImpressions || 0 | number }}</h3>
+          <span class="kpi-sub">Total customer shelf impressions</span>
+        </div>
+      </div>
+
+      <!-- Total Clicks -->
+      <div class="kpi-card">
+        <div class="kpi-icon icon-purple">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-label">Dish Clicks & Inspects</span>
+          <h3 class="kpi-value">{{ insights()?.totalClicks || 0 | number }}</h3>
+          <span class="kpi-sub">Direct clicks from recommendations</span>
+        </div>
+      </div>
+
+      <!-- Added to Cart -->
+      <div class="kpi-card">
+        <div class="kpi-icon icon-amber">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-label">Add to Cart Actions</span>
+          <h3 class="kpi-value">{{ insights()?.totalAdditionsToCart || 0 | number }}</h3>
+          <span class="kpi-sub">Recommended items added to order</span>
+        </div>
+      </div>
+
+      <!-- Orders Converted -->
+      <div class="kpi-card">
+        <div class="kpi-icon icon-emerald">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-label">Orders Generated</span>
+          <h3 class="kpi-value">{{ insights()?.totalOrders || 0 | number }}</h3>
+          <span class="kpi-sub">Orders completed with AI picks</span>
+        </div>
+      </div>
+
+      <!-- Click-Through Rate (CTR) -->
+      <div class="kpi-card">
+        <div class="kpi-icon icon-cyan">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-label">Click-Through Rate (CTR)</span>
+          <h3 class="kpi-value">{{ insights()?.clickThroughRate || 0 | number:'1.1-2' }}%</h3>
+          <span class="kpi-sub">Impressions converted to clicks</span>
+        </div>
+      </div>
+
+      <!-- Recommendation Conversion Rate -->
+      <div class="kpi-card">
+        <div class="kpi-icon icon-rose">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-label">Conversion Rate</span>
+          <h3 class="kpi-value">{{ insights()?.conversionRate || 0 | number:'1.1-2' }}%</h3>
+          <span class="kpi-sub">Clicks converted to final orders</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Top Converting Recommended Dishes Table -->
+    <section class="content-section">
+      <div class="section-header">
+        <div>
+          <h2>Top Converting Recommended Dishes</h2>
+          <p class="section-desc">Dishes driving the highest customer engagement and revenue through AI recommendations.</p>
+        </div>
+      </div>
+
+      @if (!insights()?.topConvertingDishes || insights()!.topConvertingDishes.length === 0) {
+        <div class="empty-state-card">
+          <div class="empty-icon">📊</div>
+          <h3>No conversion data recorded yet</h3>
+          <p>As customers browse the menu and order dishes, top converting items will appear here automatically.</p>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Dish Name</th>
+                <th>Impressions</th>
+                <th>Clicks</th>
+                <th>Orders Placed</th>
+                <th>Conversion Rate</th>
+                <th>Performance Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (dish of insights()!.topConvertingDishes; track dish.productId) {
+                <tr>
+                  <td class="font-bold text-main">{{ dish.productName }}</td>
+                  <td>{{ dish.impressions | number }}</td>
+                  <td>{{ dish.clicks | number }}</td>
+                  <td class="font-bold text-emerald">{{ dish.orders | number }}</td>
+                  <td>
+                    <div class="conversion-cell">
+                      <div class="progress-bar">
+                        <div class="progress-fill" [style.width.%]="dish.conversionRate > 100 ? 100 : dish.conversionRate"></div>
+                      </div>
+                      <span class="conversion-pct">{{ dish.conversionRate | number:'1.1-2' }}%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="perf-badge" [ngClass]="getPerformanceBadgeClass(dish.conversionRate)">
+                      {{ getPerformanceLabel(dish.conversionRate) }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <!-- Live Customer Menu Preview & Algorithm Simulator -->
+    <section class="content-section">
+      <div class="section-header">
+        <div>
+          <h2>Live Recommendation Preview</h2>
+          <p class="section-desc">What your customers currently see right now on their phones, ranked by time-of-day meal period, kitchen stock availability, and popularity velocity.</p>
+        </div>
+
+        <div class="preview-tabs">
+          <button class="btn-tab" [class.active]="activePreviewTab() === 'current'" (click)="onPreviewTabChange('current')">
+            All Recommendations
+          </button>
+          <button class="btn-tab" [class.active]="activePreviewTab() === 'veg'" (click)="onPreviewTabChange('veg')">
+            Pure Veg
+          </button>
+          <button class="btn-tab" [class.active]="activePreviewTab() === 'nonveg'" (click)="onPreviewTabChange('nonveg')">
+            Non-Veg
+          </button>
+        </div>
+      </div>
+
+      @if (loadingPreview()) {
+        <div class="preview-loading">
+          <div class="spinner-small"></div>
+          <span>Fetching live rankings from recommendation engine...</span>
+        </div>
+      } @else if (previewRecommendations().length === 0) {
+        <div class="empty-state-card">
+          <div class="empty-icon">🍽️</div>
+          <h3>No active recommendations found</h3>
+          <p>Ensure you have available dishes on your menu with sufficient ingredient stock portions.</p>
+        </div>
+      } @else {
+        <div class="preview-cards-grid">
+          @for (rec of previewRecommendations(); track rec.productId) {
+            <div class="preview-dish-card">
+              <div class="preview-dish-img-wrap">
+                @if (rec.imageUrl) {
+                  <img [src]="rec.imageUrl" [alt]="rec.name" class="preview-dish-img" />
+                } @else {
+                  <div class="preview-dish-fallback">
+                    {{ rec.foodType === 'NonVeg' || rec.foodType === 'Non-Veg' ? '🍗' : '🥗' }}
+                  </div>
+                }
+                <span class="rec-badge badge-popular">{{ rec.badgeText }}</span>
+              </div>
+              <div class="preview-dish-body">
+                <div class="preview-dish-title-row">
+                  <h4 class="preview-dish-name">{{ rec.name }}</h4>
+                  <span class="preview-dish-price">₹{{ rec.price | number:'1.2-2' }}</span>
+                </div>
+                <p class="preview-dish-category">{{ rec.categoryName }} • {{ rec.foodType }}</p>
+                <div class="preview-dish-meta">
+                  <span class="score-pill">AI Score: {{ rec.recommendationScore | number:'1.2-2' }}</span>
+                  <span class="portions-pill" [class.low-portions]="rec.availablePortions <= 5">
+                    {{ rec.availablePortions }} portions ready
+                  </span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Architecture & Engine Transparency Banner -->
+    <section class="engine-info-card">
+      <div class="info-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      </div>
+      <div class="info-content">
+        <h3>100% Free, Local C# Heuristic & Collaborative Engine</h3>
+        <p>
+          CanteenHub operates without paid third-party AI APIs or external cloud costs. Recommendations are computed locally in real-time by analyzing:
+        </p>
+        <ul class="engine-features-list">
+          <li><strong>Time-of-Day Relevance:</strong> Automatically detects breakfast (06:00-11:30), lunch (11:30-15:30), snacks (15:30-19:00), and dinner (19:00-23:30).</li>
+          <li><strong>Basket Association Mining:</strong> Suggests cross-sell items ("Complete Your Meal") based on customer order co-occurrences.</li>
+          <li><strong>Portion Availability Gating:</strong> Automatically suppresses items when kitchen raw ingredient stock is insufficient to cook a portion.</li>
+          <li><strong>Privacy First:</strong> Anonymous session telemetry with zero customer PII leakage or tracking cookies.</li>
+        </ul>
+      </div>
+    </section>
+  }
+</div>
+

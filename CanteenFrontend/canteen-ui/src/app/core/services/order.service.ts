@@ -27,8 +27,18 @@ export class OrderService {
     return this.http.get<OrderDto>(`${this.baseUrl}/orders/track/${encodeURIComponent(trackingToken)}`);
   }
 
-  cancelOrder(trackingToken: string): Observable<OrderDto> {
-    return this.http.post<OrderDto>(`${this.baseUrl}/orders/track/${encodeURIComponent(trackingToken)}/cancel`, {});
+  cancelOrder(trackingToken: string, reason?: string): Observable<OrderDto> {
+    return this.http.post<OrderDto>(
+      `${this.baseUrl}/orders/track/${encodeURIComponent(trackingToken)}/cancel`,
+      { reason: reason || 'Customer requested cancellation' }
+    );
+  }
+
+  cancelOrderFromCanteen(canteenId: number, orderId: number, reason: string): Observable<OrderDto> {
+    return this.http.post<OrderDto>(
+      `${this.baseUrl}/canteens/${canteenId}/orders/${orderId}/cancel`,
+      { reason: reason || 'Cancelled by canteen staff' }
+    );
   }
 
   updateOrderStatus(canteenId: number, orderId: number, status: string): Observable<OrderDto> {

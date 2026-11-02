@@ -1,5 +1,5 @@
-
 using System;
+using System.Collections.Generic;
 
 namespace Canteen.Model.Entities;
 
@@ -35,4 +35,7 @@ public class Payment
     public string? FailureReason { get; set; }
 
     public Order Order { get; set; } = null!;
+
+    public ICollection<Refund> Refunds { get; set; }
+        = new List<Refund>();
 }

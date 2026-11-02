@@ -74,7 +74,11 @@ public class OrderRepository : IOrderRepository
 
     public async Task<Order> UpdateAsync(Order order)
     {
-        _context.Orders.Update(order);
+        var entry = _context.Entry(order);
+        if (entry.State == EntityState.Detached)
+        {
+            _context.Orders.Update(order);
+        }
         await _context.SaveChangesAsync();
         return order;
     }

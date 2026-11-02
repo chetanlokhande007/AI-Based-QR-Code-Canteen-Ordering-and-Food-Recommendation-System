@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Canteen.Model.DTOs;
+using Canteen.Model.Entities;
 
 namespace Canteen.BAL.Interfaces;
 
@@ -34,4 +35,9 @@ public interface IPaymentService
     /// Confirms that a pending counter payment has been collected.
     /// </summary>
     Task<PaymentDto> ConfirmCounterPaymentAsync(int canteenId, int orderId);
+
+    /// <summary>
+    /// Executes a refund with the payment gateway (Razorpay or Mock).
+    /// </summary>
+    Task<RefundResultDto> RefundPaymentAsync(Payment payment, decimal amount, string reason);
 }

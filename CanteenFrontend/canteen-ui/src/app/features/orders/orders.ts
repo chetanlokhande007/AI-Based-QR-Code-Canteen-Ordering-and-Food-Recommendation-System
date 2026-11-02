@@ -54,6 +54,18 @@ export class Orders implements OnInit, OnDestroy, OnChanges {
   isLiveConnected = signal(false);
   lastNewOrderAlert = signal<string | null>(null);
 
+  // Cancellation Modal Signals
+  cancellingOrder = signal<OrderDto | null>(null);
+  canteenCancelReason = signal<string>('Item out of stock');
+  canteenCustomReason = signal<string>('');
+  readonly predefinedCanteenCancelReasons = [
+    'Item out of stock',
+    'Kitchen too busy / capacity exceeded',
+    'Kitchen equipment malfunction',
+    'Customer requested counter cancellation',
+    'Other'
+  ];
+
   tabs = [
     'All Orders',
     'Received',
@@ -268,32 +280,59 @@ export class Orders implements OnInit, OnDestroy, OnChanges {
       });
   }
 
-  cancelOrder(order: OrderDto): void {
-    if (this.updatingOrderId() !== null) return;
-    if (!confirm(`Are you sure you want to cancel order #${order.orderNumber}?`)) {
-      return;
-    }
+  openCanteenCancelModal(order: OrderDto): void {
+    this.cancellingOrder.set(order);
+    this.canteenCancelReason.set(this.predefinedCanteenCancelReasons[0]);
+    this.canteenCustomReason.set('');
+  }
 
-    this.updatingOrderId.set(order.orderId);
+  closeCanteenCancelModal(): void {
+    if (this.updatingOrderId() !== null) return;
+    this.cancellingOrder.set(null);
+  }
+
+  cancelOrder(order: OrderDto): void {
+    this.openCanteenCancelModal(order);
+  }
+
+  confirmCanteenCancel(): void {
+    const order = this.cancellingOrder();
+    if (!order || this.updatingOrderId() !== null) return;
+
     const cId = this.effectiveCanteenId;
     if (!cId) return;
-    this.orderService
-      .updateOrderStatus(cId, order.orderId, 'Cancelled')
-      .subscribe({
-        next: (updatedOrder) => {
-          this.orders.update((list) =>
-            list.map((o) =>
-              o.orderId === order.orderId ? { ...o, status: updatedOrder.status } : o
-            )
-          );
-          this.updatingOrderId.set(null);
-        },
-        error: (error) => {
-          console.error('Unable to cancel order:', error);
-          this.errorMessage.set('Could not cancel order.');
-          this.updatingOrderId.set(null);
-        }
-      });
+
+    const selected = this.canteenCancelReason();
+    const reason = selected === 'Other'
+      ? (this.canteenCustomReason().trim() || 'Kitchen cancellation')
+      : selected;
+
+    this.updatingOrderId.set(order.orderId);
+
+    this.orderService.cancelOrderFromCanteen(cId, order.orderId, reason).subscribe({
+      next: (cancelledOrder) => {
+        this.orders.update((list) =>
+          list.map((o) =>
+            o.orderId === order.orderId
+              ? {
+                  ...o,
+                  status: cancelledOrder.status,
+                  paymentStatus: cancelledOrder.paymentStatus,
+                  refundedAmount: cancelledOrder.refundedAmount,
+                  cancellationNote: cancelledOrder.cancellationNote
+                }
+              : o
+          )
+        );
+        this.updatingOrderId.set(null);
+        this.cancellingOrder.set(null);
+      },
+      error: (error) => {
+        console.error('Unable to cancel order from canteen:', error);
+        this.errorMessage.set(error?.error?.message || 'Could not cancel order.');
+        this.updatingOrderId.set(null);
+      }
+    });
   }
 
   collectCashPayment(order: OrderDto): void {

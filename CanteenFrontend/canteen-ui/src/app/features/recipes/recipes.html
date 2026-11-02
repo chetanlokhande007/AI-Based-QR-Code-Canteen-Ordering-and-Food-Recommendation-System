@@ -1,0 +1,589 @@
+<div class="recipes-container">
+  <!-- Header Section -->
+  <header class="recipes-header">
+    <div class="header-titles">
+      <div class="title-with-badge">
+        <h1>Recipe & Food Costing</h1>
+        <span class="badge-tag">Bill of Materials</span>
+      </div>
+      <p class="subtitle">
+        Define culinary ingredient recipes, track food cost per portion, analyze profit margins, and inspect live kitchen production bottlenecks.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="loadAllData()" [disabled]="loading()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+        Refresh
+      </button>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Create Recipe
+      </button>
+    </div>
+  </header>
+
+  <!-- Alerts / Banners -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      <span>{{ successMessage() }}</span>
+      <button class="btn-close" (click)="successMessage.set(null)">×</button>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <span>{{ errorMessage() }}</span>
+      <button class="btn-close" (click)="errorMessage.set(null)">×</button>
+    </div>
+  }
+
+  <!-- KPI Overview Cards -->
+  <section class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon icon-blue">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      </div>
+      <div class="kpi-details">
+        <span class="kpi-label">Menu Dishes</span>
+        <h3 class="kpi-value">{{ totalProductsCount() }}</h3>
+        <span class="kpi-sub">Total active items on menu</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-green">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      </div>
+      <div class="kpi-details">
+        <span class="kpi-label">Recipes Configured</span>
+        <h3 class="kpi-value">{{ recipesCount() }} <small class="text-muted">({{ recipeCoveragePercent() }}%)</small></h3>
+        <span class="kpi-sub">Dishes with full Bill of Materials</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-purple">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      </div>
+      <div class="kpi-details">
+        <span class="kpi-label">Average Margin</span>
+        <h3 class="kpi-value">{{ avgGrossMargin() }}%</h3>
+        <span class="kpi-sub">Average gross profit margin</span>
+      </div>
+    </div>
+
+    <div class="kpi-card" [class.kpi-alert]="lowStockDishesCount() > 0">
+      <div class="kpi-icon icon-amber">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      </div>
+      <div class="kpi-details">
+        <span class="kpi-label">Low Stock Dishes</span>
+        <h3 class="kpi-value">{{ lowStockDishesCount() }}</h3>
+        <span class="kpi-sub">Dishes with ≤ 5 portions remaining</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation Tabs -->
+  <nav class="tabs-nav">
+    <button class="tab-btn" [class.active]="activeTab() === 'costing'" (click)="setTab('costing')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      Menu Profitability & Costing ({{ filteredSummaries().length }})
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'recipes'" (click)="setTab('recipes')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      BOM Recipe Explorer ({{ recipes().length }})
+    </button>
+  </nav>
+
+  <!-- TAB 1: Menu Profitability & Costing -->
+  @if (activeTab() === 'costing') {
+    <div class="tab-content">
+      <!-- Search and Filter Bar -->
+      <div class="filters-bar">
+        <div class="search-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input
+            type="text"
+            placeholder="Search by dish name or category..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label>Margin Status:</label>
+          <select [ngModel]="selectedMarginFilter()" (ngModelChange)="selectedMarginFilter.set($event)">
+            <option value="all">All Dishes</option>
+            <option value="high">High Margin (≥ 65%)</option>
+            <option value="healthy">Healthy Margin (45% - 64%)</option>
+            <option value="low">Low Margin (20% - 44%)</option>
+            <option value="critical">Critical Margin (&lt; 20%)</option>
+            <option value="norecipe">No Recipe Configured</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Costing Table -->
+      <div class="table-card">
+        @if (loading()) {
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <span>Calculating food costs and live inventory portions...</span>
+          </div>
+        } @else if (filteredSummaries().length === 0) {
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <h3>No menu items match your filter</h3>
+            <p>Try clearing your search query or creating a new recipe for your dishes.</p>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Dish Name</th>
+                  <th>Category</th>
+                  <th>Selling Price</th>
+                  <th>Food Cost / Portion</th>
+                  <th>Gross Margin</th>
+                  <th>Margin Status</th>
+                  <th>Available Portions</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of filteredSummaries(); track item.productId) {
+                  <tr>
+                    <td>
+                      <div class="dish-name-cell">
+                        <span class="food-type-dot" [class.veg]="item.foodType === 'Veg'" [class.non-veg]="item.foodType !== 'Veg'"></span>
+                        <div class="dish-info">
+                          <strong>{{ item.productName }}</strong>
+                          @if (!item.hasRecipe) {
+                            <span class="text-warning-tag">Recipe Not Configured</span>
+                          }
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="badge-category">{{ item.category }}</span></td>
+                    <td class="font-weight-600">₹{{ item.sellingPrice | number:'1.2-2' }}</td>
+                    <td>
+                      @if (item.hasRecipe) {
+                        <span class="cost-value">₹{{ item.foodCostPerServing | number:'1.2-2' }}</span>
+                      } @else {
+                        <span class="text-muted">—</span>
+                      }
+                    </td>
+                    <td>
+                      @if (item.hasRecipe) {
+                        <div class="margin-cell">
+                          <strong>₹{{ item.grossMarginAmount | number:'1.2-2' }}</strong>
+                          <span class="margin-pct">({{ item.grossMarginPercentage | number:'1.1-1' }}%)</span>
+                        </div>
+                      } @else {
+                        <span class="text-muted">—</span>
+                      }
+                    </td>
+                    <td>
+                      @if (item.hasRecipe) {
+                        <span class="badge-status" [ngClass]="'status-' + item.marginStatus.toLowerCase()">
+                          {{ item.marginStatus }}
+                        </span>
+                      } @else {
+                        <span class="badge-status status-norecipe">No Recipe</span>
+                      }
+                    </td>
+                    <td>
+                      @if (item.hasRecipe) {
+                        <div class="portions-pill" [class.low-stock]="item.maxPortionsAvailable <= 5">
+                          <span class="portions-count">{{ item.maxPortionsAvailable }}</span>
+                          <span class="portions-label">portions</span>
+                          @if (item.limitingIngredient) {
+                            <span class="bottleneck-tag" title="Bottleneck Ingredient">
+                              ⚠️ {{ item.limitingIngredient }}
+                            </span>
+                          }
+                        </div>
+                      } @else {
+                        <span class="text-muted">{{ item.maxPortionsAvailable }} in stock</span>
+                      }
+                    </td>
+                    <td class="text-right actions-cell">
+                      @if (item.hasRecipe) {
+                        <button class="btn-action btn-inspect" title="Check Live Portion Availability" (click)="checkPortionAvailability(item.productId)">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                          Availability
+                        </button>
+                        @if (getRecipeByProductId(item.productId); as recipe) {
+                          <button class="btn-action btn-edit" title="Edit Bill of Materials Recipe" (click)="openEditModal(recipe)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                            Edit
+                          </button>
+                          <button class="btn-action btn-delete" title="Delete Recipe" (click)="promptDeleteRecipe(recipe.recipeId, item.productName)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                          </button>
+                        }
+                      } @else {
+                        <button class="btn btn-sm btn-primary" (click)="openCreateModal(item.productId)">
+                          + Create Recipe
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- TAB 2: BOM Recipe Explorer -->
+  @if (activeTab() === 'recipes') {
+    <div class="tab-content">
+      @if (recipes().length === 0) {
+        <div class="empty-state">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          <h3>No Recipes Created Yet</h3>
+          <p>Link your finished menu dishes to raw ingredients to automate food costing and stock deduction.</p>
+          <button class="btn btn-primary" (click)="openCreateModal()">Create First Recipe</button>
+        </div>
+      } @else {
+        <div class="recipes-cards-grid">
+          @for (recipe of recipes(); track recipe.recipeId) {
+            <div class="recipe-card">
+              <div class="recipe-card-header">
+                <div>
+                  <div class="dish-badge-row">
+                    <span class="food-type-dot" [class.veg]="recipe.foodType === 'Veg'" [class.non-veg]="recipe.foodType !== 'Veg'"></span>
+                    <span class="recipe-product-name">{{ recipe.productName }}</span>
+                    <span class="badge-category">{{ recipe.productCategory }}</span>
+                  </div>
+                  <span class="serving-size-tag">Batch Serving: {{ recipe.servingSize }} portion(s)</span>
+                </div>
+                <div class="recipe-actions">
+                  <button class="btn-icon" (click)="openEditModal(recipe)" title="Edit Recipe">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                  </button>
+                  <button class="btn-icon text-danger" (click)="promptDeleteRecipe(recipe.recipeId, recipe.productName)" title="Delete Recipe">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Costing Highlights Banner -->
+              <div class="card-cost-banner">
+                <div class="cost-stat">
+                  <span class="stat-label">Selling Price</span>
+                  <span class="stat-val">₹{{ recipe.productPrice | number:'1.2-2' }}</span>
+                </div>
+                <div class="cost-stat">
+                  <span class="stat-label">Food Cost</span>
+                  <span class="stat-val text-cost">₹{{ recipe.totalFoodCostPerServing | number:'1.2-2' }}</span>
+                </div>
+                <div class="cost-stat">
+                  <span class="stat-label">Gross Margin</span>
+                  <span class="stat-val text-margin">₹{{ recipe.grossMarginAmount | number:'1.2-2' }} ({{ recipe.grossMarginPercentage }}%)</span>
+                </div>
+                <div class="cost-stat">
+                  <span class="stat-label">Available Portions</span>
+                  <span class="stat-val text-portions">{{ recipe.maxPortionsAvailable }} portions</span>
+                </div>
+              </div>
+
+              <!-- Ingredients List Table -->
+              <div class="recipe-ingredients-section">
+                <h5>Required Culinary Ingredients ({{ recipe.ingredients.length }})</h5>
+                <table class="mini-table">
+                  <thead>
+                    <tr>
+                      <th>Ingredient</th>
+                      <th>Quantity</th>
+                      <th>Unit Cost</th>
+                      <th>Line Cost</th>
+                      <th>Stock Available</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (ing of recipe.ingredients; track ing.ingredientId) {
+                      <tr>
+                        <td><strong>{{ ing.ingredientName }}</strong></td>
+                        <td>{{ ing.quantity }} {{ ing.unit }}</td>
+                        <td>₹{{ ing.costPerBaseUnit | number:'1.2-2' }}/{{ ing.ingredientBaseUnit }}</td>
+                        <td class="font-weight-600">₹{{ ing.lineCost | number:'1.2-2' }}</td>
+                        <td>
+                          <span [class.text-danger]="ing.availableStock <= 0">
+                            {{ ing.availableStock | number:'1.1-1' }} {{ ing.ingredientBaseUnit }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              @if (recipe.preparationNotes) {
+                <div class="recipe-notes">
+                  <strong>Chef Notes:</strong>
+                  <p>{{ recipe.preparationNotes }}</p>
+                </div>
+              }
+
+              <div class="recipe-card-footer">
+                <button class="btn btn-sm btn-outline-primary" (click)="checkPortionAvailability(recipe.productId)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                  Inspect Ingredient Bottlenecks
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- MODAL 1: Create / Edit Recipe -->
+  @if (showRecipeModal()) {
+    <div class="modal-backdrop" (click)="closeRecipeModal()">
+      <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ isEditing ? 'Edit Recipe (BOM)' : 'Create Recipe (Bill of Materials)' }}</h3>
+          <button class="btn-close" (click)="closeRecipeModal()">×</button>
+        </div>
+
+        <div class="modal-body">
+          <form (ngSubmit)="saveRecipe()">
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label>Menu Dish <span class="required">*</span></label>
+                @if (isEditing) {
+                  <input
+                    type="text"
+                    class="form-control"
+                    [value]="availableProducts().find(p => p.productId === selectedProductId)?.name ?? 'Selected Dish'"
+                    disabled
+                  />
+                } @else {
+                  <select class="form-control" [(ngModel)]="selectedProductId" name="selectedProductId" required>
+                    <option [ngValue]="null" disabled>Select a menu dish to configure recipe...</option>
+                    @for (p of productsWithoutRecipe(); track p.productId) {
+                      <option [ngValue]="p.productId">
+                        {{ p.name }} (₹{{ p.price }} | {{ p.foodType }})
+                      </option>
+                    }
+                  </select>
+                }
+              </div>
+
+              <div class="form-group flex-1">
+                <label>Serving Size (Portions) <span class="required">*</span></label>
+                <input
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="servingSize"
+                  name="servingSize"
+                  min="1"
+                  max="1000"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Preparation & Chef Notes (Optional)</label>
+              <textarea
+                class="form-control"
+                rows="2"
+                [(ngModel)]="preparationNotes"
+                name="preparationNotes"
+                placeholder="Step-by-step cooking techniques, temperature guidelines, plating notes..."
+              ></textarea>
+            </div>
+
+            <!-- Ingredients Builder -->
+            <div class="ingredients-builder">
+              <div class="builder-header">
+                <div>
+                  <h4>Culinary Ingredients Line Items</h4>
+                  <p class="text-muted">Specify the raw stock quantities required to prepare {{ servingSize }} serving(s).</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-secondary" (click)="addIngredientRow()">
+                  + Add Ingredient Line
+                </button>
+              </div>
+
+              <div class="ingredients-rows">
+                @for (row of ingredientRows; track $index) {
+                  <div class="ingredient-row">
+                    <div class="form-group flex-3">
+                      <label>Ingredient</label>
+                      <select class="form-control" [(ngModel)]="row.ingredientId" [name]="'ing_' + $index" (change)="onIngredientSelected(row)">
+                        @for (ing of availableIngredients(); track ing.ingredientId) {
+                          <option [value]="ing.ingredientId">
+                            {{ ing.name }} (Stock: {{ ing.availableStock }} {{ ing.baseUnit }} | ₹{{ ing.costPerBaseUnit }}/{{ ing.baseUnit }})
+                          </option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="form-group flex-2">
+                      <label>Quantity</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        [(ngModel)]="row.quantity"
+                        [name]="'qty_' + $index"
+                        min="0.001"
+                        step="any"
+                        required
+                      />
+                    </div>
+
+                    <div class="form-group flex-1">
+                      <label>Unit</label>
+                      <select class="form-control" [(ngModel)]="row.unit" [name]="'unit_' + $index">
+                        <option value="g">g</option>
+                        <option value="kg">kg</option>
+                        <option value="ml">ml</option>
+                        <option value="L">L</option>
+                        <option value="pcs">pcs</option>
+                      </select>
+                    </div>
+
+                    <div class="row-remove-btn">
+                      <button
+                        type="button"
+                        class="btn-icon text-danger"
+                        (click)="removeIngredientRow($index)"
+                        [disabled]="ingredientRows.length <= 1"
+                        title="Remove ingredient"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Live Calculated Preview Banner -->
+            <div class="live-preview-box">
+              <div class="preview-item">
+                <span class="preview-label">Estimated Food Cost / Portion</span>
+                <span class="preview-value text-cost">₹{{ modalEstimatedFoodCost | number:'1.2-2' }}</span>
+              </div>
+              <div class="preview-item">
+                <span class="preview-label">Projected Gross Margin</span>
+                <span class="preview-value text-margin">
+                  ₹{{ modalEstimatedMargin.amount | number:'1.2-2' }} ({{ modalEstimatedMargin.pct }}%)
+                </span>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeRecipeModal()">Cancel</button>
+              <button type="submit" class="btn btn-primary" [disabled]="loading()">
+                {{ isEditing ? 'Save Changes' : 'Create Recipe' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL 2: Live Portion Availability & Bottleneck Breakdown -->
+  @if (showAvailabilityModal()) {
+    <div class="modal-backdrop" (click)="closeAvailabilityModal()">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Dish Live Portion Availability</h3>
+          <button class="btn-close" (click)="closeAvailabilityModal()">×</button>
+        </div>
+
+        <div class="modal-body">
+          @if (availabilityLoading()) {
+            <div class="loading-state">
+              <div class="spinner"></div>
+              <span>Checking inventory stock levels...</span>
+            </div>
+          } @else if (selectedAvailability(); as avail) {
+            <div class="availability-header-card">
+              <h4>{{ avail.productName }}</h4>
+              <div class="big-portions-display">
+                <span class="big-number">{{ avail.maxPortionsAvailable }}</span>
+                <span class="big-label">portions can be prepared right now</span>
+              </div>
+              @if (avail.limitingIngredientName) {
+                <div class="bottleneck-alert">
+                  <span class="bottleneck-icon">⚠️</span>
+                  <div>
+                    <strong>Bottleneck Constraint:</strong>
+                    <span>{{ avail.limitingIngredientName }} is the limiting ingredient restricting output to {{ avail.maxPortionsAvailable }} portions.</span>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <h5 class="mt-4">Ingredient Stock Breakdown:</h5>
+            <div class="breakdown-list">
+              @for (item of avail.ingredientBreakdown; track item.ingredientId) {
+                <div class="breakdown-item" [class.is-bottleneck]="item.ingredientId === avail.limitingIngredientId">
+                  <div class="breakdown-row">
+                    <div>
+                      <strong>{{ item.ingredientName }}</strong>
+                      <span class="requirement-tag">Needs {{ item.requiredPerPortion }} {{ item.unit }} / portion</span>
+                    </div>
+                    <div class="breakdown-stock">
+                      <span class="stock-avail">{{ item.availableStock }} {{ item.baseUnit }} available</span>
+                      <span class="stock-yield" [class.text-danger]="item.portionsPossible <= 5">
+                        → Can yield {{ item.portionsPossible }} portions
+                      </span>
+                    </div>
+                  </div>
+                  @if (item.ingredientId === avail.limitingIngredientId) {
+                    <span class="badge-bottleneck">PRIMARY BOTTLENECK</span>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="modal-footer">
+              <button class="btn btn-secondary" (click)="closeAvailabilityModal()">Close</button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL 3: Delete Recipe Confirmation -->
+  @if (showDeleteModal()) {
+    <div class="modal-backdrop" (click)="closeDeleteModal()">
+      <div class="modal-dialog modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Delete Recipe</h3>
+          <button class="btn-close" (click)="closeDeleteModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Are you sure you want to delete the Bill of Materials recipe for <strong>"{{ deletingDishName }}"</strong>?
+          </p>
+          <p class="text-muted small">
+            This will remove the ingredient link and food costing calculation. The underlying raw culinary ingredients in your inventory will NOT be deleted.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDeleteRecipe()" [disabled]="loading()">Delete Recipe</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
