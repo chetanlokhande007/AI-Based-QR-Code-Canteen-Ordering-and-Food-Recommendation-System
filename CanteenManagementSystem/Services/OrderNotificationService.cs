@@ -99,7 +99,8 @@ public class OrderNotificationService : IOrderNotificationService
             };
 
             await _hubContext.Clients.Group(groupName).SendAsync("OrderStatusUpdated", payload);
-            _logger.LogInformation("Dispatched 'OrderStatusUpdated' notification to group {GroupName} for Order {OrderId} (Status: {NewStatus}).", groupName, orderId, newStatus);
+            await _hubContext.Clients.All.SendAsync("OrderStatusUpdated", payload);
+            _logger.LogInformation("Dispatched 'OrderStatusUpdated' notification to group {GroupName} and all kitchen monitors for Order {OrderId} (Status: {NewStatus}).", groupName, orderId, newStatus);
         }
         catch (Exception ex)
         {

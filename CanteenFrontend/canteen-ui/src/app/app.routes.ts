@@ -8,6 +8,7 @@ import { CustomerMenu } from './features/customer-menu/customer-menu';
 import { FoodItems } from './features/food-items/food-items';
 import { Categories } from './features/categories/categories';
 import { TablesComponent } from './features/tables/tables';
+import { Orders } from './features/orders/orders';
 import { AdminDashboard } from './features/admin/admin-dashboard/admin-dashboard';
 import { AdminCanteens } from './features/admin/admin-canteens/admin-canteens';
 import { AdminCanteenDetailsComponent } from './features/admin/admin-canteen-details/admin-canteen-details';
@@ -26,7 +27,7 @@ export const routes: Routes = [
   { path: 'menu', component: CustomerMenu },
   { path: 'c/:slug', component: CustomerMenu },
   
-  // Platform Admin Routes (Protected by adminGuard — Completely Separate Layout)
+  // Platform Admin Routes (Protected by adminGuard â€” Completely Separate Layout)
   { path: 'admin', redirectTo: 'admin/dashboard', pathMatch: 'full' },
   { path: 'admin/dashboard', component: AdminDashboard, canActivate: [adminGuard] },
   { path: 'admin/canteens', component: AdminCanteens, canActivate: [adminGuard] },
@@ -44,6 +45,7 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: Dashboard },
       { path: 'owner/dashboard', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'orders', component: Orders },
       { path: 'food-items', component: FoodItems },
       { path: 'dishes', redirectTo: 'food-items', pathMatch: 'full' },
       { path: 'menu-items', redirectTo: 'food-items', pathMatch: 'full' },

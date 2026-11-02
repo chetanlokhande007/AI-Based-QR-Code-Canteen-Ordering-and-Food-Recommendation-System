@@ -108,7 +108,7 @@ public class OrderService : IOrderService
             products[item.ProductId] = product;
         }
 
-        // 3–6. Atomically reserve stock and persist order inside a database transaction
+        // 3Ã¢â‚¬â€œ6. Atomically reserve stock and persist order inside a database transaction
         var created = await _orderRepo.ExecuteInTransactionAsync(async () =>
         {
             var deducted = new List<(int ProductId, int Quantity)>();
@@ -296,6 +296,11 @@ public class OrderService : IOrderService
 
     public async Task<OrderDto?> UpdateStatusAsync(int canteenId, int orderId, string newStatus)
     {
+        if (string.Equals(newStatus, "Preparing", StringComparison.OrdinalIgnoreCase))
+        {
+            newStatus = "InPreparation";
+        }
+
         if (string.IsNullOrWhiteSpace(newStatus) || !ValidStatuses.Contains(newStatus))
         {
             throw new InvalidOrderException($"Status '{newStatus}' is invalid. Allowed: {string.Join(", ", ValidStatuses)}.");
@@ -337,7 +342,7 @@ public class OrderService : IOrderService
 
         bool isAllowed = currentStatus switch
         {
-            "Pending" => nextStatus is "Confirmed" or "Cancelled",
+            "Pending" => nextStatus is "Confirmed" or "InPreparation" or "Cancelled",
             "Confirmed" => nextStatus is "InPreparation" or "Cancelled",
             "InPreparation" => nextStatus is "Ready" or "Cancelled",
             "Ready" => nextStatus is "Completed" or "Cancelled",
