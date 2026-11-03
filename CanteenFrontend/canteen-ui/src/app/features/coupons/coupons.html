@@ -1,0 +1,448 @@
+<div class="coupons-page-container">
+  <!-- Header Bar -->
+  <header class="page-header">
+    <div class="header-titles">
+      <div class="header-icon-badge">🎟️</div>
+      <div>
+        <h1 class="page-title">Offers & Coupon Management</h1>
+        <p class="page-subtitle">Configure promotional discounts, manage usage caps, and boost canteen sales</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-create-coupon" (click)="openCreateModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        Create New Coupon
+      </button>
+    </div>
+  </header>
+
+  <!-- Notification Alerts -->
+  @if (successMessage()) {
+  <div class="alert-banner success">
+    <span>✓ {{ successMessage() }}</span>
+  </div>
+  }
+
+  @if (errorMessage()) {
+  <div class="alert-banner error">
+    <span>✕ {{ errorMessage() }}</span>
+  </div>
+  }
+
+  <!-- KPI Metric Cards -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon total">🏷️</div>
+      <div class="metric-info">
+        <span class="metric-label">Total Coupons</span>
+        <span class="metric-value">{{ report()?.totalCoupons ?? coupons().length }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon active">⚡</div>
+      <div class="metric-info">
+        <span class="metric-label">Active Campaigns</span>
+        <span class="metric-value text-success">{{ report()?.activeCoupons ?? 0 }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon redemptions">👥</div>
+      <div class="metric-info">
+        <span class="metric-label">Total Redemptions</span>
+        <span class="metric-value text-accent">{{ report()?.totalRedemptions ?? 0 }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon savings">💰</div>
+      <div class="metric-info">
+        <span class="metric-label">Total Discounts Given</span>
+        <span class="metric-value">₹{{ (report()?.totalDiscountGiven ?? 0) | number:'1.2-2' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Search Toolbar -->
+  <div class="toolbar-card">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input
+        type="text"
+        placeholder="Search by coupon code, title, or description..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)" />
+    </div>
+
+    <div class="status-filter-pills">
+      <button
+        class="filter-pill"
+        [class.active]="filterStatus() === 'all'"
+        (click)="filterStatus.set('all')">
+        All ({{ coupons().length }})
+      </button>
+      <button
+        class="filter-pill"
+        [class.active]="filterStatus() === 'active'"
+        (click)="filterStatus.set('active')">
+        Active Only
+      </button>
+      <button
+        class="filter-pill"
+        [class.active]="filterStatus() === 'expired'"
+        (click)="filterStatus.set('expired')">
+        Expired
+      </button>
+    </div>
+  </div>
+
+  <!-- Coupons List Table -->
+  <div class="coupons-card">
+    @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading promotional offers...</p>
+    </div>
+    } @else if (filteredCoupons().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">🎟️</div>
+      <h3>No Promotional Offers Found</h3>
+      <p>Launch your first discount campaign to attract customers and reward repeat visits.</p>
+      <button class="btn-create-coupon-empty" (click)="openCreateModal()">
+        + Create First Offer
+      </button>
+    </div>
+    } @else {
+    <div class="table-responsive">
+      <table class="coupons-table">
+        <thead>
+          <tr>
+            <th>Coupon Code & Title</th>
+            <th>Discount Value</th>
+            <th>Order Criteria</th>
+            <th>Usage & Limits</th>
+            <th>Validity Window</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (coupon of filteredCoupons(); track coupon.couponId) {
+          <tr>
+            <!-- Code & Title -->
+            <td>
+              <div class="coupon-cell">
+                <div class="code-badge-group">
+                  <span class="code-badge">{{ coupon.code }}</span>
+                  <button class="btn-copy" (click)="copyCode(coupon.code)" title="Copy Code">
+                    📋
+                  </button>
+                </div>
+                <span class="coupon-title">{{ coupon.title }}</span>
+                @if (coupon.description) {
+                <span class="coupon-desc">{{ coupon.description }}</span>
+                }
+              </div>
+            </td>
+
+            <!-- Discount Value -->
+            <td>
+              <div class="discount-cell">
+                @if (coupon.discountType === 'Percentage') {
+                <span class="discount-pill percent">{{ coupon.discountValue }}% OFF</span>
+                @if (coupon.maxDiscountAmount) {
+                <span class="discount-cap">Up to ₹{{ coupon.maxDiscountAmount | number:'1.2-2' }}</span>
+                }
+                } @else {
+                <span class="discount-pill fixed">₹{{ coupon.discountValue | number:'1.2-2' }} FLAT</span>
+                }
+              </div>
+            </td>
+
+            <!-- Order Criteria -->
+            <td>
+              <div class="criteria-cell">
+                <span class="criteria-label">Min Order:</span>
+                <span class="criteria-val">₹{{ coupon.minOrderAmount | number:'1.2-2' }}</span>
+                <span class="criteria-sub">Per User: {{ coupon.usageLimitPerCustomer }}x</span>
+              </div>
+            </td>
+
+            <!-- Usage & Limits -->
+            <td>
+              <div class="usage-cell">
+                <div class="usage-text">
+                  <strong>{{ coupon.timesUsed }}</strong>
+                  <span class="text-muted">/ {{ coupon.totalUsageLimit ? coupon.totalUsageLimit : '∞' }} redeemed</span>
+                </div>
+                @if (coupon.totalUsageLimit) {
+                <div class="progress-bar-bg">
+                  <div
+                    class="progress-bar-fill"
+                    [style.width.%]="(coupon.timesUsed / coupon.totalUsageLimit) * 100">
+                  </div>
+                </div>
+                }
+              </div>
+            </td>
+
+            <!-- Validity Window -->
+            <td>
+              <div class="validity-cell">
+                <span class="validity-expiry">Expires: {{ coupon.endDate | date:'dd MMM yyyy' }}</span>
+                <span class="validity-start">Started: {{ coupon.startDate | date:'dd MMM yyyy' }}</span>
+              </div>
+            </td>
+
+            <!-- Status Toggle -->
+            <td>
+              <button
+                class="status-toggle-btn"
+                [class.active]="coupon.isActive"
+                (click)="toggleStatus(coupon)">
+                <span class="toggle-dot"></span>
+                {{ coupon.isActive ? 'Active' : 'Paused' }}
+              </button>
+            </td>
+
+            <!-- Actions -->
+            <td>
+              <div class="actions-cell">
+                <button class="btn-action edit" (click)="openEditModal(coupon)" title="Edit">
+                  ✏️
+                </button>
+                <button class="btn-action delete" (click)="deleteCoupon(coupon)" title="Delete">
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+  </div>
+
+  <!-- Create / Edit Modal -->
+  @if (isModalOpen()) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-header-icon">🎟️</span>
+          <div>
+            <h3 class="modal-title">{{ editingCouponId() ? 'Edit Promotional Coupon' : 'Create New Promotional Coupon' }}</h3>
+            <p class="modal-subtitle">Offer special discounts to incentivize customer dining and increase basket size</p>
+          </div>
+        </div>
+        <button class="btn-close" (click)="closeModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Live Offer Ticket Preview -->
+        <div class="ticket-preview-box">
+          <div class="ticket-stub">
+            <span class="ticket-tag">CANTEEN OFFER</span>
+            <span class="ticket-code">{{ formCode || 'PROMOCODE' }}</span>
+          </div>
+          <div class="ticket-content">
+            <h4 class="ticket-title">{{ formTitle || 'Special Offer Title' }}</h4>
+            <p class="ticket-discount">
+              @if (formDiscountType === 'Percentage') {
+              {{ formDiscountValue || 0 }}% OFF @if (formMaxDiscountAmount) { (Up to ₹{{ formMaxDiscountAmount }}) }
+              } @else {
+              Flat ₹{{ formDiscountValue || 0 }} OFF
+              }
+            </p>
+            <span class="ticket-min">Min order: ₹{{ formMinOrderAmount || 0 }} • Valid until {{ formEndDate || 'End Date' }}</span>
+          </div>
+        </div>
+
+        <form class="coupon-form" (ngSubmit)="saveCoupon()">
+          <div class="form-row two-col">
+            <div class="form-group">
+              <label class="form-label" for="couponCode">Coupon Code *</label>
+              <input
+                id="couponCode"
+                type="text"
+                class="form-control code-input"
+                placeholder="e.g. WELCOME20"
+                [disabled]="!!editingCouponId()"
+                [(ngModel)]="formCode"
+                name="code"
+                maxlength="20"
+                required />
+              <small class="form-hint">Uppercase letters and numbers only.</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="couponTitle">Offer Title *</label>
+              <input
+                id="couponTitle"
+                type="text"
+                class="form-control"
+                placeholder="e.g. Welcome 20% Discount"
+                [(ngModel)]="formTitle"
+                name="title"
+                required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="couponDescription">Description (Optional)</label>
+            <input
+              id="couponDescription"
+              type="text"
+              class="form-control"
+              placeholder="e.g. Applicable on all biryanis and meal bowls during lunch hours."
+              [(ngModel)]="formDescription"
+              name="description" />
+          </div>
+
+          <div class="form-row three-col">
+            <div class="form-group">
+              <label class="form-label">Discount Type *</label>
+              <div class="type-pill-group">
+                <button
+                  type="button"
+                  class="type-pill"
+                  [class.active]="formDiscountType === 'Percentage'"
+                  (click)="formDiscountType = 'Percentage'">
+                  Percentage (%)
+                </button>
+                <button
+                  type="button"
+                  class="type-pill"
+                  [class.active]="formDiscountType === 'FixedAmount'"
+                  (click)="formDiscountType = 'FixedAmount'">
+                  Flat (₹)
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="discountValue">
+                {{ formDiscountType === 'Percentage' ? 'Discount Percentage (%) *' : 'Discount Amount (₹) *' }}
+              </label>
+              <input
+                id="discountValue"
+                type="number"
+                class="form-control"
+                min="0.01"
+                step="0.01"
+                [(ngModel)]="formDiscountValue"
+                name="discountValue"
+                required />
+            </div>
+
+            @if (formDiscountType === 'Percentage') {
+            <div class="form-group">
+              <label class="form-label" for="maxDiscount">Max Discount Limit (₹)</label>
+              <input
+                id="maxDiscount"
+                type="number"
+                class="form-control"
+                placeholder="Optional (e.g. 50)"
+                min="0"
+                [(ngModel)]="formMaxDiscountAmount"
+                name="maxDiscountAmount" />
+              <small class="form-hint">Cap on savings.</small>
+            </div>
+            }
+          </div>
+
+          <div class="form-row three-col">
+            <div class="form-group">
+              <label class="form-label" for="minOrder">Min Food Subtotal (₹)</label>
+              <input
+                id="minOrder"
+                type="number"
+                class="form-control"
+                placeholder="0 for none"
+                min="0"
+                [(ngModel)]="formMinOrderAmount"
+                name="minOrderAmount" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="perUserLimit">Per-Customer Limit *</label>
+              <input
+                id="perUserLimit"
+                type="number"
+                class="form-control"
+                min="1"
+                [(ngModel)]="formUsageLimitPerCustomer"
+                name="usageLimitPerCustomer"
+                required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="totalLimit">Total Redemptions Cap</label>
+              <input
+                id="totalLimit"
+                type="number"
+                class="form-control"
+                placeholder="Unlimited"
+                min="1"
+                [(ngModel)]="formTotalUsageLimit"
+                name="totalUsageLimit" />
+            </div>
+          </div>
+
+          <div class="form-row two-col">
+            <div class="form-group">
+              <label class="form-label" for="startDate">Valid From Date</label>
+              <input
+                id="startDate"
+                type="date"
+                class="form-control"
+                [(ngModel)]="formStartDate"
+                name="startDate" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="endDate">Expiry Date *</label>
+              <input
+                id="endDate"
+                type="date"
+                class="form-control"
+                [(ngModel)]="formEndDate"
+                name="endDate"
+                required />
+            </div>
+          </div>
+
+          <div class="form-checkbox-row">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="formIsActive" name="isActive" />
+              <span>Enable and activate this coupon immediately</span>
+            </label>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" (click)="closeModal()" [disabled]="saving()">
+          Cancel
+        </button>
+        <button type="button" class="btn-modal-save" (click)="saveCoupon()" [disabled]="saving()">
+          @if (saving()) {
+          <span class="spinner-small"></span> Saving...
+          } @else {
+          {{ editingCouponId() ? 'Save Changes' : 'Publish Offer' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+</div>
+

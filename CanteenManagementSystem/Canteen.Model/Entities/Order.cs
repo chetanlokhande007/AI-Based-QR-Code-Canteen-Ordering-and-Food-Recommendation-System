@@ -20,6 +20,13 @@ namespace Canteen.Model.Entities
         // Food Subtotal (Sum of items * quantity)
         public decimal SubtotalAmount { get; set; }
 
+        // Promotional Coupon discount applied to food subtotal
+        public decimal DiscountAmount { get; set; } = 0.00m;
+
+        // Promotional Coupon snapshot details
+        public int? CouponId { get; set; }
+        public string? CouponCode { get; set; }
+
         // Tax / GST amount
         public decimal TaxAmount { get; set; }
 
@@ -63,5 +70,9 @@ namespace Canteen.Model.Entities
 
         public ICollection<StockTransaction> StockTransactions { get; set; }
             = new List<StockTransaction>();
+
+        public Coupon? Coupon { get; set; }
+
+        public CouponRedemption? CouponRedemption { get; set; }
     }
 }

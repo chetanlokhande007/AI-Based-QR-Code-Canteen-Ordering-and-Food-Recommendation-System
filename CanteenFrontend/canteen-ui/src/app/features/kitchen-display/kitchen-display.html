@@ -1,0 +1,474 @@
+<div class="kds-container" [class.is-fullscreen]="isFullscreen()">
+  <!-- Top Command Bar -->
+  <header class="kds-header">
+    <div class="header-left">
+      <div class="title-cluster">
+        <h1 class="kds-title">Kitchen Display System</h1>
+        <div class="connection-badge" [class.connected]="isLiveConnected()">
+          <span class="status-dot"></span>
+          {{ isLiveConnected() ? 'Live Connected' : 'Connecting...' }}
+        </div>
+      </div>
+      <p class="kds-subtitle">Real-time touch station for cooks and kitchen staff</p>
+    </div>
+
+    <!-- Quick KPI Strip -->
+    <div class="kpi-strip">
+      <div class="kpi-pill pending">
+        <span class="kpi-num">{{ pendingCount() }}</span>
+        <span class="kpi-label">Pending</span>
+      </div>
+      <div class="kpi-pill cooking">
+        <span class="kpi-num">{{ preparingCount() }}</span>
+        <span class="kpi-label">Cooking</span>
+      </div>
+      <div class="kpi-pill ready">
+        <span class="kpi-num">{{ readyCount() }}</span>
+        <span class="kpi-label">Ready</span>
+      </div>
+      <div class="kpi-pill avg-time">
+        <span class="kpi-num">{{ avgPrepTime() }}</span>
+        <span class="kpi-label">Avg Wait</span>
+      </div>
+    </div>
+
+    <!-- Utility Controls -->
+    <div class="header-actions">
+      <!-- Audio Toggle -->
+      <button 
+        type="button" 
+        class="util-btn" 
+        [class.active]="audioAlert.audioEnabled()" 
+        (click)="audioAlert.toggleAudio()"
+        title="Toggle Chime Sound">
+        <svg *ngIf="audioAlert.audioEnabled()" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+        </svg>
+        <svg *ngIf="!audioAlert.audioEnabled()" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="1" y1="1" x2="23" y2="23" />
+          <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" />
+          <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23" />
+          <line x1="12" y1="19" x2="12" y2="23" />
+          <line x1="8" y1="23" x2="16" y2="23" />
+        </svg>
+        <span>{{ audioAlert.audioEnabled() ? 'Sound On' : 'Muted' }}</span>
+      </button>
+
+      <!-- Test Sound -->
+      <button type="button" class="util-btn" (click)="testAudio()" title="Test Bell & Voice">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+          <path d="M4 22h16" />
+          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+        </svg>
+        <span>Test Bell</span>
+      </button>
+
+      <!-- Fullscreen Toggle -->
+      <button type="button" class="util-btn" (click)="toggleFullscreen()" title="Toggle Fullscreen">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+        </svg>
+        <span>{{ isFullscreen() ? 'Exit Full' : 'Fullscreen' }}</span>
+      </button>
+
+      <!-- Manage Smart TVs Button -->
+      <button type="button" class="util-btn tv-manage-btn" (click)="openTvModal()" title="Manage & Pair Smart TVs">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="20" height="15" x="2" y="7" rx="2" ry="2" />
+          <polyline points="17 2 12 7 7 2" />
+        </svg>
+        <span>Smart TVs</span>
+      </button>
+
+      <!-- Launch TV Pickup Display -->
+      <button type="button" class="launch-tv-btn" (click)="openTvDisplay()">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="20" height="15" x="2" y="7" rx="2" ry="2" />
+          <polyline points="17 2 12 7 7 2" />
+        </svg>
+        <span>Launch TV Display</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Incoming Order Banner Notification -->
+  <div *ngIf="newOrderBanner()" class="kds-alert-banner">
+    <span>{{ newOrderBanner() }}</span>
+  </div>
+
+  <!-- Filter & Controls Toolbar -->
+  <div class="kds-toolbar">
+    <div class="tabs-group">
+      <button
+        *ngFor="let tab of tabs"
+        type="button"
+        class="tab-btn"
+        [class.active]="selectedTab() === tab"
+        (click)="selectedTab.set(tab)">
+        {{ tab }}
+        <span class="tab-badge" *ngIf="tab === 'All Active'">{{ tickets().length }}</span>
+        <span class="tab-badge" *ngIf="tab === 'Pending'">{{ pendingCount() }}</span>
+        <span class="tab-badge" *ngIf="tab === 'Preparing'">{{ preparingCount() }}</span>
+        <span class="tab-badge" *ngIf="tab === 'Ready'">{{ readyCount() }}</span>
+      </button>
+    </div>
+
+    <div class="toolbar-right">
+      <button type="button" class="refresh-btn" (click)="loadTickets()" [disabled]="loading()">
+        <svg class="icon" [class.spinning]="loading()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+        </svg>
+        <span>Refresh</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage()" class="kds-error">
+    {{ errorMessage() }}
+  </div>
+
+  <!-- Tickets Grid / Kanban -->
+  <div class="tickets-grid" *ngIf="!loading() && filteredTickets().length > 0">
+    <div
+      *ngFor="let ticket of filteredTickets()"
+      class="ticket-card"
+      [class.status-pending]="isPending(ticket.status)"
+      [class.status-preparing]="isPreparing(ticket.status)"
+      [class.status-ready]="isReady(ticket.status)"
+      [class.urgency-critical]="ticket.urgency === 'critical'"
+      [class.urgency-warning]="ticket.urgency === 'warning'">
+
+      <!-- Ticket Header -->
+      <div class="ticket-header">
+        <div class="token-wrap">
+          <span class="token-prefix">TOKEN</span>
+          <span class="token-val">{{ ticket.tokenNumber }}</span>
+        </div>
+
+        <div class="ticket-meta">
+          <span class="table-tag" *ngIf="ticket.tableId && ticket.tableId > 0">Table {{ ticket.tableId }}</span>
+          <span class="table-tag takeaway" *ngIf="!ticket.tableId || ticket.tableId <= 0">Takeaway</span>
+
+          <!-- Stopwatch Timer -->
+          <div class="timer-badge" [class]="'timer-' + ticket.urgency">
+            <svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span>{{ formatElapsed(ticket.elapsedMinutes) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Info Bar -->
+      <div class="ticket-subbar">
+        <span class="order-num-text">#{{ ticket.orderNumber }}</span>
+        <span class="pay-badge" [class.paid]="ticket.paymentStatus === 'Paid'">
+          {{ ticket.paymentStatus }}
+        </span>
+      </div>
+
+      <!-- Plating Checklist Items -->
+      <div class="ticket-items">
+        <div
+          *ngFor="let item of ticket.items"
+          class="item-row"
+          [class.plated]="isItemPlated(ticket.orderId, item.productId)"
+          (click)="toggleItemPlated(ticket.orderId, item.productId)">
+          <div class="item-left">
+            <span class="item-checkbox" [class.checked]="isItemPlated(ticket.orderId, item.productId)">
+              ✓
+            </span>
+            <span class="item-qty">{{ item.quantity }}x</span>
+            <span class="item-name">{{ item.productName }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ticket Footer Actions -->
+      <div class="ticket-footer">
+        <!-- Status: Pending -> Start Cooking -->
+        <button
+          *ngIf="isPending(ticket.status)"
+          type="button"
+          class="action-btn btn-start-prep"
+          [disabled]="activeOrderIdAction() === ticket.orderId"
+          (click)="startCooking(ticket)">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v8m0 4v8M2 12h8m4 0h8" />
+          </svg>
+          <span>{{ activeOrderIdAction() === ticket.orderId ? 'Starting...' : 'Start Cooking' }}</span>
+        </button>
+
+        <!-- Status: Preparing -> Mark Ready -->
+        <button
+          *ngIf="isPreparing(ticket.status)"
+          type="button"
+          class="action-btn btn-mark-ready"
+          [disabled]="activeOrderIdAction() === ticket.orderId"
+          (click)="markReady(ticket)">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          <span>{{ activeOrderIdAction() === ticket.orderId ? 'Updating...' : 'Order Ready 🔔' }}</span>
+        </button>
+
+        <!-- Status: Ready -> Call Again & Bump -->
+        <div *ngIf="isReady(ticket.status)" class="ready-action-cluster">
+          <button
+            type="button"
+            class="action-btn btn-call-tv"
+            [disabled]="announcingOrderId() === ticket.orderId"
+            (click)="announceOnTv(ticket)"
+            title="Re-announce token on Dining Hall TV">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            </svg>
+            <span>Call</span>
+          </button>
+
+          <button
+            type="button"
+            class="action-btn btn-bump-complete"
+            [disabled]="activeOrderIdAction() === ticket.orderId"
+            (click)="bumpComplete(ticket)"
+            title="Customer picked up order">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>{{ activeOrderIdAction() === ticket.orderId ? 'Completing...' : 'Bump / Done' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="kds-empty-state">
+    <div class="spinner"></div>
+    <p>Loading live kitchen orders...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading() && filteredTickets().length === 0" class="kds-empty-state">
+    <div class="empty-icon-wrap">
+      <svg class="empty-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+      </svg>
+    </div>
+    <h2>Kitchen Queue is Clear! 🎉</h2>
+    <p>All active tickets have been prepared and collected. New orders will automatically appear with an audio chime.</p>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- SMART TV MANAGEMENT & PAIRING MODAL           -->
+  <!-- ============================================== -->
+  <div *ngIf="showTvModal()" class="tv-modal-backdrop" (click)="closeTvModal()">
+    <div class="tv-modal-container" (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="tv-modal-header">
+        <div class="tv-modal-title-cluster">
+          <div class="tv-modal-icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect width="20" height="15" x="2" y="7" rx="2" ry="2" />
+              <polyline points="17 2 12 7 7 2" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="tv-modal-title">Smart TV Management</h2>
+            <p class="tv-modal-subtitle">Connect and configure wireless pickup token displays for dining areas and kitchen counters</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" (click)="closeTvModal()">×</button>
+      </div>
+
+      <!-- Action Notices -->
+      <div *ngIf="tvActionSuccess()" class="modal-alert-banner success">
+        <span>✓ {{ tvActionSuccess() }}</span>
+      </div>
+      <div *ngIf="tvActionError()" class="modal-alert-banner error">
+        <span>⚠ {{ tvActionError() }}</span>
+      </div>
+
+      <!-- Modal Tabs -->
+      <div class="tv-modal-tabs">
+        <button
+          type="button"
+          class="tv-tab-btn"
+          [class.active]="tvModalTab() === 'connected'"
+          (click)="tvModalTab.set('connected'); loadTvDevices()">
+          Connected TVs
+          <span class="tv-tab-count">{{ tvDevices().length }}</span>
+        </button>
+        <button
+          type="button"
+          class="tv-tab-btn"
+          [class.active]="tvModalTab() === 'connect'"
+          (click)="tvModalTab.set('connect')">
+          + Connect New TV
+        </button>
+      </div>
+
+      <!-- TAB 1: CONNECTED DEVICES -->
+      <div *ngIf="tvModalTab() === 'connected'" class="tv-modal-body">
+        <div *ngIf="loadingDevices()" class="modal-loading-state">
+          <div class="spinner"></div>
+          <p>Loading connected Smart TVs...</p>
+        </div>
+
+        <div *ngIf="!loadingDevices() && tvDevices().length === 0" class="modal-empty-state">
+          <div class="empty-icon-wrap">📺</div>
+          <h3>No Smart TVs Connected</h3>
+          <p>Pair a Smart TV screen or tablet to display live preparing and ready tokens to customers.</p>
+          <button type="button" class="btn-primary-action" (click)="tvModalTab.set('connect')">
+            Connect First Smart TV
+          </button>
+        </div>
+
+        <div *ngIf="!loadingDevices() && tvDevices().length > 0" class="tv-devices-list">
+          <div *ngFor="let device of tvDevices()" class="tv-device-card" [class.inactive]="!device.isActive">
+            <div class="tv-device-info">
+              <div class="tv-device-main">
+                <span class="tv-device-name">{{ device.deviceName }}</span>
+                <span class="device-status-badge" [class.active]="device.isActive">
+                  {{ device.isActive ? 'Active' : 'Revoked' }}
+                </span>
+                <span class="device-station-tag" [class.station-beverage]="device.stationScope === 'Beverage'" [class.station-food]="device.stationScope === 'Food'">
+                  {{ device.stationScope === 'Beverage' ? '🥤 Beverage Counter' : device.stationScope === 'Food' ? '🍳 Food Station' : '🍽️ All Orders' }}
+                </span>
+              </div>
+              <div class="tv-device-meta">
+                <span>Registered: {{ device.registeredAt | date:'mediumDate' }}</span>
+                <span *ngIf="device.lastConnectedAt">• Last active: {{ device.lastConnectedAt | date:'shortTime' }}</span>
+              </div>
+            </div>
+
+            <div class="tv-device-actions">
+              <button
+                *ngIf="device.isActive"
+                type="button"
+                class="btn-revoke-device"
+                (click)="revokeTvDevice(device)"
+                title="Disconnect TV screen immediately">
+                Disconnect
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: CONNECT NEW TV -->
+      <div *ngIf="tvModalTab() === 'connect'" class="tv-modal-body">
+        <!-- Step 1: Form to Generate PIN -->
+        <div *ngIf="!activePairingSession()" class="pairing-form-wrap">
+          <div class="form-group">
+            <label class="form-label">TV Display Name</label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="e.g. Dining Hall Main TV, Drinks Counter TV"
+              [value]="newTvName()"
+              (input)="newTvName.set($any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Kitchen Station Scope</label>
+            <div class="station-options-grid">
+              <label class="station-option" [class.selected]="newTvStation() === 'All'">
+                <input
+                  type="radio"
+                  name="stationScope"
+                  value="All"
+                  [checked]="newTvStation() === 'All'"
+                  (change)="newTvStation.set('All')" />
+                <div class="station-opt-content">
+                  <span class="opt-title">🍽️ All Orders</span>
+                  <span class="opt-desc">Displays all food items, snacks, and beverages across all stations</span>
+                </div>
+              </label>
+
+              <label class="station-option" [class.selected]="newTvStation() === 'Food'">
+                <input
+                  type="radio"
+                  name="stationScope"
+                  value="Food"
+                  [checked]="newTvStation() === 'Food'"
+                  (change)="newTvStation.set('Food')" />
+                <div class="station-opt-content">
+                  <span class="opt-title">🍳 Food Station Only</span>
+                  <span class="opt-desc">Displays only hot meals and dishes prepared by the kitchen cooks</span>
+                </div>
+              </label>
+
+              <label class="station-option" [class.selected]="newTvStation() === 'Beverage'">
+                <input
+                  type="radio"
+                  name="stationScope"
+                  value="Beverage"
+                  [checked]="newTvStation() === 'Beverage'"
+                  (change)="newTvStation.set('Beverage')" />
+                <div class="station-opt-content">
+                  <span class="opt-title">🥤 Beverage Counter Only</span>
+                  <span class="opt-desc">Displays only coffee, tea, cold drinks, juices, and shakes</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="btn-primary-action btn-generate-pin"
+            [disabled]="isGeneratingCode()"
+            (click)="generatePairingCode()">
+            <span *ngIf="!isGeneratingCode()">Generate 6-Digit Pairing PIN</span>
+            <span *ngIf="isGeneratingCode()">Generating PIN...</span>
+          </button>
+        </div>
+
+        <!-- Step 2: Display PIN with Countdown -->
+        <div *ngIf="activePairingSession()" class="active-pin-display-wrap">
+          <div class="pin-callout-card">
+            <span class="pin-badge-header">TEMPORARY PAIRING PIN</span>
+            <div class="large-pin-number">
+              {{ activePairingSession()!.pairingCode }}
+            </div>
+            <div class="pin-expiry-badge" [class.expired]="pairingCountdownSeconds() <= 0">
+              <span class="expiry-dot"></span>
+              <span *ngIf="pairingCountdownSeconds() > 0">Expires in {{ formattedPairingCountdown() }}</span>
+              <span *ngIf="pairingCountdownSeconds() <= 0">PIN Expired</span>
+            </div>
+          </div>
+
+          <div class="pin-instructions-list">
+            <h4>Instructions to Pair:</h4>
+            <ol>
+              <li>Open any browser on your Smart TV or tablet.</li>
+              <li>Navigate to: <code class="code-url">/kitchen/tv</code> (or click "Launch TV Display")</li>
+              <li>Enter the 6-digit PIN above using the TV remote or mouse.</li>
+              <li>The TV will automatically connect and stream live tokens for station <strong>{{ activePairingSession()!.stationScope }}</strong>!</li>
+            </ol>
+          </div>
+
+          <div class="pin-actions-footer">
+            <button type="button" class="btn-secondary-action" (click)="activePairingSession.set(null)">
+              Generate Another PIN
+            </button>
+            <button type="button" class="btn-primary-action" (click)="closeTvModal()">
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

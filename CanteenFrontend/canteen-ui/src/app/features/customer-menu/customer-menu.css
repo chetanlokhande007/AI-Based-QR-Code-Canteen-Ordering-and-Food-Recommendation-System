@@ -2463,3 +2463,234 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* ==========================================================================
+   Offers & Coupon Management (Cart Drawer Integration)
+   ========================================================================== */
+
+.coupon-section {
+  padding: 12px 16px;
+  background: #F8FAFC;
+  border-top: 1px solid #E2E8F0;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.available-offers-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.offers-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.offers-chips-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.offer-chip {
+  background: #FFFFFF;
+  border: 1.5px dashed #0D9488;
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.offer-chip:hover {
+  background: #F0FDFA;
+  border-color: #0F766E;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.15);
+}
+
+.chip-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.chip-code {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #0F766E;
+  font-family: monospace;
+}
+
+.chip-desc {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.btn-chip-apply {
+  background: #0D9488;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* Coupon Input Group */
+.coupon-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.coupon-input {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #0F172A;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.coupon-input:focus {
+  border-color: #0D9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+.btn-apply-coupon {
+  padding: 9px 18px;
+  background: #0D9488;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-apply-coupon:hover:not(:disabled) {
+  background: #0F766E;
+}
+
+.btn-apply-coupon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Applied Coupon Badge Card */
+.applied-coupon-card {
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.applied-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.applied-icon {
+  font-size: 1.2rem;
+}
+
+.applied-code-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.applied-code {
+  font-weight: 800;
+  color: #065F46;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.applied-badge {
+  background: #10B981;
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.applied-saving {
+  display: block;
+  font-size: 0.72rem;
+  color: #047857;
+  font-weight: 600;
+}
+
+.btn-remove-coupon {
+  background: none;
+  border: 1px solid #A7F3D0;
+  color: #DC2626;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-remove-coupon:hover {
+  background: #FEF2F2;
+  border-color: #F87171;
+}
+
+.coupon-msg {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.coupon-msg.success {
+  color: #059669;
+}
+
+.coupon-msg.error {
+  color: #DC2626;
+}
+
+/* Bill breakdown discount rows */
+.bill-row.discount-row {
+  color: #059669;
+  font-weight: 700;
+}
+
+.discount-value {
+  color: #059669;
+  font-weight: 800;
+}
+
+.bill-row.net-subtotal-row {
+  font-size: 0.78rem;
+  color: #64748B;
+  border-bottom: 1px dashed #E2E8F0;
+  padding-bottom: 4px;
+}

@@ -24,7 +24,6 @@ builder.Services.AddDbContext<CanteenDbContext>(options =>
     options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
 });
 
-// â”€â”€â”€ DAL â€“ Repositories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddScoped<ICanteenRepository, CanteenRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -37,6 +36,8 @@ builder.Services.AddScoped<IOrderCancellationRepository, OrderCancellationReposi
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IRecommendationRepository, RecommendationRepository>();
+builder.Services.AddScoped<ICouponRepository, CouponRepository>();
+builder.Services.AddScoped<ITvDeviceRepository, TvDeviceRepository>();
 
 // â”€â”€â”€ BAL â€“ Services â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddScoped<ICanteenService, CanteenService>();
@@ -50,6 +51,9 @@ builder.Services.AddScoped<IRefundService, RefundService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IFoodRecommendationService, FoodRecommendationService>();
+builder.Services.AddScoped<ICouponService, CouponService>();
+builder.Services.AddScoped<ITvDeviceService, TvDeviceService>();
+builder.Services.AddScoped<IPaymentDashboardService, PaymentDashboardService>();
 
 builder.Services.AddHttpClient<RazorpayPaymentService>();
 var useMockPayment = builder.Configuration.GetValue<bool>("Razorpay:UseMock");
@@ -85,7 +89,6 @@ else
 builder.Services.AddScoped<IOrderNotificationService, OrderNotificationService>();
 builder.Services.AddSignalR();
 
-// â”€â”€â”€ JWT Authentication â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT key is missing.");
 
@@ -148,7 +151,6 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// â”€â”€â”€ CORS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Origins are loaded from Cors:AllowedOrigins in appsettings (per-environment).
 // Production values must be set via environment variables or a secret manager.
 const string CorsPolicyName = "AllowFrontend";
@@ -189,10 +191,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-// â”€â”€â”€ API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddControllers();
 
-// â”€â”€â”€ Swagger / Swashbuckle with JWT Bearer Support â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -237,7 +237,6 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// â”€â”€â”€ Auto-apply migrations on startup (development only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Production migrations must be applied through controlled CI/CD pipelines
 // or EF Core migration bundles to prevent concurrency deadlocks across replicas.
 if (app.Environment.IsDevelopment())
@@ -287,7 +286,6 @@ if (app.Environment.IsDevelopment())
     }
 }
 
-// â”€â”€â”€ Middleware pipeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // Global exception handler: returns a structured JSON 500 in all environments
 // without leaking internal details (stack traces, EF queries, etc.) to clients.

@@ -29,6 +29,8 @@ public class OrderService : IOrderService
     private readonly IInventoryRepository? _inventoryRepo;
     private readonly IOrderCancellationRepository? _cancellationRepo;
     private readonly IRefundService? _refundService;
+    private readonly ICouponService? _couponService;
+    private readonly ICouponRepository? _couponRepo;
 
     public OrderService(
         IOrderRepository orderRepo,
@@ -92,7 +94,9 @@ public class OrderService : IOrderService
         IRecipeRepository? recipeRepo,
         IInventoryRepository? inventoryRepo,
         IOrderCancellationRepository? cancellationRepo,
-        IRefundService? refundService)
+        IRefundService? refundService,
+        ICouponService? couponService = null,
+        ICouponRepository? couponRepo = null)
     {
         _orderRepo = orderRepo;
         _productRepo = productRepo;
@@ -104,6 +108,8 @@ public class OrderService : IOrderService
         _inventoryRepo = inventoryRepo;
         _cancellationRepo = cancellationRepo;
         _refundService = refundService;
+        _couponService = couponService;
+        _couponRepo = couponRepo;
     }
 
     public async Task<OrderDto> CreateAsync(CreateOrderDto dto, string qrToken)
@@ -292,6 +298,43 @@ public class OrderService : IOrderService
                 });
             }
 
+            // Coupon validation & discount calculation
+            decimal discountAmount = 0.00m;
+            int? appliedCouponId = null;
+            string? appliedCouponCode = null;
+            Coupon? appliedCoupon = null;
+
+            if (!string.IsNullOrWhiteSpace(dto.CouponCode) && _couponService != null && _couponRepo != null)
+            {
+                var valResult = await _couponService.ValidateCouponAsync(canteenId, new ValidateCouponRequestDto
+                {
+                    Code = dto.CouponCode,
+                    FoodSubtotal = subtotalAmount,
+                    CustomerIdentifier = dto.CustomerPhone
+                });
+
+                if (!valResult.IsValid)
+                {
+                    foreach (var (pId, qty) in deductedProducts)
+                    {
+                        await _productRepo.RestoreStockAsync(canteenId, pId, qty);
+                    }
+                    throw new InvalidOrderException(valResult.Message);
+                }
+
+                discountAmount = valResult.DiscountAmount;
+                appliedCouponCode = valResult.Code;
+                appliedCoupon = await _couponRepo.GetByCodeAsync(canteenId, appliedCouponCode!);
+                if (appliedCoupon != null)
+                {
+                    appliedCouponId = appliedCoupon.CouponId;
+                    appliedCoupon.TimesUsed++;
+                    await _couponRepo.UpdateCouponAsync(appliedCoupon);
+                }
+            }
+
+            decimal netFoodSubtotal = Math.Max(0m, subtotalAmount - discountAmount);
+
             // Read canteen tax and platform fee policy if available
             decimal taxPercentage = 0;
             string feePolicy = "CustomerPays";
@@ -305,23 +348,23 @@ public class OrderService : IOrderService
                 }
             }
 
-            decimal taxAmount = Math.Round(subtotalAmount * (taxPercentage / 100m), 2);
+            decimal taxAmount = Math.Round(netFoodSubtotal * (taxPercentage / 100m), 2);
             decimal platformFeeAmount = 5.00m; // Standard CanteenHub platform fee
             decimal totalAmount;
             decimal canteenEarningsAmount;
 
             if (string.Equals(feePolicy, "CanteenAbsorbs", StringComparison.OrdinalIgnoreCase))
             {
-                // Customer only pays food + tax; canteen absorbs platform fee from their earnings
-                totalAmount = subtotalAmount + taxAmount;
-                canteenEarningsAmount = Math.Max(0m, (subtotalAmount + taxAmount) - platformFeeAmount);
+                // Customer only pays net food + tax; canteen absorbs platform fee from their earnings
+                totalAmount = netFoodSubtotal + taxAmount;
+                canteenEarningsAmount = Math.Max(0m, (netFoodSubtotal + taxAmount) - platformFeeAmount);
             }
             else
             {
-                // Customer pays food + tax + platform fee; canteen gets food + tax
+                // Customer pays net food + tax + platform fee; canteen gets net food + tax
                 feePolicy = "CustomerPays";
-                totalAmount = subtotalAmount + taxAmount + platformFeeAmount;
-                canteenEarningsAmount = subtotalAmount + taxAmount;
+                totalAmount = netFoodSubtotal + taxAmount + platformFeeAmount;
+                canteenEarningsAmount = netFoodSubtotal + taxAmount;
             }
 
             // 5. Generate human-friendly unique order number and cryptographically random tracking token
@@ -345,6 +388,9 @@ public class OrderService : IOrderService
                 Status = "Pending",
                 PaymentStatus = "Pending",
                 SubtotalAmount = subtotalAmount,
+                DiscountAmount = discountAmount,
+                CouponCode = appliedCouponCode,
+                CouponId = appliedCouponId,
                 TaxAmount = taxAmount,
                 PlatformFeeAmount = platformFeeAmount,
                 PlatformFeePolicy = feePolicy,
@@ -356,7 +402,23 @@ public class OrderService : IOrderService
                 StockReservation = stockReservation
             };
 
-            return await _orderRepo.AddAsync(order);
+            var savedOrder = await _orderRepo.AddAsync(order);
+
+            if (appliedCouponId.HasValue && _couponRepo != null)
+            {
+                var redemption = new CouponRedemption
+                {
+                    CouponId = appliedCouponId.Value,
+                    OrderId = savedOrder.OrderId,
+                    CanteenId = canteenId,
+                    CustomerIdentifier = dto.CustomerPhone ?? "Customer",
+                    DiscountAmountApplied = discountAmount,
+                    RedeemedAt = DateTime.UtcNow
+                };
+                await _couponRepo.AddRedemptionAsync(redemption);
+            }
+
+            return savedOrder;
         });
 
         // Populate navigation names for the DTO
@@ -586,9 +648,9 @@ public class OrderService : IOrderService
         }
 
         if (string.Equals(newStatus, "InPreparation", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(newStatus, "Ready", StringComparison.OrdinalIgnoreCase))
+            string.Equals(newStatus, "Ready", StringComparison.OrdinalIgnoreCase) || string.Equals(newStatus, "Completed", StringComparison.OrdinalIgnoreCase))
         {
-            await _notificationService.NotifyOrderStatusUpdatedAsync(order.OrderId, order.OrderNumber, newStatus, DateTime.UtcNow);
+            await _notificationService.NotifyOrderStatusUpdatedAsync(order.OrderId, order.OrderNumber, newStatus, DateTime.UtcNow, order.CanteenId);
         }
 
         return dto;
@@ -740,6 +802,9 @@ public class OrderService : IOrderService
         Status = o.Status,
         PaymentStatus = o.PaymentStatus,
         SubtotalAmount = o.SubtotalAmount,
+        DiscountAmount = o.DiscountAmount,
+        CouponCode = o.CouponCode,
+        CouponId = o.CouponId,
         TaxAmount = o.TaxAmount,
         PlatformFeeAmount = o.PlatformFeeAmount,
         PlatformFeePolicy = o.PlatformFeePolicy,

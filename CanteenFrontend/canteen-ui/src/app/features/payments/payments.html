@@ -1,0 +1,1057 @@
+<div class="payments-container">
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="header-left">
+      <div class="header-icon-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="header-icon">
+          <rect width="20" height="14" x="2" y="5" rx="2" />
+          <line x1="2" x2="22" y1="10" y2="10" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="page-title">Payments</h1>
+        <p class="page-subtitle">Manage payments, settlements, refunds and payment settings for your canteen.</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Date Range Dropdown -->
+      <div class="date-dropdown-wrapper">
+        <svg class="calendar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="18" height="18" x="3" y="4" rx="2" />
+          <line x1="16" x2="16" y1="2" y2="6" />
+          <line x1="8" x2="8" y1="2" y2="6" />
+          <line x1="3" x2="21" y1="10" y2="10" />
+        </svg>
+        <select 
+          class="date-select" 
+          [ngModel]="selectedDateRange()" 
+          (ngModelChange)="onDateRangeChange($event)">
+          @for (opt of dateRangeOptions; track opt) {
+            <option [value]="opt">{{ opt }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Export Report Button -->
+      <button class="btn btn-export" (click)="exportReport()" [disabled]="isExporting()">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" x2="12" y1="15" y2="3" />
+        </svg>
+        <span>{{ isExporting() ? 'Exporting...' : 'Export Report' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- SUMMARY CARDS ROW -->
+  <section class="summary-cards-grid">
+    <!-- Total Payments -->
+    <div class="summary-card">
+      <div class="summary-card-header">
+        <span class="card-label">Total Payments</span>
+        <div class="card-icon-pill icon-pill-teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="20" height="14" x="2" y="5" rx="2" />
+            <line x1="2" x2="22" y1="10" y2="10" />
+          </svg>
+        </div>
+      </div>
+      <div class="card-metric">
+        @if (isSummaryLoading()) {
+          <span class="skeleton-text">₹------</span>
+        } @else {
+          {{ formatCurrency(summary()?.totalAmount || 0) }}
+        }
+      </div>
+      <div class="card-subtext">
+        @if (summary()?.comparisonPercentage !== null && summary()?.comparisonPercentage !== undefined) {
+          <span class="trend-badge positive">
+            ▲ +{{ summary()?.comparisonPercentage }}% {{ summary()?.comparisonLabel }}
+          </span>
+        } @else {
+          <span class="neutral-subtext">{{ summary()?.totalCount || 0 }} total transactions</span>
+        }
+      </div>
+    </div>
+
+    <!-- Successful -->
+    <div class="summary-card">
+      <div class="summary-card-header">
+        <span class="card-label">Successful</span>
+        <div class="card-icon-pill icon-pill-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          </svg>
+        </div>
+      </div>
+      <div class="card-metric">
+        @if (isSummaryLoading()) {
+          <span class="skeleton-text">₹------</span>
+        } @else {
+          {{ formatCurrency(summary()?.successfulAmount || 0) }}
+        }
+      </div>
+      <div class="card-subtext">
+        <span class="percentage-subtext">{{ summary()?.successfulPercentage || 0 }}% of total</span>
+      </div>
+    </div>
+
+    <!-- Failed -->
+    <div class="summary-card">
+      <div class="summary-card-header">
+        <span class="card-label">Failed</span>
+        <div class="card-icon-pill icon-pill-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" x2="9" y1="9" y2="15" />
+            <line x1="9" x2="15" y1="9" y2="15" />
+          </svg>
+        </div>
+      </div>
+      <div class="card-metric">
+        @if (isSummaryLoading()) {
+          <span class="skeleton-text">₹------</span>
+        } @else {
+          {{ formatCurrency(summary()?.failedAmount || 0) }}
+        }
+      </div>
+      <div class="card-subtext">
+        <span class="percentage-subtext muted-red">{{ summary()?.failedPercentage || 0 }}% of total</span>
+      </div>
+    </div>
+
+    <!-- Refunded -->
+    <div class="summary-card">
+      <div class="summary-card-header">
+        <span class="card-label">Refunded</span>
+        <div class="card-icon-pill icon-pill-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+          </svg>
+        </div>
+      </div>
+      <div class="card-metric">
+        @if (isSummaryLoading()) {
+          <span class="skeleton-text">₹------</span>
+        } @else {
+          {{ formatCurrency(summary()?.refundedAmount || 0) }}
+        }
+      </div>
+      <div class="card-subtext">
+        <span class="percentage-subtext muted-orange">{{ summary()?.refundedPercentage || 0 }}% of total</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="payments-tabs">
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'transactions'" 
+      (click)="onTabChange('transactions')">
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="8" x2="21" y1="6" y2="6" />
+        <line x1="8" x2="21" y1="12" y2="12" />
+        <line x1="8" x2="21" y1="18" y2="18" />
+        <line x1="3" x2="3.01" y1="6" y2="6" />
+        <line x1="3" x2="3.01" y1="12" y2="12" />
+        <line x1="3" x2="3.01" y1="18" y2="18" />
+      </svg>
+      <span>Transactions</span>
+    </button>
+
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'settlements'" 
+      (click)="onTabChange('settlements')">
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect width="20" height="12" x="2" y="6" rx="2" />
+        <circle cx="12" cy="12" r="2" />
+        <path d="M6 12h.01M18 12h.01" />
+      </svg>
+      <span>Settlements</span>
+    </button>
+
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'refunds'" 
+      (click)="onTabChange('refunds')">
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="23 4 23 10 17 10" />
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+      </svg>
+      <span>Refunds & Disputes</span>
+    </button>
+
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'methods'" 
+      (click)="onTabChange('methods')">
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect width="20" height="14" x="2" y="5" rx="2" />
+        <line x1="2" x2="22" y1="10" y2="10" />
+      </svg>
+      <span>Payment Methods</span>
+    </button>
+
+    <button 
+      class="tab-btn" 
+      [class.active]="activeTab() === 'settings'" 
+      (click)="onTabChange('settings')">
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+  <!-- SPLIT DASHBOARD LAYOUT -->
+  <div class="dashboard-split-layout">
+
+    <!-- LEFT PANEL: ACTIVE TAB CONTENT -->
+    <div class="left-main-panel">
+
+      <!-- TAB 1: TRANSACTIONS -->
+      @if (activeTab() === 'transactions') {
+        <div class="tab-card">
+          <div class="tab-card-header">
+            <div>
+              <h2 class="card-inner-title">Transaction History</h2>
+              <p class="card-inner-subtitle">All payment transactions for your canteen.</p>
+            </div>
+
+            <div class="table-toolbar">
+              <!-- Search Box -->
+              <div class="search-input-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" x2="16.65" y1="21" y2="16.65" />
+                </svg>
+                <input 
+                  type="text" 
+                  placeholder="Search by Order ID, Transaction ID..." 
+                  [value]="searchTerm()" 
+                  (input)="onSearch($event)" />
+              </div>
+
+              <!-- Status Filter Dropdown -->
+              <select class="filter-select" [ngModel]="selectedStatus()" (ngModelChange)="onStatusFilter($event)">
+                <option value="All">All Statuses</option>
+                <option value="Success">Success</option>
+                <option value="Failed">Failed</option>
+                <option value="Pending">Pending</option>
+                <option value="Refunded">Refunded</option>
+              </select>
+
+              <!-- Method Filter Dropdown -->
+              <select class="filter-select" [ngModel]="selectedMethod()" (ngModelChange)="onMethodFilter($event)">
+                <option value="All">All Methods</option>
+                <option value="Razorpay">Razorpay</option>
+                <option value="UPI">UPI</option>
+                <option value="Cards">Cards</option>
+                <option value="Cash">Cash / Counter</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Error Alert -->
+          @if (transactionsError()) {
+            <div class="error-banner">
+              <span>{{ transactionsError() }}</span>
+              <button class="btn-retry" (click)="loadTransactions()">Retry</button>
+            </div>
+          }
+
+          <!-- Transactions Table -->
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Transaction ID</th>
+                  <th>Customer</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                  <th>Date & Time</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (isTransactionsLoading()) {
+                  @for (i of [1,2,3,4,5]; track i) {
+                    <tr class="skeleton-row">
+                      <td colspan="8"><div class="skeleton-bar"></div></td>
+                    </tr>
+                  }
+                } @else if (transactions().length === 0) {
+                  <tr>
+                    <td colspan="8" class="empty-state-cell">
+                      <div class="empty-state-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="empty-icon">
+                          <rect width="20" height="14" x="2" y="5" rx="2" />
+                          <line x1="2" x2="22" y1="10" y2="10" />
+                        </svg>
+                        <p class="empty-title">No transactions found</p>
+                        <p class="empty-desc">No payment records match your active search or filters.</p>
+                      </div>
+                    </td>
+                  </tr>
+                } @else {
+                  @for (tx of transactions(); track tx.paymentId) {
+                    <tr>
+                      <td class="font-bold text-teal clickable" (click)="openDetailsModal(tx)">
+                        {{ tx.orderNumber }}
+                      </td>
+                      <td class="text-secondary mono-text" [title]="tx.transactionId">
+                        {{ tx.transactionId.length > 14 ? tx.transactionId.substring(0, 14) + '...' : tx.transactionId }}
+                      </td>
+                      <td>
+                        <div class="customer-cell">
+                          <div class="avatar-circle">{{ tx.customerInitials }}</div>
+                          <span class="customer-name">{{ tx.customerName }}</span>
+                        </div>
+                      </td>
+                      <td class="font-bold">{{ formatCurrency(tx.amount) }}</td>
+                      <td>
+                        <div class="method-badge">
+                          @if (tx.paymentMethod.toLowerCase().includes('razor')) {
+                            <svg class="method-icon razorpay-color" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M7 21h4.5l5.5-12h-4.5L7 21z" />
+                            </svg>
+                          } @else if (tx.paymentMethod.toLowerCase().includes('upi')) {
+                            <span class="method-text-upi">UPI</span>
+                          } @else if (tx.paymentMethod.toLowerCase().includes('card')) {
+                            <svg class="method-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <rect width="20" height="14" x="2" y="5" rx="2" />
+                              <line x1="2" x2="22" y1="10" y2="10" />
+                            </svg>
+                          } @else {
+                            <svg class="method-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <circle cx="12" cy="12" r="10" />
+                              <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                              <path d="M12 18V6" />
+                            </svg>
+                          }
+                          <span>{{ tx.paymentMethod }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="status-badge" [class]="'status-' + tx.status.toLowerCase()">
+                          @if (tx.status.toLowerCase() === 'success') {
+                            <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          } @else if (tx.status.toLowerCase() === 'failed') {
+                            <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <line x1="18" x2="6" y1="6" y2="18" />
+                              <line x1="6" x2="18" y1="6" y2="18" />
+                            </svg>
+                          } @else if (tx.status.toLowerCase() === 'refunded') {
+                            <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="1 4 1 10 7 10" />
+                              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                            </svg>
+                          } @else {
+                            <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <circle cx="12" cy="12" r="10" />
+                              <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                          }
+                          {{ tx.status }}
+                        </span>
+                      </td>
+                      <td class="text-secondary text-sm">
+                        {{ tx.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+                      </td>
+                      <td class="text-right">
+                        <button class="btn-action-more" (click)="openDetailsModal(tx)" title="View Details">
+                          •••
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Footer -->
+          <div class="pagination-footer">
+            <span class="pagination-info">
+              Showing {{ transactions().length === 0 ? 0 : ((currentPage() - 1) * pageSize() + 1) }} - 
+              {{ (currentPage() - 1) * pageSize() + transactions().length }} of {{ totalTransactions() }} transactions
+            </span>
+
+            <div class="pagination-buttons">
+              <button 
+                class="pg-btn" 
+                [disabled]="currentPage() === 1" 
+                (click)="onPageChange(currentPage() - 1)">
+                ‹
+              </button>
+
+              @for (p of getPageNumbers(); track $index) {
+                @if (p === '...') {
+                  <span class="pg-ellipsis">...</span>
+                } @else {
+                  <button 
+                    class="pg-btn" 
+                    [class.active]="currentPage() === p" 
+                    (click)="onPageChange(+p)">
+                    {{ p }}
+                  </button>
+                }
+              }
+
+              <button 
+                class="pg-btn" 
+                [disabled]="currentPage() === totalPages() || totalPages() === 0" 
+                (click)="onPageChange(currentPage() + 1)">
+                ›
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- TAB 2: SETTLEMENTS -->
+      @if (activeTab() === 'settlements') {
+        <div class="tab-card">
+          <div class="tab-card-header">
+            <div>
+              <h2 class="card-inner-title">Settlement Management</h2>
+              <p class="card-inner-subtitle">Review payout schedule, sales revenue, platform fees and bank disbursement status.</p>
+            </div>
+          </div>
+
+          <div class="settlement-detail-grid">
+            <div class="settle-box">
+              <span class="settle-label">Available for Settlement</span>
+              <span class="settle-value text-green">{{ formatCurrency(settlement()?.availableForSettlement || 0) }}</span>
+              <span class="settle-sub">{{ settlement()?.payoutSchedule || 'Daily (Auto T+1)' }}</span>
+            </div>
+
+            <div class="settle-box">
+              <span class="settle-label">Gross Merchandise Value (Sales)</span>
+              <span class="settle-value">{{ formatCurrency(settlement()?.grossSales || 0) }}</span>
+              <span class="settle-sub">Total customer order payments</span>
+            </div>
+
+            <div class="settle-box">
+              <span class="settle-label">Platform Fees Deducted</span>
+              <span class="settle-value text-secondary">{{ formatCurrency(settlement()?.platformFeesDeducted || 0) }}</span>
+              <span class="settle-sub">Software maintenance & hosting fees</span>
+            </div>
+
+            <div class="settle-box">
+              <span class="settle-label">Refunds Deducted</span>
+              <span class="settle-value text-secondary">{{ formatCurrency(settlement()?.totalRefundsDeducted || 0) }}</span>
+              <span class="settle-sub">Processed customer refunds</span>
+            </div>
+          </div>
+
+          <div class="bank-details-summary-card">
+            <div class="bds-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="bds-icon">
+                <rect width="20" height="12" x="2" y="6" rx="2" />
+                <circle cx="12" cy="12" r="2" />
+              </svg>
+              <div>
+                <h3 class="bds-title">Beneficiary Bank Account</h3>
+                <p class="bds-subtitle">Direct deposit account for automatic daily settlements</p>
+              </div>
+              <button class="btn btn-outline" (click)="onTabChange('settings')">Edit Details</button>
+            </div>
+
+            <div class="bds-content">
+              <div class="bds-field">
+                <span class="field-k">Bank Name</span>
+                <span class="field-v">{{ settlement()?.bankName || 'Not Configured' }}</span>
+              </div>
+              <div class="bds-field">
+                <span class="field-k">Account Number</span>
+                <span class="field-v mono-text">{{ settlement()?.accountNumberMasked || 'Not Configured' }}</span>
+              </div>
+              <div class="bds-field">
+                <span class="field-k">IFSC Code</span>
+                <span class="field-v mono-text">{{ settlement()?.ifscCode || 'Not Configured' }}</span>
+              </div>
+              <div class="bds-field">
+                <span class="field-k">Account Type</span>
+                <span class="field-v">{{ settlement()?.accountType || 'Current' }}</span>
+              </div>
+              <div class="bds-field">
+                <span class="field-k">Settlement Status</span>
+                <span class="status-badge" [class.status-success]="settlement()?.settlementStatus === 'Ready for Payout'" [class.status-failed]="settlement()?.settlementStatus === 'Bank Required'">
+                  {{ settlement()?.settlementStatus || 'Ready for Payout' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- TAB 3: REFUNDS & DISPUTES -->
+      @if (activeTab() === 'refunds') {
+        <div class="tab-card">
+          <div class="tab-card-header">
+            <div>
+              <h2 class="card-inner-title">Refunds & Order Cancellations</h2>
+              <p class="card-inner-subtitle">Audit trail of order refunds and cancellations processed for this canteen.</p>
+            </div>
+            <button class="btn btn-primary" (click)="openRefundModal()">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" x2="12" y1="5" y2="19" />
+                <line x1="5" x2="19" y1="12" y2="12" />
+              </svg>
+              <span>Initiate Refund</span>
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Refund ID</th>
+                  <th>Order #</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                  <th>Reason</th>
+                  <th>Initiated By</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (isRefundsLoading()) {
+                  <tr class="skeleton-row">
+                    <td colspan="8"><div class="skeleton-bar"></div></td>
+                  </tr>
+                } @else if (refunds().length === 0) {
+                  <tr>
+                    <td colspan="8" class="empty-state-cell">
+                      <div class="empty-state-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="empty-icon">
+                          <polyline points="1 4 1 10 7 10" />
+                          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                        </svg>
+                        <p class="empty-title">No refunds recorded</p>
+                        <p class="empty-desc">No customer refunds or cancellations have been processed for your canteen.</p>
+                      </div>
+                    </td>
+                  </tr>
+                } @else {
+                  @for (r of refunds(); track r.refundId) {
+                    <tr>
+                      <td class="mono-text">#REF-{{ r.refundId }}</td>
+                      <td class="font-bold text-teal">{{ r.orderNumber }}</td>
+                      <td class="font-bold">{{ formatCurrency(r.amount) }}</td>
+                      <td>{{ r.refundMethod || 'Gateway' }}</td>
+                      <td>
+                        <span class="status-badge status-refunded">{{ r.status }}</span>
+                      </td>
+                      <td class="text-secondary text-sm max-w-xs">{{ r.reason }}</td>
+                      <td>{{ r.initiatedByRole }}</td>
+                      <td class="text-secondary text-sm">{{ r.createdAt | date:'dd MMM yyyy, hh:mm a' }}</td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- TAB 4: PAYMENT METHODS -->
+      @if (activeTab() === 'methods') {
+        <div class="tab-card">
+          <div class="tab-card-header">
+            <div>
+              <h2 class="card-inner-title">Payment Method Channels</h2>
+              <p class="card-inner-subtitle">Configure customer checkout payment options enabled for your canteen.</p>
+            </div>
+          </div>
+
+          <div class="methods-card-grid">
+            @for (m of paymentMethods(); track m.id) {
+              <div class="method-box">
+                <div class="mb-header">
+                  <div class="mb-icon-box">
+                    @if (m.id === 'razorpay') {
+                      <svg viewBox="0 0 24 24" fill="currentColor" class="mb-icon razorpay-color">
+                        <path d="M7 21h4.5l5.5-12h-4.5L7 21z" />
+                      </svg>
+                    } @else if (m.id === 'upi') {
+                      <span class="mb-icon-text">UPI</span>
+                    } @else if (m.id === 'cards') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-icon">
+                        <rect width="20" height="14" x="2" y="5" rx="2" />
+                        <line x1="2" x2="22" y1="10" y2="10" />
+                      </svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-icon">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                      </svg>
+                    }
+                  </div>
+                  <span class="status-pill-green">● Active</span>
+                </div>
+
+                <h3 class="mb-title">{{ m.name }}</h3>
+                <p class="mb-subtitle">{{ m.subtitle }}</p>
+                <div class="mb-footer">
+                  <span class="mb-provider">Provider: {{ m.provider }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- TAB 5: SETTINGS -->
+      @if (activeTab() === 'settings') {
+        <div class="tab-card">
+          <div class="tab-card-header">
+            <div>
+              <h2 class="card-inner-title">Payment & Settlement Settings</h2>
+              <p class="card-inner-subtitle">Manage payout bank details, UPI VPA, platform fee policy and GST tax rate.</p>
+            </div>
+          </div>
+
+          @if (settingsSuccessMessage()) {
+            <div class="success-banner">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="banner-icon">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span>{{ settingsSuccessMessage() }}</span>
+            </div>
+          }
+
+          @if (settingsErrorMessage()) {
+            <div class="error-banner">
+              <span>{{ settingsErrorMessage() }}</span>
+            </div>
+          }
+
+          <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="settings-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Bank Name</label>
+                <input type="text" formControlName="bankName" placeholder="e.g. HDFC Bank, SBI, ICICI" />
+              </div>
+              <div class="form-group">
+                <label>Account Holder Name</label>
+                <input type="text" formControlName="bankAccountHolder" placeholder="e.g. Canteen Business Name" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Bank Account Number</label>
+                <input type="text" formControlName="accountNumber" placeholder="9 to 18 digit account number" />
+              </div>
+              <div class="form-group">
+                <label>IFSC Code</label>
+                <input type="text" formControlName="ifscCode" placeholder="e.g. HDFC0001234" style="text-transform: uppercase;" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Account Type</label>
+                <select formControlName="accountType">
+                  <option value="Current">Current Account</option>
+                  <option value="Savings">Savings Account</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Settlement UPI ID (VPA)</label>
+                <input type="text" formControlName="upiId" placeholder="e.g. canteen@okhdfcbank" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Platform Fee Absorption Policy</label>
+                <select formControlName="feeAbsorptionPolicy">
+                  <option value="CustomerPays">Customer Pays (Fee added to customer checkout)</option>
+                  <option value="CanteenAbsorbs">Canteen Absorbs (Fee deducted from canteen earnings)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Applicable GST / Tax Rate (%)</label>
+                <input type="number" formControlName="taxPercentage" min="0" max="28" step="0.5" placeholder="0" />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" [disabled]="isSettingsSaving() || settingsForm.invalid">
+                {{ isSettingsSaving() ? 'Saving...' : 'Save Payment Settings' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+
+    </div>
+
+    <!-- RIGHT PANEL: OVERVIEW DONUT & SETTLEMENT SUMMARY -->
+    <div class="right-sidebar-panel">
+
+      <!-- Payment Overview Donut Card -->
+      <div class="side-card">
+        <div class="side-card-header">
+          <div class="sc-title-group">
+            <svg class="sc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" x2="12" y1="16" y2="12" />
+              <line x1="12" x2="12.01" y1="8" y2="8" />
+            </svg>
+            <h3 class="side-card-title">Payment Overview</h3>
+          </div>
+        </div>
+
+        <div class="donut-chart-container">
+          <!-- SVG Donut Chart -->
+          <div class="donut-svg-wrapper">
+            <svg viewBox="0 0 120 120" class="donut-svg">
+              <!-- Base Circle Background Track -->
+              <circle 
+                cx="60" cy="60" r="45" 
+                class="donut-track" 
+                fill="none" 
+                stroke="#E2E8F0" 
+                stroke-width="12" />
+
+              <!-- Successful Segment (Green) -->
+              <circle 
+                cx="60" cy="60" r="45" 
+                class="donut-segment donut-succ" 
+                fill="none" 
+                stroke="#10B981" 
+                stroke-width="12" 
+                stroke-linecap="round"
+                [attr.stroke-dasharray]="successfulStrokeDash()" 
+                stroke-dashoffset="0" />
+
+              <!-- Failed Segment (Red) -->
+              @if ((summary()?.failedPercentage || 0) > 0) {
+                <circle 
+                  cx="60" cy="60" r="45" 
+                  class="donut-segment donut-fail" 
+                  fill="none" 
+                  stroke="#EF4444" 
+                  stroke-width="12" 
+                  stroke-linecap="round"
+                  [attr.stroke-dasharray]="failedStrokeDash()" 
+                  [attr.stroke-dashoffset]="failedStrokeOffset()" />
+              }
+
+              <!-- Refunded Segment (Orange) -->
+              @if ((summary()?.refundedPercentage || 0) > 0) {
+                <circle 
+                  cx="60" cy="60" r="45" 
+                  class="donut-segment donut-ref" 
+                  fill="none" 
+                  stroke="#F59E0B" 
+                  stroke-width="12" 
+                  stroke-linecap="round"
+                  [attr.stroke-dasharray]="refundedStrokeDash()" 
+                  [attr.stroke-dashoffset]="refundedStrokeOffset()" />
+              }
+            </svg>
+
+            <!-- Center Text in Donut -->
+            <div class="donut-center-label">
+              <span class="donut-total-amt">{{ formatCurrency(summary()?.totalAmount || 0) }}</span>
+              <span class="donut-total-txt">Total</span>
+            </div>
+          </div>
+
+          <!-- Donut Legend -->
+          <div class="donut-legend">
+            <div class="legend-item">
+              <div class="legend-color-box bg-green"></div>
+              <span class="legend-name">Successful</span>
+              <span class="legend-value">{{ summary()?.successfulPercentage || 0 }}%</span>
+            </div>
+
+            <div class="legend-item">
+              <div class="legend-color-box bg-red"></div>
+              <span class="legend-name">Failed</span>
+              <span class="legend-value">{{ summary()?.failedPercentage || 0 }}%</span>
+            </div>
+
+            <div class="legend-item">
+              <div class="legend-color-box bg-orange"></div>
+              <span class="legend-name">Refunded</span>
+              <span class="legend-value">{{ summary()?.refundedPercentage || 0 }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settlement Summary Card -->
+      <div class="side-card">
+        <div class="side-card-header">
+          <div class="sc-title-group">
+            <svg class="sc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect width="20" height="12" x="2" y="6" rx="2" />
+              <circle cx="12" cy="12" r="2" />
+            </svg>
+            <h3 class="side-card-title">Settlement Summary</h3>
+          </div>
+          <svg class="info-bubble-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" x2="12" y1="16" y2="12" />
+            <line x1="12" x2="12.01" y1="8" y2="8" />
+          </svg>
+        </div>
+
+        <div class="settlement-summary-content">
+          <div class="ss-row">
+            <span class="ss-label">Available for Settlement</span>
+            <span class="ss-val text-green font-bold">
+              {{ formatCurrency(settlement()?.availableForSettlement || 0) }}
+            </span>
+          </div>
+
+          <div class="ss-row">
+            <span class="ss-label">Next Settlement (Auto)</span>
+            <span class="ss-val">
+              {{ settlement()?.nextSettlementDate ? (settlement()?.nextSettlementDate | date:'dd MMM yyyy') : 'Tomorrow (T+1)' }}
+            </span>
+          </div>
+
+          <div class="ss-row">
+            <span class="ss-label">Settlement Account</span>
+            <div class="ss-account-group">
+              <span class="ss-val mono-text">{{ settlement()?.accountNumberMasked || '••••1234' }}</span>
+              <button class="btn-icon-tiny" (click)="onTabChange('settings')" title="Edit Bank Details">
+                ✎
+              </button>
+            </div>
+          </div>
+
+          <button class="btn-link-action" (click)="onTabChange('settlements')">
+            <span>View Settlement Details</span>
+            <span class="arrow-right">→</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM ROW: ENABLED METHODS + QUICK ACTIONS -->
+  <footer class="bottom-footer-grid">
+    <!-- Payment Methods (Enabled) Card -->
+    <div class="bottom-card">
+      <h3 class="bottom-card-title">Payment Methods (Enabled)</h3>
+      <div class="enabled-methods-row">
+        <!-- Razorpay Pill -->
+        <div class="enabled-method-pill">
+          <svg class="pill-icon razorpay-color" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 21h4.5l5.5-12h-4.5L7 21z" />
+          </svg>
+          <div class="pill-text-group">
+            <span class="pill-name">Razorpay</span>
+            <span class="pill-sub">Online payments</span>
+          </div>
+          <span class="pill-status-dot">● Active</span>
+        </div>
+
+        <!-- UPI Pill -->
+        <div class="enabled-method-pill">
+          <span class="pill-upi-logo">UPI</span>
+          <div class="pill-text-group">
+            <span class="pill-name">UPI</span>
+            <span class="pill-sub">GPay, PhonePe, Paytm etc.</span>
+          </div>
+          <span class="pill-status-dot">● Active</span>
+        </div>
+
+        <!-- Cards Pill -->
+        <div class="enabled-method-pill">
+          <svg class="pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="20" height="14" x="2" y="5" rx="2" />
+            <line x1="2" x2="22" y1="10" y2="10" />
+          </svg>
+          <div class="pill-text-group">
+            <span class="pill-name">Cards</span>
+            <span class="pill-sub">Credit & Debit Cards</span>
+          </div>
+          <span class="pill-status-dot">● Active</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions Card -->
+    <div class="bottom-card">
+      <div class="bottom-card-header">
+        <svg class="lightning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
+        <h3 class="bottom-card-title">Quick Actions</h3>
+      </div>
+
+      <div class="quick-actions-row">
+        <!-- Reconcile Payments -->
+        <button class="btn btn-action-card" (click)="reconcilePayments()" [disabled]="isReconciling()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="20" height="12" x="2" y="6" rx="2" />
+            <circle cx="12" cy="12" r="2" />
+          </svg>
+          <span>{{ isReconciling() ? 'Checking...' : 'Reconcile Payments' }}</span>
+        </button>
+
+        <!-- Initiate Refund -->
+        <button class="btn btn-action-card" (click)="openRefundModal()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+          </svg>
+          <span>Initiate Refund</span>
+        </button>
+
+        <!-- Download Statement -->
+        <button class="btn btn-action-card" (click)="exportReport()" [disabled]="isExporting()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" x2="12" y1="15" y2="3" />
+          </svg>
+          <span>Download Statement</span>
+        </button>
+      </div>
+
+      @if (reconciliationResult()) {
+        <div class="reconcile-toast">
+          {{ reconciliationResult()?.message }}
+        </div>
+      }
+    </div>
+  </footer>
+
+  <!-- TRANSACTION DETAILS MODAL -->
+  @if (showDetailsModal() && activeTransactionDetails()) {
+    <div class="modal-backdrop" (click)="closeDetailsModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">Payment Transaction Details</h3>
+          <button class="btn-close" (click)="closeDetailsModal()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-row">
+            <span class="detail-k">Order Number:</span>
+            <span class="detail-v text-teal font-bold">{{ activeTransactionDetails()?.orderNumber }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-k">Transaction ID:</span>
+            <span class="detail-v mono-text">{{ activeTransactionDetails()?.transactionId }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-k">Customer:</span>
+            <span class="detail-v">{{ activeTransactionDetails()?.customerName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-k">Amount:</span>
+            <span class="detail-v font-bold">{{ formatCurrency(activeTransactionDetails()?.amount || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-k">Payment Method:</span>
+            <span class="detail-v">{{ activeTransactionDetails()?.paymentMethod }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-k">Status:</span>
+            <span class="status-badge" [class]="'status-' + activeTransactionDetails()?.status?.toLowerCase()">
+              {{ activeTransactionDetails()?.status }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-k">Created At:</span>
+            <span class="detail-v">{{ activeTransactionDetails()?.createdAt | date:'medium' }}</span>
+          </div>
+          @if (activeTransactionDetails()?.failureReason) {
+            <div class="detail-row">
+              <span class="detail-k">Failure Reason:</span>
+              <span class="detail-v text-red">{{ activeTransactionDetails()?.failureReason }}</span>
+            </div>
+          }
+        </div>
+        <div class="modal-footer">
+          @if (activeTransactionDetails()?.status === 'Success') {
+            <button class="btn btn-outline-danger" (click)="openRefundModal(activeTransactionDetails()!)">
+              Request Refund
+            </button>
+          }
+          <button class="btn btn-primary" (click)="closeDetailsModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- REFUND MODAL -->
+  @if (showRefundModal()) {
+    <div class="modal-backdrop" (click)="closeRefundModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">Initiate Payment Refund</h3>
+          <button class="btn-close" (click)="closeRefundModal()">✕</button>
+        </div>
+        <div class="modal-body">
+          @if (refundModalError()) {
+            <div class="error-banner mb-3">{{ refundModalError() }}</div>
+          }
+          @if (refundModalMessage()) {
+            <div class="success-banner mb-3">{{ refundModalMessage() }}</div>
+          }
+
+          <div class="form-group mb-3">
+            <label>Select Order / Transaction</label>
+            <select 
+              class="form-select" 
+              [ngModel]="selectedTransactionForRefund()?.paymentId" 
+              (ngModelChange)="selectedTransactionForRefund.set(transactions().find(t => t.paymentId === +$event) || null)">
+              @for (tx of transactions(); track tx.paymentId) {
+                <option [value]="tx.paymentId">
+                  {{ tx.orderNumber }} - {{ formatCurrency(tx.amount) }} ({{ tx.customerName }})
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group mb-3">
+            <label>Reason for Refund</label>
+            <textarea 
+              rows="3" 
+              class="form-textarea"
+              placeholder="e.g. Item unavailable, customer requested cancellation, incorrect order" 
+              [ngModel]="refundReason()" 
+              (ngModelChange)="refundReason.set($event)"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeRefundModal()">Cancel</button>
+          <button 
+            class="btn btn-primary" 
+            [disabled]="isProcessingRefund() || !refundReason().trim()" 
+            (click)="submitRefund()">
+            {{ isProcessingRefund() ? 'Processing...' : 'Confirm Refund' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
+

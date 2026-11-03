@@ -1,3 +1,4 @@
+import { CouponsComponent } from './features/coupons/coupons';
 import { RecipesComponent } from './features/recipes/recipes';
 import { RecommendationsComponent } from './features/recommendations/recommendations';
 import { Routes } from '@angular/router';
@@ -12,6 +13,8 @@ import { Categories } from './features/categories/categories';
 import { TablesComponent } from './features/tables/tables';
 import { Orders } from './features/orders/orders';
 import { InventoryComponent } from './features/inventory/inventory';
+import { KitchenDisplayComponent } from './features/kitchen-display/kitchen-display';
+import { TvDisplayComponent } from './features/tv-display/tv-display';
 import { AdminDashboard } from './features/admin/admin-dashboard/admin-dashboard';
 import { AdminCanteens } from './features/admin/admin-canteens/admin-canteens';
 import { AdminCanteenDetailsComponent } from './features/admin/admin-canteen-details/admin-canteen-details';
@@ -21,6 +24,7 @@ import { AdminPaymentsComponent } from './features/admin/admin-payments/admin-pa
 import { AdminAuditLogsComponent } from './features/admin/admin-audit-logs/admin-audit-logs';
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
+import { PaymentsComponent } from './features/payments/payments';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -29,6 +33,13 @@ export const routes: Routes = [
   { path: 'canteen/register', component: Login },
   { path: 'menu', component: CustomerMenu },
   { path: 'c/:slug', component: CustomerMenu },
+
+  // Standalone Smart TV Display Routes (Optimized for Wall TVs & Dining Hall Screens)
+  { path: 'kitchen/tv', component: TvDisplayComponent },
+  { path: 'kitchen-display/tv', component: TvDisplayComponent },
+  { path: 'tv-display/:canteenId', component: TvDisplayComponent },
+  { path: 'tv/:canteenId', redirectTo: 'tv-display/:canteenId', pathMatch: 'full' },
+  { path: 'tv', component: TvDisplayComponent },
   
   // Platform Admin Routes (Protected by adminGuard — Completely Separate Layout)
   { path: 'admin', redirectTo: 'admin/dashboard', pathMatch: 'full' },
@@ -49,6 +60,10 @@ export const routes: Routes = [
       { path: 'dashboard', component: Dashboard },
       { path: 'owner/dashboard', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'orders', component: Orders },
+      { path: 'payments', component: PaymentsComponent },
+      { path: 'kitchen-display', component: KitchenDisplayComponent },
+      { path: 'kitchen', redirectTo: 'kitchen-display', pathMatch: 'full' },
+      { path: 'kds', redirectTo: 'kitchen-display', pathMatch: 'full' },
       { path: 'food-items', component: FoodItems },
       { path: 'dishes', redirectTo: 'food-items', pathMatch: 'full' },
       { path: 'menu-items', redirectTo: 'food-items', pathMatch: 'full' },
@@ -60,6 +75,8 @@ export const routes: Routes = [
       { path: 'recommendations', component: RecommendationsComponent },
       { path: 'ai-recommendations', redirectTo: 'recommendations', pathMatch: 'full' },
       { path: 'recommendation-insights', redirectTo: 'recommendations', pathMatch: 'full' },
+      { path: 'coupons', component: CouponsComponent },
+      { path: 'offers', redirectTo: 'coupons', pathMatch: 'full' },
       { path: 'categories', component: Categories },
       { path: 'tables', component: TablesComponent },
       { path: 'tables-qr', redirectTo: 'tables', pathMatch: 'full' },

@@ -10,6 +10,8 @@ import { OrderService } from '../../core/services/order.service';
 import { SignalRService } from '../../core/services/signalr.service';
 import { PaymentService } from '../../core/services/payment.service';
 import { RecommendationService } from '../../core/services/recommendation.service';
+import { CouponService } from '../../core/services/coupon.service';
+import { PublicCouponDto, ValidateCouponResponse } from '../../core/models/coupon.models';
 import { FoodRecommendation, CartAddonRecommendation } from '../../core/models/recommendation.models';
 import { PublicCanteenDto } from '../../core/models/canteen.models';
 import { CategoryDto } from '../../core/models/category.models';
@@ -38,7 +40,8 @@ export class CustomerMenu implements OnInit, OnDestroy {
   private readonly orderService = inject(OrderService);
   private readonly signalRService = inject(SignalRService);
   private readonly paymentService = inject(PaymentService);
-  private readonly recommendationService = inject(RecommendationService);
+  private readonly recommendationService = inject(RecommendationService);
+  private readonly couponService = inject(CouponService);
 
   private readonly subscriptions = new Subscription();
 
@@ -70,6 +73,15 @@ export class CustomerMenu implements OnInit, OnDestroy {
   readonly isSubmittingOrder = signal<boolean>(false);
   readonly orderError = signal<string | null>(null);
 
+  // Coupon & Promotional Offers State
+  readonly availableCoupons = signal<PublicCouponDto[]>([]);
+  readonly couponInputCode = signal<string>('');
+  readonly appliedCoupon = signal<ValidateCouponResponse | null>(null);
+  readonly isValidatingCoupon = signal<boolean>(false);
+  readonly couponError = signal<string | null>(null);
+  readonly couponSuccess = signal<string | null>(null);
+  readonly customerPhone = signal<string>('');
+
   // Payment Options & Processing State
   readonly selectedPaymentMethod = signal<'online' | 'counter'>('online');
   readonly isPaymentProcessing = signal<boolean>(false);
@@ -125,25 +137,37 @@ export class CustomerMenu implements OnInit, OnDestroy {
     return this.cart().reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   });
 
-  readonly cartTaxAmount = computed(() => {
-    const taxRate = this.canteen()?.taxPercentage || 0;
-    return Math.round((this.cartSubtotal() * (taxRate / 100)) * 100) / 100;
-  });
-
-  readonly platformFeeAmount = computed(() => {
-    return 5.00;
-  });
-
-  readonly isPlatformFeeAbsorbed = computed(() => {
-    return this.canteen()?.feeAbsorptionPolicy === 'CanteenAbsorbs';
-  });
-
-  readonly totalCartAmount = computed(() => {
-    const subtotal = this.cartSubtotal();
-    if (subtotal === 0) return 0;
-    const tax = this.cartTaxAmount();
-    const fee = this.isPlatformFeeAbsorbed() ? 0 : this.platformFeeAmount();
-    return Math.round((subtotal + tax + fee) * 100) / 100;
+  readonly cartDiscountAmount = computed(() => {
+    const applied = this.appliedCoupon();
+    if (!applied || !applied.isValid) return 0;
+    if (applied.minOrderAmount && this.cartSubtotal() < applied.minOrderAmount) return 0;
+    return applied.discountAmount;
+  });
+
+  readonly netFoodSubtotal = computed(() => {
+    return Math.max(0, this.cartSubtotal() - this.cartDiscountAmount());
+  });
+
+  readonly cartTaxAmount = computed(() => {
+    const taxRate = this.canteen()?.taxPercentage || 0;
+    return Math.round((this.netFoodSubtotal() * (taxRate / 100)) * 100) / 100;
+  });
+
+  readonly platformFeeAmount = computed(() => {
+    return 5.00;
+  });
+
+  readonly isPlatformFeeAbsorbed = computed(() => {
+    return this.canteen()?.feeAbsorptionPolicy === 'CanteenAbsorbs';
+  });
+
+  readonly totalCartAmount = computed(() => {
+    const subtotal = this.cartSubtotal();
+    if (subtotal === 0) return 0;
+    const netFood = this.netFoodSubtotal();
+    const tax = this.cartTaxAmount();
+    const fee = this.isPlatformFeeAbsorbed() ? 0 : this.platformFeeAmount();
+    return Math.round((netFood + tax + fee) * 100) / 100;
   });
 
   ngOnInit(): void {
@@ -367,12 +391,14 @@ export class CustomerMenu implements OnInit, OnDestroy {
     this.isSubmittingOrder.set(true);
     this.orderError.set(null);
 
-    const payload = {
-      tableId: this.tableId(),
-      items: this.cart().map((item) => ({
-        productId: item.product.productId,
-        quantity: item.quantity
-      }))
+    const payload = {
+      tableId: this.tableId(),
+      items: this.cart().map((item) => ({
+        productId: item.product.productId,
+        quantity: item.quantity
+      })),
+      couponCode: this.appliedCoupon()?.code || undefined,
+      customerPhone: this.customerPhone().trim() || undefined
     };
 
     const chosenPaymentMethod = this.selectedPaymentMethod();
@@ -559,6 +585,68 @@ export class CustomerMenu implements OnInit, OnDestroy {
     });
   }
 
+  applyCouponCode(codeToApply?: string): void {
+    const code = (codeToApply || this.couponInputCode()).trim().toUpperCase();
+    if (!code) {
+      this.couponError.set('Please enter a coupon code.');
+      this.couponSuccess.set(null);
+      return;
+    }
+
+    const cId = this.canteenId();
+    if (!cId) return;
+
+    this.isValidatingCoupon.set(true);
+    this.couponError.set(null);
+    this.couponSuccess.set(null);
+
+    this.couponService.validateCoupon(cId, {
+      code,
+      foodSubtotal: this.cartSubtotal(),
+      customerIdentifier: this.customerPhone().trim() || undefined
+    }).subscribe({
+      next: (res) => {
+        this.isValidatingCoupon.set(false);
+        if (res.isValid) {
+          this.appliedCoupon.set(res);
+          this.couponSuccess.set(`Coupon '${res.code}' applied! You saved ₹${res.discountAmount.toFixed(2)}.`);
+          this.couponError.set(null);
+          this.couponInputCode.set(res.code || '');
+        } else {
+          this.appliedCoupon.set(null);
+          this.couponError.set(res.message || 'Invalid coupon code.');
+          this.couponSuccess.set(null);
+        }
+      },
+      error: (err) => {
+        this.isValidatingCoupon.set(false);
+        this.appliedCoupon.set(null);
+        const msg = err?.error?.message || 'Could not validate coupon.';
+        this.couponError.set(msg);
+        this.couponSuccess.set(null);
+      }
+    });
+  }
+
+  removeCoupon(): void {
+    this.appliedCoupon.set(null);
+    this.couponInputCode.set('');
+    this.couponError.set(null);
+    this.couponSuccess.set(null);
+  }
+
+  loadAvailableCoupons(canteenId: number): void {
+    if (!canteenId) return;
+    this.couponService.getActiveCoupons(canteenId).subscribe({
+      next: (coupons) => {
+        this.availableCoupons.set(coupons || []);
+      },
+      error: (err) => {
+        console.warn('Failed to load active coupons:', err);
+      }
+    });
+  }
+
   openCancelModal(): void {
     this.selectedCancelReason.set(this.predefinedCancelReasons[0]);
     this.customCancelReason.set('');

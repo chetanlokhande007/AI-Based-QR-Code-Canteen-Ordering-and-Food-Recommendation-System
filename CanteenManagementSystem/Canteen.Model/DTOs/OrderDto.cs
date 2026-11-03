@@ -20,6 +20,13 @@ public class OrderDto
     // Marketplace breakdown
     public decimal SubtotalAmount { get; set; }
 
+    // Promotional Coupon Discount
+    public decimal DiscountAmount { get; set; } = 0.00m;
+
+    public string? CouponCode { get; set; }
+
+    public int? CouponId { get; set; }
+
     public decimal TaxAmount { get; set; }
 
     public decimal PlatformFeeAmount { get; set; } = 5.00m;

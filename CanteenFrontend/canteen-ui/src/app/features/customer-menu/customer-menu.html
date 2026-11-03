@@ -545,11 +545,91 @@
       </div>
 
       <div class="drawer-footer">
-        <div class="bill-breakdown">
-          <div class="bill-row">
-            <span>Food Subtotal</span>
-            <span>₹{{ cartSubtotal() | number:'1.2-2' }}</span>
-          </div>
+        <div class="coupon-section">
+          <!-- Available Promo Chips Carousel -->
+          @if (availableCoupons().length > 0 && !appliedCoupon()) {
+          <div class="available-offers-block">
+            <span class="offers-label">🏷️ Available Offers</span>
+            <div class="offers-chips-list">
+              @for (offer of availableCoupons(); track offer.couponId) {
+              <div class="offer-chip" (click)="applyCouponCode(offer.code)">
+                <div class="chip-main">
+                  <span class="chip-code">{{ offer.code }}</span>
+                  <span class="chip-desc">
+                    {{ offer.discountType === 'Percentage' ? offer.discountValue + '% OFF' : '₹' + offer.discountValue + ' FLAT' }}
+                  </span>
+                </div>
+                <button class="btn-chip-apply">Apply</button>
+              </div>
+              }
+            </div>
+          </div>
+          }
+
+          <!-- Coupon Input Form / Applied Badge -->
+          @if (!appliedCoupon()) {
+          <div class="coupon-input-group">
+            <input
+              type="text"
+              class="coupon-input"
+              placeholder="Enter Coupon / Promo Code"
+              [ngModel]="couponInputCode()"
+              (ngModelChange)="couponInputCode.set($event)"
+              (keyup.enter)="applyCouponCode()" />
+            <button
+              class="btn-apply-coupon"
+              [disabled]="isValidatingCoupon() || !couponInputCode().trim()"
+              (click)="applyCouponCode()">
+              @if (isValidatingCoupon()) {
+              <span class="spinner-small"></span>
+              } @else {
+              Apply
+              }
+            </button>
+          </div>
+          } @else {
+          <div class="applied-coupon-card">
+            <div class="applied-info">
+              <span class="applied-icon">🎉</span>
+              <div>
+                <div class="applied-code-row">
+                  <span class="applied-code">{{ appliedCoupon()?.code }}</span>
+                  <span class="applied-badge">Applied</span>
+                </div>
+                <span class="applied-saving">You save ₹{{ cartDiscountAmount() | number:'1.2-2' }} with this offer</span>
+              </div>
+            </div>
+            <button class="btn-remove-coupon" (click)="removeCoupon()">✕ Remove</button>
+          </div>
+          }
+
+          @if (couponSuccess()) {
+          <p class="coupon-msg success">✓ {{ couponSuccess() }}</p>
+          }
+          @if (couponError()) {
+          <p class="coupon-msg error">✕ {{ couponError() }}</p>
+          }
+        </div>
+
+        <div class="bill-breakdown">
+          <div class="bill-row">
+            <span>Food Subtotal</span>
+            <span>₹{{ cartSubtotal() | number:'1.2-2' }}</span>
+          </div>
+
+          @if (cartDiscountAmount() > 0) {
+          <div class="bill-row discount-row">
+            <span class="discount-label">
+              <span class="discount-icon">🏷️</span> Coupon Discount ({{ appliedCoupon()?.code }})
+            </span>
+            <span class="discount-value">- ₹{{ cartDiscountAmount() | number:'1.2-2' }}</span>
+          </div>
+          <div class="bill-row net-subtotal-row">
+            <span>Net Food Total</span>
+            <span>₹{{ netFoodSubtotal() | number:'1.2-2' }}</span>
+          </div>
+          }
+
           @if (cartTaxAmount() > 0) {
           <div class="bill-row">
             <span>Tax ({{ canteen()?.taxPercentage }}% GST)</span>

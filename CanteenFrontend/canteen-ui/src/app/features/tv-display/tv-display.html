@@ -1,0 +1,262 @@
+<div class="tv-container" [class.is-fullscreen]="isFullscreen()">
+  <!-- Top Cinema Header -->
+  <header class="tv-header">
+    <div class="tv-brand">
+      <div class="brand-badge">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+          <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+          <line x1="6" y1="1" x2="6" y2="4" />
+          <line x1="10" y1="1" x2="10" y2="4" />
+          <line x1="14" y1="1" x2="14" y2="4" />
+        </svg>
+      </div>
+      <div class="brand-titles">
+        <h1 class="canteen-title">{{ isPaired() ? canteenName() : 'CanteenHub Smart TV' }}</h1>
+        <div class="header-sub-badges">
+          <span class="canteen-tagline">{{ isPaired() ? 'LIVE ORDER STATUS & TOKEN DISPLAY' : 'SMART SCREEN PAIRING' }}</span>
+          
+          <!-- Station Scope Pill (when paired) -->
+          <span *ngIf="isPaired()" class="station-pill" [class.station-beverage]="stationScope() === 'Beverage'" [class.station-food]="stationScope() === 'Food'">
+            {{ stationScope() === 'Beverage' ? '🥤 Beverage Counter' : stationScope() === 'Food' ? '🍳 Food Station' : '🍽️ All Orders' }}
+          </span>
+
+          <span *ngIf="isPaired() && deviceName()" class="device-pill">
+            📺 {{ deviceName() }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Announcement Flash Bar (if actively calling) -->
+    <div *ngIf="isPaired() && activeAnnouncement()" class="tv-calling-banner">
+      <span class="calling-pulse-dot"></span>
+      <span class="calling-text">{{ activeAnnouncement() }}</span>
+    </div>
+
+    <!-- Right Side: Clock & TV Controls -->
+    <div class="tv-top-right">
+      <div class="tv-clock-cluster">
+        <div class="tv-digital-time">{{ currentTime() }}</div>
+        <div class="tv-digital-date">{{ currentDate() }}</div>
+      </div>
+
+      <div class="tv-controls-cluster">
+        <!-- Live Connection Indicator -->
+        <div *ngIf="isPaired()" class="tv-live-pill" [class.connected]="isLiveConnected()">
+          <span class="tv-pulse-dot"></span>
+          {{ isLiveConnected() ? 'LIVE' : 'OFFLINE' }}
+        </div>
+
+        <!-- Audio Mute Toggle -->
+        <button 
+          *ngIf="isPaired()"
+          type="button" 
+          class="tv-tool-btn" 
+          [class.active]="audioAlert.audioEnabled()" 
+          (click)="audioAlert.toggleAudio()"
+          title="Toggle TV Voice / Sound">
+          <svg *ngIf="audioAlert.audioEnabled()" class="tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+          </svg>
+          <svg *ngIf="!audioAlert.audioEnabled()" class="tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="1" y1="1" x2="23" y2="23" />
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+          </svg>
+        </button>
+
+        <!-- Test Chime -->
+        <button *ngIf="isPaired()" type="button" class="tv-tool-btn" (click)="testAudio()" title="Test TV Chime & Voice">
+          <svg class="tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+        </button>
+
+        <!-- Fullscreen Toggle -->
+        <button type="button" class="tv-tool-btn" (click)="toggleFullscreen()" title="Toggle Fullscreen Mode">
+          <svg class="tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+          </svg>
+        </button>
+
+        <!-- Disconnect / Unpair Button (paired mode) -->
+        <button *ngIf="isPaired()" type="button" class="tv-tool-btn tv-unpair-btn" (click)="unpairDevice()" title="Unpair TV Screen">
+          <svg class="tv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+            <line x1="12" y1="2" x2="12" y2="12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================== -->
+  <!-- MODE 1: SMART TV PAIRING SCREEN (WHEN NOT PAIRED) -->
+  <!-- ============================================== -->
+  <main *ngIf="!isPaired()" class="tv-pairing-viewport">
+    <div class="pairing-cinema-card">
+      <div class="pairing-badge-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="20" height="15" x="2" y="7" rx="2" ry="2" />
+          <polyline points="17 2 12 7 7 2" />
+        </svg>
+      </div>
+
+      <h2 class="pairing-heading">Connect This Smart TV</h2>
+      <p class="pairing-desc">
+        Enter the 6-digit numeric pairing code generated in your CanteenHub Kitchen Staff Dashboard to pair this screen.
+      </p>
+
+      <!-- PIN Input Slot Boxes -->
+      <div class="pin-slots-wrapper">
+        <div
+          *ngFor="let i of [0, 1, 2, 3, 4, 5]"
+          class="pin-slot"
+          [class.filled]="pairingCode().length > i"
+          [class.active]="pairingCode().length === i">
+          <span>{{ pairingCode().length > i ? pairingCode()[i] : '' }}</span>
+        </div>
+      </div>
+
+      <!-- Pairing Error Banner -->
+      <div *ngIf="pairingError()" class="pairing-error-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="error-icon">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <span>{{ pairingError() }}</span>
+      </div>
+
+      <!-- Remote / Touch Numpad -->
+      <div class="tv-numpad-grid">
+        <button
+          *ngFor="let key of numpadKeys"
+          type="button"
+          class="numpad-key"
+          [class.key-action]="key === 'Clear' || key === '⌫'"
+          (click)="onNumpadClick(key)">
+          {{ key }}
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pairing-actions-cluster">
+        <button
+          type="button"
+          class="pairing-submit-btn"
+          [disabled]="pairingCode().length !== 6 || isClaiming()"
+          (click)="submitPairing()">
+          <span *ngIf="!isClaiming()">Pair TV Screen</span>
+          <span *ngIf="isClaiming()">Connecting TV...</span>
+        </button>
+
+        <button
+          type="button"
+          class="pairing-clear-btn"
+          [disabled]="pairingCode().length === 0"
+          (click)="clearCode()">
+          Clear PIN
+        </button>
+      </div>
+
+      <!-- Quick Setup Instructions -->
+      <div class="pairing-guide-strip">
+        <div class="guide-step">
+          <span class="step-num">1</span>
+          <span>Open Kitchen Display on your computer or tablet</span>
+        </div>
+        <div class="guide-step">
+          <span class="step-num">2</span>
+          <span>Click <strong>"📺 Manage Smart TVs"</strong> &gt; <strong>"Connect New TV"</strong></span>
+        </div>
+        <div class="guide-step">
+          <span class="step-num">3</span>
+          <span>Enter the 6-digit PIN using your TV remote or mouse</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================================== -->
+  <!-- MODE 2: LIVE TV TOKEN BOARD (WHEN PAIRED)      -->
+  <!-- ============================================== -->
+  <main *ngIf="isPaired()" class="tv-main-split">
+    <!-- LEFT COLUMN: PREPARING -->
+    <section class="split-col col-preparing">
+      <div class="col-header preparing-header">
+        <div class="header-badge-wrap">
+          <span class="col-icon">🍳</span>
+          <h2 class="col-title">PREPARING</h2>
+        </div>
+        <span class="count-tag">{{ preparingOrders().length }} Orders</span>
+      </div>
+
+      <div class="tokens-viewport">
+        <div class="tokens-grid" *ngIf="preparingOrders().length > 0">
+          <div
+            *ngFor="let token of preparingOrders()"
+            class="token-card preparing-card">
+            <span class="token-hash">#</span>
+            <span class="token-digit">{{ token.tokenNumber }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="preparingOrders().length === 0" class="col-empty">
+          <span class="empty-emoji">✨</span>
+          <p>No orders currently cooking</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN: READY FOR PICKUP -->
+    <section class="split-col col-ready">
+      <div class="col-header ready-header">
+        <div class="header-badge-wrap">
+          <span class="col-icon">🔔</span>
+          <h2 class="col-title">READY FOR PICKUP</h2>
+        </div>
+        <span class="count-tag ready-tag">{{ readyOrders().length }} Ready</span>
+      </div>
+
+      <div class="counter-pickup-banner">
+        <span>👉 Please collect your order at Counter 1</span>
+      </div>
+
+      <div class="tokens-viewport">
+        <div class="tokens-grid" *ngIf="readyOrders().length > 0">
+          <div
+            *ngFor="let token of readyOrders()"
+            class="token-card ready-card"
+            [class.newly-ready-pulse]="newlyReadyToken() === token.tokenNumber">
+            <span class="token-hash">#</span>
+            <span class="token-digit">{{ token.tokenNumber }}</span>
+            <span *ngIf="newlyReadyToken() === token.tokenNumber" class="ready-flash-badge">READY NOW</span>
+          </div>
+        </div>
+
+        <div *ngIf="readyOrders().length === 0" class="col-empty">
+          <span class="empty-emoji">🍽️</span>
+          <p>Ready orders will appear here</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Ticker / Brand Footer -->
+  <footer class="tv-footer">
+    <div class="footer-ticker">
+      <span class="ticker-dot"></span>
+      <span class="ticker-text">
+        {{ isPaired() 
+          ? 'Scan the QR code at your table to browse menu & order instantly • Please collect your meal when your token number appears above'
+          : 'Smart TV pairing mode • Secure connection with 5-minute PIN verification' }}
+      </span>
+    </div>
+    <div class="footer-brand-sig">
+      CanteenHub Smart OS
+    </div>
+  </footer>
+</div>

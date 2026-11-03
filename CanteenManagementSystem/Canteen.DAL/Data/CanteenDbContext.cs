@@ -81,6 +81,10 @@ public class CanteenDbContext : DbContext
     public DbSet<StockReservation> StockReservations => Set<StockReservation>();
     public DbSet<StockReservationItem> StockReservationItems => Set<StockReservationItem>();
     public DbSet<RecommendationEvent> RecommendationEvents => Set<RecommendationEvent>();
+    public DbSet<Coupon> Coupons => Set<Coupon>();
+    public DbSet<CouponRedemption> CouponRedemptions => Set<CouponRedemption>();
+    public DbSet<TvDevice> TvDevices => Set<TvDevice>();
+    public DbSet<TvPairingSession> TvPairingSessions => Set<TvPairingSession>();
 
 
 
@@ -855,9 +859,19 @@ public class CanteenDbContext : DbContext
 
 
             entity.Property(o => o.CancellationReason)
-
                 .HasMaxLength(500);
 
+            entity.Property(o => o.DiscountAmount)
+                .HasPrecision(18, 2)
+                .HasDefaultValue(0.00m);
+
+            entity.Property(o => o.CouponCode)
+                .HasMaxLength(30);
+
+            entity.HasOne(o => o.Coupon)
+                .WithMany(c => c.Orders)
+                .HasForeignKey(o => o.CouponId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
 
@@ -1415,7 +1429,122 @@ public class CanteenDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // ==========================================
+        // Configure Coupon
+        // ==========================================
+        modelBuilder.Entity<Coupon>(entity =>
+        {
+            entity.HasKey(c => c.CouponId);
+
+            entity.Property(c => c.Code)
+                .HasMaxLength(30)
+                .IsRequired();
+
+            entity.Property(c => c.Title)
+                .HasMaxLength(120)
+                .IsRequired();
+
+            entity.Property(c => c.Description)
+                .HasMaxLength(300);
+
+            entity.Property(c => c.DiscountType)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            entity.Property(c => c.DiscountValue)
+                .HasPrecision(18, 2)
+                .IsRequired();
+
+            entity.Property(c => c.MinOrderAmount)
+                .HasPrecision(18, 2)
+                .HasDefaultValue(0.00m);
+
+            entity.Property(c => c.MaxDiscountAmount)
+                .HasPrecision(18, 2);
+
+            entity.Property(c => c.IsActive)
+                .HasDefaultValue(true);
+
+            entity.HasIndex(c => new { c.CanteenId, c.Code })
+                .IsUnique();
+
+            entity.HasIndex(c => new { c.IsActive, c.StartDate, c.EndDate });
+
+            entity.HasOne(c => c.Canteen)
+                .WithMany(c => c.Coupons)
+                .HasForeignKey(c => c.CanteenId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ==========================================
+        // Configure CouponRedemption
+        // ==========================================
+        modelBuilder.Entity<CouponRedemption>(entity =>
+        {
+            entity.HasKey(cr => cr.RedemptionId);
+
+            entity.Property(cr => cr.CustomerIdentifier)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(cr => cr.DiscountAmountApplied)
+                .HasPrecision(18, 2)
+                .IsRequired();
+
+            entity.HasIndex(cr => new { cr.CouponId, cr.CustomerIdentifier });
+            entity.HasIndex(cr => cr.OrderId);
+            entity.HasIndex(cr => cr.CanteenId);
+
+            entity.HasOne(cr => cr.Coupon)
+                .WithMany(c => c.Redemptions)
+                .HasForeignKey(cr => cr.CouponId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(cr => cr.Order)
+                .WithOne(o => o.CouponRedemption)
+                .HasForeignKey<CouponRedemption>(cr => cr.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(cr => cr.Canteen)
+                .WithMany(c => c.CouponRedemptions)
+                .HasForeignKey(cr => cr.CanteenId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+
+        // Configure TvDevice entity
+        modelBuilder.Entity<TvDevice>(entity =>
+        {
+            entity.HasKey(e => e.TvDeviceId);
+            entity.Property(e => e.DeviceName).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.DeviceIdentifier).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.DeviceTokenHash).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.StationScope).HasMaxLength(20).HasDefaultValue("All");
+
+            entity.HasIndex(e => e.CanteenId);
+            entity.HasIndex(e => e.DeviceIdentifier);
+
+            entity.HasOne(e => e.Canteen)
+                .WithMany(c => c.TvDevices)
+                .HasForeignKey(e => e.CanteenId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure TvPairingSession entity
+        modelBuilder.Entity<TvPairingSession>(entity =>
+        {
+            entity.HasKey(e => e.SessionId);
+            entity.Property(e => e.PairingCode).HasMaxLength(10).IsRequired();
+            entity.Property(e => e.StationScope).HasMaxLength(20).HasDefaultValue("All");
+
+            entity.HasIndex(e => e.CanteenId);
+            entity.HasIndex(e => e.PairingCode);
+
+            entity.HasOne(e => e.Canteen)
+                .WithMany(c => c.TvPairingSessions)
+                .HasForeignKey(e => e.CanteenId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 
 }
-

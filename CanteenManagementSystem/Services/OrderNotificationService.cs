@@ -26,7 +26,9 @@ public class OrderNotificationService : IOrderNotificationService
     {
         try
         {
-            var groupName = $"canteen_{order.CanteenId}";
+            var kitchenGroup = $"canteen_{order.CanteenId}";
+            var tvGroup = $"canteen_tv_{order.CanteenId}";
+
             var payload = new NewOrderPlacedNotificationDto
             {
                 OrderId = order.OrderId,
@@ -45,8 +47,9 @@ public class OrderNotificationService : IOrderNotificationService
                 }).ToList()
             };
 
-            await _hubContext.Clients.Group(groupName).SendAsync("NewOrderPlaced", payload);
-            _logger.LogInformation("Dispatched 'NewOrderPlaced' notification to group {GroupName} for Order {OrderId}.", groupName, order.OrderId);
+            await _hubContext.Clients.Group(kitchenGroup).SendAsync("NewOrderPlaced", payload);
+            await _hubContext.Clients.Group(tvGroup).SendAsync("NewOrderPlaced", payload);
+            _logger.LogInformation("Dispatched 'NewOrderPlaced' notification to kitchen ({KitchenGroup}) and TV ({TvGroup}) for Order {OrderId}.", kitchenGroup, tvGroup, order.OrderId);
         }
         catch (Exception ex)
         {
@@ -59,6 +62,7 @@ public class OrderNotificationService : IOrderNotificationService
         try
         {
             var canteenGroup = $"canteen_{canteenId}";
+            var tvGroup = $"canteen_tv_{canteenId}";
             var orderGroup = $"order_{orderId}";
             var payload = new PaymentConfirmedNotificationDto
             {
@@ -69,13 +73,15 @@ public class OrderNotificationService : IOrderNotificationService
                 PaidAt = paidAt
             };
 
-            // Dispatch to both the canteen kitchen group and the customer order tracking group
+            // Dispatch to kitchen, TV, and customer tracking groups
             await _hubContext.Clients.Group(canteenGroup).SendAsync("PaymentConfirmed", payload);
+            await _hubContext.Clients.Group(tvGroup).SendAsync("PaymentConfirmed", payload);
             await _hubContext.Clients.Group(orderGroup).SendAsync("PaymentConfirmed", payload);
 
             _logger.LogInformation(
-                "Dispatched 'PaymentConfirmed' notification to kitchen ({CanteenGroup}) and customer ({OrderGroup}) for Order {OrderId}.",
+                "Dispatched 'PaymentConfirmed' notification to kitchen ({CanteenGroup}), TV ({TvGroup}) and customer ({OrderGroup}) for Order {OrderId}.",
                 canteenGroup,
+                tvGroup,
                 orderGroup,
                 orderId);
         }
@@ -85,7 +91,12 @@ public class OrderNotificationService : IOrderNotificationService
         }
     }
 
-    public async Task NotifyOrderStatusUpdatedAsync(int orderId, string orderNumber, string newStatus, DateTime updatedAt)
+    public Task NotifyOrderStatusUpdatedAsync(int orderId, string orderNumber, string newStatus, DateTime updatedAt)
+    {
+        return NotifyOrderStatusUpdatedAsync(orderId, orderNumber, newStatus, updatedAt, null);
+    }
+
+    public async Task NotifyOrderStatusUpdatedAsync(int orderId, string orderNumber, string newStatus, DateTime updatedAt, int? canteenId)
     {
         try
         {
@@ -95,16 +106,54 @@ public class OrderNotificationService : IOrderNotificationService
                 OrderId = orderId,
                 OrderNumber = orderNumber,
                 NewStatus = newStatus,
-                UpdatedAt = updatedAt
+                UpdatedAt = updatedAt,
+                CanteenId = canteenId ?? 0
             };
 
             await _hubContext.Clients.Group(groupName).SendAsync("OrderStatusUpdated", payload);
+
+            if (canteenId.HasValue && canteenId.Value > 0)
+            {
+                var kitchenGroup = $"canteen_{canteenId.Value}";
+                var tvGroup = $"canteen_tv_{canteenId.Value}";
+                await _hubContext.Clients.Group(kitchenGroup).SendAsync("OrderStatusUpdated", payload);
+                await _hubContext.Clients.Group(tvGroup).SendAsync("OrderStatusUpdated", payload);
+            }
+
             await _hubContext.Clients.All.SendAsync("OrderStatusUpdated", payload);
-            _logger.LogInformation("Dispatched 'OrderStatusUpdated' notification to group {GroupName} and all kitchen monitors for Order {OrderId} (Status: {NewStatus}).", groupName, orderId, newStatus);
+
+            _logger.LogInformation("Dispatched 'OrderStatusUpdated' notification to group {GroupName} and kitchen monitors for Order {OrderId} (Status: {NewStatus}, CanteenId: {CanteenId}).", groupName, orderId, newStatus, canteenId);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to dispatch 'OrderStatusUpdated' notification for Order ID {OrderId}.", orderId);
+        }
+    }
+
+    public async Task NotifyTvAnnouncementAsync(int canteenId, int orderId, string orderNumber, string tokenNumber, string message)
+    {
+        try
+        {
+            var tvGroup = $"canteen_tv_{canteenId}";
+            var kitchenGroup = $"canteen_{canteenId}";
+            var payload = new TvVoiceAnnouncementDto
+            {
+                CanteenId = canteenId,
+                OrderId = orderId,
+                OrderNumber = orderNumber,
+                TokenNumber = tokenNumber,
+                Message = message,
+                AnnouncedAt = DateTime.UtcNow
+            };
+
+            await _hubContext.Clients.Group(tvGroup).SendAsync("TvVoiceAnnouncement", payload);
+            await _hubContext.Clients.Group(kitchenGroup).SendAsync("TvVoiceAnnouncement", payload);
+
+            _logger.LogInformation("Dispatched 'TvVoiceAnnouncement' notification for Token {TokenNumber} to TV ({TvGroup}).", tokenNumber, tvGroup);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to dispatch 'TvVoiceAnnouncement' for Order ID {OrderId}.", orderId);
         }
     }
 }

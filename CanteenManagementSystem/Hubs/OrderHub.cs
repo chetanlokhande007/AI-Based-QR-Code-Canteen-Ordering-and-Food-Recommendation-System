@@ -125,4 +125,20 @@ public class OrderHub : Hub
         await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
         _logger.LogInformation("Customer connection {ConnectionId} joined tracking group {GroupName}.", Context.ConnectionId, groupName);
     }
+
+    /// <summary>
+    /// Allows a dining hall TV display (or wall screen) to subscribe to real-time status updates and voice call events for a specific canteen.
+    /// </summary>
+    [AllowAnonymous]
+    public async Task JoinTvDisplayGroup(int canteenId)
+    {
+        if (canteenId <= 0)
+        {
+            throw new HubException("Valid canteen ID is required.");
+        }
+
+        var groupName = $"canteen_tv_{canteenId}";
+        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+        _logger.LogInformation("TV display connection {ConnectionId} joined group {GroupName}.", Context.ConnectionId, groupName);
+    }
 }

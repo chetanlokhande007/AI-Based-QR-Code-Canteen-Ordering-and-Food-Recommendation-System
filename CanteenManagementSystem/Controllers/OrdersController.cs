@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Canteen.BAL.Exceptions;
 using Canteen.BAL.Interfaces;
@@ -17,11 +18,16 @@ public class OrdersController : ControllerBase
 {
     private readonly IOrderService _orderService;
     private readonly ICanteenService _canteenService;
+    private readonly IOrderNotificationService? _notificationService;
 
-    public OrdersController(IOrderService orderService, ICanteenService canteenService)
+    public OrdersController(
+        IOrderService orderService,
+        ICanteenService canteenService,
+        IOrderNotificationService? notificationService = null)
     {
         _orderService = orderService;
         _canteenService = canteenService;
+        _notificationService = notificationService;
     }
 
     private async Task<bool> IsAuthorizedAsync(int canteenId)
@@ -180,5 +186,104 @@ public class OrdersController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    /// <summary>
+    /// Public TV Display endpoint for dining hall wall monitors.
+    /// Returns active tokens partitioned into Preparing and Ready without customer PII.
+    /// </summary>
+    [HttpGet("api/canteens/{canteenId:int}/tv-display")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(CanteenTvDisplayDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetTvDisplayData(int canteenId)
+    {
+        var canteen = await _canteenService.GetByIdAsync(canteenId);
+        if (canteen == null)
+        {
+            return NotFound(new { message = "Canteen not found." });
+        }
+
+        var orders = await _orderService.GetAllByCanteenAsync(canteenId);
+        var activeOrders = orders.Where(o =>
+            string.Equals(o.Status, "InPreparation", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(o.Status, "Preparing", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(o.Status, "Ready", StringComparison.OrdinalIgnoreCase)
+        ).ToList();
+
+        var preparing = activeOrders
+            .Where(o => string.Equals(o.Status, "InPreparation", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(o.Status, "Preparing", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(o => o.CreatedAt)
+            .Select(MapToTvToken)
+            .ToList();
+
+        var ready = activeOrders
+            .Where(o => string.Equals(o.Status, "Ready", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(o => o.CreatedAt)
+            .Select(MapToTvToken)
+            .ToList();
+
+        return Ok(new CanteenTvDisplayDto
+        {
+            CanteenId = canteenId,
+            CanteenName = canteen.Name,
+            PreparingOrders = preparing,
+            ReadyOrders = ready
+        });
+    }
+
+    /// <summary>
+    /// Explicitly triggers a TV voice announcement for a ready order (e.g. customer recall).
+    /// </summary>
+    [HttpPost("api/canteens/{canteenId:int}/orders/{orderId:int}/announce-tv")]
+    [Authorize(Roles = "CanteenOwner")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AnnounceOrderOnTv(int canteenId, int orderId)
+    {
+        if (!await IsAuthorizedAsync(canteenId))
+        {
+            return Forbid();
+        }
+
+        var order = await _orderService.GetByIdAsync(canteenId, orderId);
+        if (order == null)
+        {
+            return NotFound(new { message = "Order not found." });
+        }
+
+        var token = ExtractToken(order.OrderNumber);
+        var message = $"Token number {token}, your order is ready for pickup!";
+
+        if (_notificationService != null)
+        {
+            await _notificationService.NotifyTvAnnouncementAsync(canteenId, order.OrderId, order.OrderNumber, token, message);
+        }
+
+        return Ok(new { message = "TV voice announcement triggered successfully.", tokenNumber = token });
+    }
+
+    private static TvTokenDto MapToTvToken(OrderDto order)
+    {
+        var token = ExtractToken(order.OrderNumber);
+        return new TvTokenDto
+        {
+            OrderId = order.OrderId,
+            OrderNumber = order.OrderNumber,
+            TokenNumber = token,
+            Status = order.Status,
+            CreatedAt = order.CreatedAt,
+            UpdatedAt = order.CreatedAt,
+            ItemCount = order.Items?.Count ?? 0
+        };
+    }
+
+    private static string ExtractToken(string orderNumber)
+    {
+        if (string.IsNullOrWhiteSpace(orderNumber)) return string.Empty;
+        var parts = orderNumber.Split('-');
+        return parts.Length > 0 ? parts[^1] : orderNumber;
     }
 }

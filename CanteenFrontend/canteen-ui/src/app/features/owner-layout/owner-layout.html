@@ -127,8 +127,19 @@
         <span class="nav-label">Orders</span>
       </a>
 
+      <!-- Offers & Coupons -->
+      <a class="nav-item" routerLink="/coupons" routerLinkActive="active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+          <path d="M13 5v2" />
+          <path d="M13 17v2" />
+          <path d="M13 11v2" />
+        </svg>
+        <span class="nav-label">Offers & Coupons</span>
+      </a>
+
       <!-- Kitchen Display -->
-      <a class="nav-item" routerLink="/dashboard" [queryParams]="{ section: 'kitchen' }">
+      <a class="nav-item" routerLink="/kitchen-display" routerLinkActive="active">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="m13 2-2 2.5h3L12 7" />
           <path d="M10 14v4" />
@@ -140,7 +151,7 @@
       </a>
 
       <!-- Payments -->
-      <a class="nav-item" routerLink="/dashboard" [queryParams]="{ section: 'payments' }">
+      <a class="nav-item" routerLink="/payments" routerLinkActive="active">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect width="20" height="14" x="2" y="5" rx="2" />
           <line x1="2" x2="22" y1="10" y2="10" />
@@ -166,16 +177,6 @@
           <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
         <span class="nav-label">Staff Management</span>
-      </a>
-
-      <!-- Inventory -->
-      <a class="nav-item" routerLink="/dashboard" [queryParams]="{ section: 'inventory' }">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-          <path d="m3.3 7 8.7 5 8.7-5" />
-          <path d="M12 22V12" />
-        </svg>
-        <span class="nav-label">Inventory</span>
       </a>
 
       <!-- Settings -->

@@ -93,5 +93,17 @@ namespace Canteen.Model.Entities
 
         public ICollection<RecommendationEvent> RecommendationEvents { get; set; }
             = new List<RecommendationEvent>();
+
+        public ICollection<Coupon> Coupons { get; set; }
+            = new List<Coupon>();
+
+        public ICollection<CouponRedemption> CouponRedemptions { get; set; }
+            = new List<CouponRedemption>();
+
+        public ICollection<TvDevice> TvDevices { get; set; }
+            = new List<TvDevice>();
+
+        public ICollection<TvPairingSession> TvPairingSessions { get; set; }
+            = new List<TvPairingSession>();
     }
 }

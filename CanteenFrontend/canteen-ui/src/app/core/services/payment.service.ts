@@ -1,12 +1,21 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   CreatePaymentOrderRequest,
   PaymentOrderResponse,
   VerifyPaymentRequest,
-  PaymentDto
+  PaymentDto,
+  PaymentDashboardSummary,
+  PaymentTransaction,
+  PaymentPagedResult,
+  CanteenSettlementSummary,
+  PaymentMethodConfig,
+  CanteenPaymentSettings,
+  UpdatePaymentSettings,
+  PaymentReconciliationResult,
+  RefundRecord
 } from '../models/payment.models';
 
 declare global {
@@ -44,6 +53,89 @@ export class PaymentService {
     );
   }
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // PAYMENTS DASHBOARD API METHODS (AUTHORITATIVE REAL DATA, ZERO FABRICATED DATA)
+  // ──────────────────────────────────────────────────────────────────────────
+
+  getDashboardSummary(canteenId: number, dateRange: string = 'Last 7 Days'): Observable<PaymentDashboardSummary> {
+    let params = new HttpParams().set('dateRange', dateRange);
+    return this.http.get<PaymentDashboardSummary>(
+      `${this.baseUrl}/canteens/${canteenId}/payments/dashboard-summary`,
+      { params }
+    );
+  }
+
+  getTransactions(
+    canteenId: number,
+    filter: {
+      page?: number;
+      pageSize?: number;
+      search?: string;
+      status?: string;
+      paymentMethod?: string;
+      dateRange?: string;
+    } = {}
+  ): Observable<PaymentPagedResult<PaymentTransaction>> {
+    let params = new HttpParams();
+    if (filter.page) params = params.set('page', filter.page.toString());
+    if (filter.pageSize) params = params.set('pageSize', filter.pageSize.toString());
+    if (filter.search) params = params.set('search', filter.search.trim());
+    if (filter.status && filter.status !== 'All') params = params.set('status', filter.status);
+    if (filter.paymentMethod && filter.paymentMethod !== 'All') params = params.set('paymentMethod', filter.paymentMethod);
+    if (filter.dateRange && filter.dateRange !== 'All') params = params.set('dateRange', filter.dateRange);
+
+    return this.http.get<PaymentPagedResult<PaymentTransaction>>(
+      `${this.baseUrl}/canteens/${canteenId}/payments/transactions`,
+      { params }
+    );
+  }
+
+  getSettlementSummary(canteenId: number): Observable<CanteenSettlementSummary> {
+    return this.http.get<CanteenSettlementSummary>(
+      `${this.baseUrl}/canteens/${canteenId}/payments/settlements`
+    );
+  }
+
+  getPaymentMethods(canteenId: number): Observable<PaymentMethodConfig[]> {
+    return this.http.get<PaymentMethodConfig[]>(
+      `${this.baseUrl}/canteens/${canteenId}/payments/methods`
+    );
+  }
+
+  getPaymentSettings(canteenId: number): Observable<CanteenPaymentSettings> {
+    return this.http.get<CanteenPaymentSettings>(
+      `${this.baseUrl}/canteens/${canteenId}/payments/settings`
+    );
+  }
+
+  updatePaymentSettings(canteenId: number, settings: UpdatePaymentSettings): Observable<CanteenPaymentSettings> {
+    return this.http.put<CanteenPaymentSettings>(
+      `${this.baseUrl}/canteens/${canteenId}/payments/settings`,
+      settings
+    );
+  }
+
+  exportStatement(canteenId: number, dateRange: string = 'Last 7 Days'): Observable<Blob> {
+    const params = new HttpParams().set('dateRange', dateRange);
+    return this.http.get(
+      `${this.baseUrl}/canteens/${canteenId}/payments/export`,
+      { params, responseType: 'blob' }
+    );
+  }
+
+  reconcilePayments(canteenId: number): Observable<PaymentReconciliationResult> {
+    return this.http.post<PaymentReconciliationResult>(
+      `${this.baseUrl}/canteens/${canteenId}/payments/reconcile`,
+      {}
+    );
+  }
+
+  getCanteenRefunds(canteenId: number): Observable<RefundRecord[]> {
+    return this.http.get<RefundRecord[]>(
+      `${this.baseUrl}/canteens/${canteenId}/refunds`
+    );
+  }
+
   loadRazorpayScript(): Promise<boolean> {
     if (this.scriptLoaded && window.Razorpay) {
       return Promise.resolve(true);
@@ -65,4 +157,3 @@ export class PaymentService {
     });
   }
 }
-

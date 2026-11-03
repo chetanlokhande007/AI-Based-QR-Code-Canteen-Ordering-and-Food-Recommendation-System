@@ -255,6 +255,124 @@ namespace Canteen.DAL.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.Coupon", b =>
+                {
+                    b.Property<int>("CouponId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CouponId"));
+
+                    b.Property<int?>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("DiscountType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<decimal>("DiscountValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<decimal?>("MaxDiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("MinOrderAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasDefaultValue(0.00m);
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("TimesUsed")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<int?>("TotalUsageLimit")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsageLimitPerCustomer")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CouponId");
+
+                    b.HasIndex("CanteenId", "Code")
+                        .IsUnique();
+
+                    b.HasIndex("IsActive", "StartDate", "EndDate");
+
+                    b.ToTable("Coupons");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.CouponRedemption", b =>
+                {
+                    b.Property<int>("RedemptionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RedemptionId"));
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CouponId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CustomerIdentifier")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("DiscountAmountApplied")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("RedeemedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("RedemptionId");
+
+                    b.HasIndex("CanteenId");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("CouponId", "CustomerIdentifier");
+
+                    b.ToTable("CouponRedemptions");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.IngredientWastage", b =>
                 {
                     b.Property<int>("WastageId")
@@ -395,8 +513,21 @@ namespace Canteen.DAL.Migrations
                     b.Property<int>("CanteenId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("CouponCode")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<int?>("CouponId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasDefaultValue(0.00m);
 
                     b.Property<string>("OrderNumber")
                         .IsRequired()
@@ -455,6 +586,8 @@ namespace Canteen.DAL.Migrations
                         .HasDefaultValue("");
 
                     b.HasKey("OrderId");
+
+                    b.HasIndex("CouponId");
 
                     b.HasIndex("TrackingToken");
 
@@ -1145,6 +1278,104 @@ namespace Canteen.DAL.Migrations
                     b.ToTable("StockTransactions");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.TvDevice", b =>
+                {
+                    b.Property<int>("TvDeviceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TvDeviceId"));
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DeviceIdentifier")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("DeviceName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("DeviceTokenHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastConnectedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("RegisteredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("StationScope")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("All");
+
+                    b.HasKey("TvDeviceId");
+
+                    b.HasIndex("CanteenId");
+
+                    b.HasIndex("DeviceIdentifier");
+
+                    b.ToTable("TvDevices");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.TvPairingSession", b =>
+                {
+                    b.Property<int>("SessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SessionId"));
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsClaimed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PairingCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("StationScope")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("All");
+
+                    b.HasKey("SessionId");
+
+                    b.HasIndex("CanteenId");
+
+                    b.HasIndex("PairingCode");
+
+                    b.ToTable("TvPairingSessions");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.Canteen", b =>
                 {
                     b.HasOne("Canteen.Model.Entities.Owner", "Owner")
@@ -1188,6 +1419,43 @@ namespace Canteen.DAL.Migrations
                     b.Navigation("Canteen");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.Coupon", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany("Coupons")
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Canteen");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.CouponRedemption", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany("CouponRedemptions")
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.Coupon", "Coupon")
+                        .WithMany("Redemptions")
+                        .HasForeignKey("CouponId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.Order", "Order")
+                        .WithOne("CouponRedemption")
+                        .HasForeignKey("Canteen.Model.Entities.CouponRedemption", "OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+
+                    b.Navigation("Coupon");
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.IngredientWastage", b =>
                 {
                     b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
@@ -1226,6 +1494,11 @@ namespace Canteen.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Canteen.Model.Entities.Coupon", "Coupon")
+                        .WithMany("Orders")
+                        .HasForeignKey("CouponId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Canteen.Model.Entities.CanteenTable", "Table")
                         .WithMany()
                         .HasForeignKey("CanteenId", "TableId")
@@ -1234,6 +1507,8 @@ namespace Canteen.DAL.Migrations
                         .IsRequired();
 
                     b.Navigation("Canteen");
+
+                    b.Navigation("Coupon");
 
                     b.Navigation("Table");
                 });
@@ -1465,11 +1740,37 @@ namespace Canteen.DAL.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.TvDevice", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany("TvDevices")
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.TvPairingSession", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany("TvPairingSessions")
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.Canteen", b =>
                 {
                     b.Navigation("CancellationPolicy");
 
                     b.Navigation("Cancellations");
+
+                    b.Navigation("CouponRedemptions");
+
+                    b.Navigation("Coupons");
 
                     b.Navigation("Ingredients");
 
@@ -1487,12 +1788,23 @@ namespace Canteen.DAL.Migrations
 
                     b.Navigation("Tables");
 
+                    b.Navigation("TvDevices");
+
+                    b.Navigation("TvPairingSessions");
+
                     b.Navigation("Wastages");
                 });
 
             modelBuilder.Entity("Canteen.Model.Entities.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.Coupon", b =>
+                {
+                    b.Navigation("Orders");
+
+                    b.Navigation("Redemptions");
                 });
 
             modelBuilder.Entity("Canteen.Model.Entities.InventoryIngredient", b =>
@@ -1509,6 +1821,8 @@ namespace Canteen.DAL.Migrations
             modelBuilder.Entity("Canteen.Model.Entities.Order", b =>
                 {
                     b.Navigation("CancellationAudit");
+
+                    b.Navigation("CouponRedemption");
 
                     b.Navigation("Items");
 
