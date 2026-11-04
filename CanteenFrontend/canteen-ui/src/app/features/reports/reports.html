@@ -1,0 +1,1166 @@
+<div class="reports-page-container">
+
+  <!-- ========================================================================
+       Top Navigation & Action Toolbar
+       ======================================================================== -->
+  <header class="reports-header-bar">
+    <div class="header-left">
+      <div class="title-row">
+        <h1 class="page-title">Reports & Analytics</h1>
+        <span class="live-pill">
+          <span class="pulse-indicator"></span>
+          Live Analytics
+        </span>
+      </div>
+      <p class="page-subtitle">Real-time enterprise intelligence, financial ledgers, and operational performance</p>
+    </div>
+
+    <div class="header-right">
+      <!-- Export Actions Dropdown / Buttons -->
+      <div class="export-btn-group">
+        <button
+          type="button"
+          class="btn-export btn-export-csv"
+          (click)="exportCurrentReport('csv')"
+          [disabled]="isExporting() || isLoading()"
+          title="Export current view as CSV"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>Export CSV</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn-export btn-export-excel"
+          (click)="exportCurrentReport('excel')"
+          [disabled]="isExporting() || isLoading()"
+          title="Export current view as Excel Spreadsheet"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+          <span>Export Excel</span>
+        </button>
+      </div>
+
+      <!-- Refresh Button -->
+      <button
+        type="button"
+        class="btn-refresh"
+        (click)="loadActiveReport()"
+        [disabled]="isLoading()"
+        title="Reload live report data"
+      >
+        <svg
+          [class.spinning]="isLoading()"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          width="16"
+          height="16"
+        >
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+        </svg>
+        <span>Refresh</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       Filter Strip: Date Presets, Custom Range, and Search
+       ======================================================================== -->
+  <section class="filters-card">
+    <div class="filters-left">
+      <span class="filter-label">Period:</span>
+      <div class="preset-chips">
+        @for (p of periods; track p.value) {
+          <button
+            type="button"
+            class="chip-btn"
+            [class.active]="selectedPeriod() === p.value"
+            (click)="setPeriod(p.value)"
+          >
+            {{ p.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (selectedPeriod() === 'custom') {
+      <div class="custom-date-range">
+        <div class="date-input-group">
+          <label>From:</label>
+          <input
+            type="date"
+            [ngModel]="customStartDate()"
+            (ngModelChange)="customStartDate.set($event)"
+          />
+        </div>
+        <div class="date-input-group">
+          <label>To:</label>
+          <input
+            type="date"
+            [ngModel]="customEndDate()"
+            (ngModelChange)="customEndDate.set($event)"
+          />
+        </div>
+        <button
+          type="button"
+          class="btn-apply-date"
+          (click)="applyCustomDateRange()"
+          [disabled]="!customStartDate() || !customEndDate()"
+        >
+          Apply Range
+        </button>
+      </div>
+    }
+
+    <!-- Search input for searchable tables -->
+    @if (activeTab() !== 'overview' && activeTab() !== 'peak-hours') {
+      <div class="filter-search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          type="text"
+          placeholder="Filter records..."
+          [ngModel]="searchFilter()"
+          (ngModelChange)="searchFilter.set($event); onSearchChange()"
+        />
+        @if (searchFilter()) {
+          <button type="button" class="btn-clear-search" (click)="searchFilter.set(''); onSearchChange()">✕</button>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- ========================================================================
+       Report Navigation Tabs Strip
+       ======================================================================== -->
+  <nav class="report-nav-tabs">
+    @for (tab of tabs; track tab.id) {
+      <button
+        type="button"
+        class="nav-tab-btn"
+        [class.active]="activeTab() === tab.id"
+        (click)="selectTab(tab.id)"
+      >
+        <span class="tab-label">{{ tab.label }}</span>
+      </button>
+    }
+  </nav>
+
+  <!-- ========================================================================
+       Error Banner
+       ======================================================================== -->
+  @if (errorMessage()) {
+    <div class="error-banner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <span>{{ errorMessage() }}</span>
+      <button type="button" class="btn-dismiss-error" (click)="errorMessage.set(null)">✕</button>
+    </div>
+  }
+
+  <!-- ========================================================================
+       Loading State Skeleton
+       ======================================================================== -->
+  @if (isLoading()) {
+    <div class="loading-state-card">
+      <div class="spinner-ring"></div>
+      <p>Gathering fresh analytics & compiling metrics...</p>
+    </div>
+  } @else {
+
+    <!-- ======================================================================
+         TAB 1: EXECUTIVE OVERVIEW
+         ====================================================================== -->
+    @if (activeTab() === 'overview' && overviewData()) {
+      <div class="tab-content-wrapper">
+        <!-- 4 Key Stat Metric Cards -->
+        <div class="metric-cards-grid">
+          <div class="stat-card glass-card">
+            <div class="card-top">
+              <span class="card-caption">Gross Revenue</span>
+              <span class="growth-pill" [class.negative]="overviewData()!.grossRevenueGrowthPercent < 0">
+                {{ overviewData()!.grossRevenueGrowthPercent >= 0 ? '+' : '' }}{{ overviewData()!.grossRevenueGrowthPercent }}%
+              </span>
+            </div>
+            <div class="card-value">₹{{ overviewData()!.grossRevenue | number:'1.2-2' }}</div>
+            <div class="card-subtext">Before refunds & discounts</div>
+          </div>
+
+          <div class="stat-card glass-card">
+            <div class="card-top">
+              <span class="card-caption">Net Collections</span>
+              <span class="growth-pill" [class.negative]="overviewData()!.netRevenueGrowthPercent < 0">
+                {{ overviewData()!.netRevenueGrowthPercent >= 0 ? '+' : '' }}{{ overviewData()!.netRevenueGrowthPercent }}%
+              </span>
+            </div>
+            <div class="card-value net-highlight">₹{{ overviewData()!.netRevenue | number:'1.2-2' }}</div>
+            <div class="card-subtext">Refunds deducted: ₹{{ overviewData()!.totalRefunds | number:'1.2-2' }}</div>
+          </div>
+
+          <div class="stat-card glass-card">
+            <div class="card-top">
+              <span class="card-caption">Total Orders</span>
+              <span class="growth-pill" [class.negative]="overviewData()!.ordersGrowthPercent < 0">
+                {{ overviewData()!.ordersGrowthPercent >= 0 ? '+' : '' }}{{ overviewData()!.ordersGrowthPercent }}%
+              </span>
+            </div>
+            <div class="card-value">{{ overviewData()!.totalOrders }}</div>
+            <div class="card-subtext">{{ overviewData()!.completedOrders }} completed • {{ overviewData()!.cancelledOrders }} cancelled</div>
+          </div>
+
+          <div class="stat-card glass-card">
+            <div class="card-top">
+              <span class="card-caption">Average Order Value</span>
+              <span class="growth-pill" [class.negative]="overviewData()!.averageOrderValueGrowthPercent < 0">
+                {{ overviewData()!.averageOrderValueGrowthPercent >= 0 ? '+' : '' }}{{ overviewData()!.averageOrderValueGrowthPercent }}%
+              </span>
+            </div>
+            <div class="card-value">₹{{ overviewData()!.averageOrderValue | number:'1.2-2' }}</div>
+            <div class="card-subtext">{{ overviewData()!.activeProductsCount }} active dishes on menu</div>
+          </div>
+        </div>
+
+        <!-- Charts & Distributions Grid -->
+        <div class="visuals-split-grid">
+          <!-- 5. Revenue Trajectory Line / Area Chart -->
+          <div class="glass-card chart-panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Revenue Trajectory</h3>
+              <span class="panel-badge">{{ overviewData()!.period }}</span>
+            </div>
+
+            @if (revenueTrajectoryOption()) {
+              <div class="echart-card-box" [appEcharts]="revenueTrajectoryOption()"></div>
+            } @else {
+              <div class="empty-chart-notice">No orders recorded in this date range.</div>
+            }
+          </div>
+
+          <!-- 6. Order Status Distribution Donut Chart -->
+          <div class="glass-card distribution-panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Order Status Distribution</h3>
+            </div>
+            @if (orderStatusDonutOption()) {
+              <div class="echart-card-box" [appEcharts]="orderStatusDonutOption()"></div>
+            } @else {
+              <div class="empty-chart-notice">No orders found.</div>
+            }
+          </div>
+        </div>
+
+        <!-- Top Selling Dishes Horizontal Bar Chart -->
+        <div class="glass-card top-items-card">
+          <div class="panel-header">
+            <h3 class="panel-title">Top Selling Dishes</h3>
+            <button type="button" class="btn-link" (click)="selectTab('products')">View all products →</button>
+          </div>
+          @if (topProductsBarOption()) {
+            <div class="echart-card-box-sm" [appEcharts]="topProductsBarOption()"></div>
+          } @else {
+            <div class="empty-chart-notice">No product sales yet.</div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ======================================================================
+         TAB 2: SALES & REVENUE REPORT
+         ====================================================================== -->
+    @if (activeTab() === 'sales' && salesData()) {
+      <div class="tab-content-wrapper">
+        <!-- Sales Financial Highlights -->
+        <div class="metric-cards-grid six-cols">
+          <div class="stat-card glass-card">
+            <span class="card-caption">Gross Sales</span>
+            <div class="card-value">₹{{ salesData()!.grossSales | number:'1.2-2' }}</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Food Subtotal</span>
+            <div class="card-value">₹{{ salesData()!.subtotalAmount | number:'1.2-2' }}</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Discounts Given</span>
+            <div class="card-value text-amber">₹{{ salesData()!.totalDiscounts | number:'1.2-2' }}</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">GST / Tax Collected</span>
+            <div class="card-value">₹{{ salesData()!.totalTaxCollected | number:'1.2-2' }}</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Refunds Issued</span>
+            <div class="card-value text-red">₹{{ salesData()!.totalRefunds | number:'1.2-2' }}</div>
+          </div>
+          <div class="stat-card glass-card highlight-border">
+            <span class="card-caption">Net Canteen Earnings</span>
+            <div class="card-value net-highlight">₹{{ salesData()!.totalCanteenEarnings | number:'1.2-2' }}</div>
+          </div>
+        </div>
+
+        <!-- 1. Daily Sales Trend Area Chart -->
+        <div class="glass-card chart-panel">
+          <div class="panel-header">
+            <h3 class="panel-title">Daily Sales Trend</h3>
+            <span class="panel-badge">Gross Sales vs Net Earnings</span>
+          </div>
+          @if (dailySalesTrendOption()) {
+            <div class="echart-card-box-lg" [appEcharts]="dailySalesTrendOption()"></div>
+          } @else {
+            <div class="empty-chart-notice">No sales timeline recorded in this date range.</div>
+          }
+        </div>
+
+        <!-- Payment Methods & Category Split -->
+        <div class="visuals-split-grid">
+          <div class="glass-card">
+            <div class="panel-header"><h3 class="panel-title">Collections by Payment Method</h3></div>
+            @if (paymentMethodsDonutOption()) {
+              <div class="echart-card-box-sm" [appEcharts]="paymentMethodsDonutOption()"></div>
+            }
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>Orders</th>
+                  <th>Gross Collected</th>
+                  <th>Refunded</th>
+                  <th>Net</th>
+                  <th>Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (m of salesData()!.paymentMethodSummary; track m.paymentMethod) {
+                  <tr>
+                    <td><strong>{{ m.paymentMethod }}</strong></td>
+                    <td>{{ m.transactionsCount }}</td>
+                    <td>₹{{ m.grossAmount | number:'1.2-2' }}</td>
+                    <td class="text-red">₹{{ m.refundAmount | number:'1.2-2' }}</td>
+                    <td class="text-bold">₹{{ m.netAmount | number:'1.2-2' }}</td>
+                    <td><span class="badge-pill">{{ m.sharePercentage }}%</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="glass-card">
+            <div class="panel-header"><h3 class="panel-title">Revenue by Food Category</h3></div>
+            @if (categorySalesBarOption()) {
+              <div class="echart-card-box-sm" [appEcharts]="categorySalesBarOption()"></div>
+            }
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Units Sold</th>
+                  <th>Revenue</th>
+                  <th>Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of salesData()!.categorySales; track c.categoryName) {
+                  <tr>
+                    <td><strong>{{ c.categoryName }}</strong></td>
+                    <td>{{ c.quantitySold }}</td>
+                    <td>₹{{ c.totalSales | number:'1.2-2' }}</td>
+                    <td><span class="badge-pill">{{ c.sharePercentage }}%</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Detailed Transactions Ledger -->
+        <div class="glass-card table-panel">
+          <div class="panel-header">
+            <h3 class="panel-title">Sales Transactions Ledger ({{ salesData()!.transactions.totalCount }})</h3>
+          </div>
+          <div class="table-responsive">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Table</th>
+                  <th>Date & Time</th>
+                  <th>Subtotal</th>
+                  <th>Discount</th>
+                  <th>Tax</th>
+                  <th>Total</th>
+                  <th>Refunded</th>
+                  <th>Net</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (tx of salesData()!.transactions.items; track tx.orderId) {
+                  <tr>
+                    <td class="font-mono">#{{ tx.orderNumber }}</td>
+                    <td>T-{{ tx.tableNumber }}</td>
+                    <td>{{ tx.createdAt | date:'short' }}</td>
+                    <td>₹{{ tx.subtotal | number:'1.2-2' }}</td>
+                    <td class="text-amber">₹{{ tx.discount | number:'1.2-2' }}</td>
+                    <td>₹{{ tx.tax | number:'1.2-2' }}</td>
+                    <td>₹{{ tx.totalAmount | number:'1.2-2' }}</td>
+                    <td class="text-red">₹{{ tx.refundedAmount | number:'1.2-2' }}</td>
+                    <td class="text-bold">₹{{ tx.netAmount | number:'1.2-2' }}</td>
+                    <td><span class="status-badge" [attr.data-status]="tx.orderStatus">{{ tx.orderStatus }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div class="pagination-bar">
+            <span>Showing {{ salesData()!.transactions.items.length }} of {{ salesData()!.transactions.totalCount }} records</span>
+            <div class="page-btns">
+              <button
+                type="button"
+                class="btn-pager"
+                [disabled]="!salesData()!.transactions.hasPreviousPage"
+                (click)="changePage(currentPage() - 1)"
+              >
+                Previous
+              </button>
+              <span class="page-indicator">Page {{ currentPage() }} of {{ salesData()!.transactions.totalPages || 1 }}</span>
+              <button
+                type="button"
+                class="btn-pager"
+                [disabled]="!salesData()!.transactions.hasNextPage"
+                (click)="changePage(currentPage() + 1)"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ======================================================================
+         TAB 3: ORDERS & FULFILLMENT REPORT
+         ====================================================================== -->
+    @if (activeTab() === 'orders' && orderData()) {
+      <div class="tab-content-wrapper">
+        <div class="metric-cards-grid">
+          <div class="stat-card glass-card">
+            <span class="card-caption">Total Orders</span>
+            <div class="card-value">{{ orderData()!.totalOrders }}</div>
+            <div class="card-subtext">₹{{ orderData()!.totalOrderValue | number:'1.2-2' }} total value</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Fulfillment Rate</span>
+            <div class="card-value text-green">{{ orderData()!.fulfillmentRate }}%</div>
+            <div class="card-subtext">{{ orderData()!.completedOrders }} successfully served</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Cancellation Rate</span>
+            <div class="card-value text-red">{{ orderData()!.cancellationRate }}%</div>
+            <div class="card-subtext">{{ orderData()!.cancelledOrders }} orders cancelled</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">In-Flight Queue</span>
+            <div class="card-value text-amber">{{ orderData()!.inProgressOrders }}</div>
+            <div class="card-subtext">Pending / Preparing / Ready</div>
+          </div>
+        </div>
+
+        <div class="visuals-split-grid">
+          <div class="glass-card">
+            <div class="panel-header"><h3 class="panel-title">Order Status Distribution</h3></div>
+            @if (orderStatusDonutOption()) {
+              <div class="echart-card-box" [appEcharts]="orderStatusDonutOption()"></div>
+            } @else {
+              <div class="empty-chart-notice">No orders found.</div>
+            }
+          </div>
+
+          <div class="glass-card">
+            <div class="panel-header"><h3 class="panel-title">Cancellation Reasons Audit</h3></div>
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Reason</th>
+                  <th>Count</th>
+                  <th>Refunded</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (cr of orderData()!.cancellationReasons; track cr.reason) {
+                  <tr>
+                    <td>{{ cr.reason }}</td>
+                    <td>{{ cr.count }}</td>
+                    <td class="text-red">₹{{ cr.totalRefundedAmount | number:'1.2-2' }}</td>
+                  </tr>
+                }
+                @if (orderData()!.cancellationReasons.length === 0) {
+                  <tr><td colspan="3" class="text-muted">Zero cancellations recorded.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="glass-card table-panel">
+          <div class="panel-header"><h3 class="panel-title">Orders Record ({{ orderData()!.orders.totalCount }})</h3></div>
+          <div class="table-responsive">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Table</th>
+                  <th>Items</th>
+                  <th>Subtotal</th>
+                  <th>Tax</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (o of orderData()!.orders.items; track o.orderId) {
+                  <tr>
+                    <td class="font-mono">#{{ o.orderNumber }}</td>
+                    <td>T-{{ o.tableNumber }}</td>
+                    <td>{{ o.totalItems }} items</td>
+                    <td>₹{{ o.subtotalAmount | number:'1.2-2' }}</td>
+                    <td>₹{{ o.taxAmount | number:'1.2-2' }}</td>
+                    <td class="text-bold">₹{{ o.totalAmount | number:'1.2-2' }}</td>
+                    <td><span class="status-badge" [attr.data-status]="o.status">{{ o.status }}</span></td>
+                    <td>{{ o.createdAt | date:'short' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ======================================================================
+         TAB 4: PRODUCT CATALOG PERFORMANCE
+         ====================================================================== -->
+    @if (activeTab() === 'products' && productData()) {
+      <div class="tab-content-wrapper">
+        <div class="metric-cards-grid">
+          <div class="stat-card glass-card">
+            <span class="card-caption">Total Products</span>
+            <div class="card-value">{{ productData()!.totalProductsInCatalog }}</div>
+            <div class="card-subtext">{{ productData()!.activeProductsCount }} available on menu</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Total Units Sold</span>
+            <div class="card-value">{{ productData()!.totalUnitsSold }}</div>
+            <div class="card-subtext">Total food dishes ordered</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Food Revenue</span>
+            <div class="card-value text-green">₹{{ productData()!.totalRevenueGenerated | number:'1.2-2' }}</div>
+            <div class="card-subtext">From menu item sales</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Out of Stock Alerts</span>
+            <div class="card-value text-red">{{ productData()!.outOfStockCount }}</div>
+            <div class="card-subtext">Items needing stock replenishment</div>
+          </div>
+        </div>
+
+        <!-- Paginated Product Table -->
+        <div class="glass-card table-panel">
+          <div class="panel-header"><h3 class="panel-title">Dishes & Menu Items Performance</h3></div>
+          <div class="table-responsive">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Dish Name</th>
+                  <th>Category</th>
+                  <th>Type</th>
+                  <th>Unit Price</th>
+                  <th>Units Sold</th>
+                  <th>Total Sales</th>
+                  <th>Revenue Share</th>
+                  <th>Current Stock</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (prod of productData()!.products.items; track prod.productId) {
+                  <tr>
+                    <td><strong>{{ prod.name }}</strong></td>
+                    <td>{{ prod.categoryName }}</td>
+                    <td>
+                      <span class="diet-pill" [class.veg]="prod.foodType === 'Veg'" [class.nonveg]="prod.foodType !== 'Veg'">
+                        {{ prod.foodType }}
+                      </span>
+                    </td>
+                    <td>₹{{ prod.unitPrice | number:'1.2-2' }}</td>
+                    <td>{{ prod.quantitySold }}</td>
+                    <td class="text-bold">₹{{ prod.totalRevenue | number:'1.2-2' }}</td>
+                    <td><span class="badge-pill">{{ prod.revenueSharePercentage }}%</span></td>
+                    <td>
+                      <span [class.text-red]="prod.currentStock <= 0">{{ prod.currentStock }}</span>
+                    </td>
+                    <td>
+                      <span class="status-badge" [attr.data-status]="prod.isAvailable ? 'Active' : 'Inactive'">
+                        {{ prod.isAvailable ? 'Available' : 'Unavailable' }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ======================================================================
+         TAB 5: PAYMENTS & SETTLEMENTS REPORT
+         ====================================================================== -->
+    @if (activeTab() === 'payments' && paymentData()) {
+      <div class="tab-content-wrapper">
+        <div class="metric-cards-grid">
+          <div class="stat-card glass-card">
+            <span class="card-caption">Gross Collections</span>
+            <div class="card-value">₹{{ paymentData()!.totalGrossCollections | number:'1.2-2' }}</div>
+            <div class="card-subtext">{{ paymentData()!.successfulPaymentsCount }} successful payments</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Razorpay / Online</span>
+            <div class="card-value">₹{{ paymentData()!.onlineCollections | number:'1.2-2' }}</div>
+            <div class="card-subtext">Direct digital collections</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Counter Cash</span>
+            <div class="card-value">₹{{ paymentData()!.counterCashCollections | number:'1.2-2' }}</div>
+            <div class="card-subtext">On-premise counter cash</div>
+          </div>
+          <div class="stat-card glass-card highlight-border">
+            <span class="card-caption">Net Settlement</span>
+            <div class="card-value net-highlight">₹{{ paymentData()!.netSettlementAmount | number:'1.2-2' }}</div>
+            <div class="card-subtext">Refunds: ₹{{ paymentData()!.totalRefundedAmount | number:'1.2-2' }}</div>
+          </div>
+        </div>
+
+        <!-- Payments Ledger Table -->
+        <div class="glass-card table-panel">
+          <div class="panel-header"><h3 class="panel-title">Payments Ledger ({{ paymentData()!.payments.totalCount }})</h3></div>
+          <div class="table-responsive">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                  <th>Gateway Ref</th>
+                  <th>Refunded</th>
+                  <th>Paid At</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (pay of paymentData()!.payments.items; track pay.paymentId) {
+                  <tr>
+                    <td class="font-mono">#{{ pay.orderNumber }}</td>
+                    <td>₹{{ pay.amount | number:'1.2-2' }}</td>
+                    <td>{{ pay.paymentMethod }}</td>
+                    <td><span class="status-badge" [attr.data-status]="pay.status">{{ pay.status }}</span></td>
+                    <td class="font-mono text-muted">{{ pay.razorpayPaymentId || '-' }}</td>
+                    <td class="text-red">₹{{ pay.refundedAmount | number:'1.2-2' }}</td>
+                    <td>{{ pay.paidAt ? (pay.paidAt | date:'short') : '-' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ======================================================================
+         TAB 6: INVENTORY & WASTAGE REPORT
+         ====================================================================== -->
+    @if (activeTab() === 'inventory' && inventoryData()) {
+      <div class="tab-content-wrapper">
+        <div class="metric-cards-grid">
+          <div class="stat-card glass-card">
+            <span class="card-caption">Inventory Valuation</span>
+            <div class="card-value net-highlight">₹{{ inventoryData()!.totalInventoryValuation | number:'1.2-2' }}</div>
+            <div class="card-subtext">{{ inventoryData()!.totalIngredientsTracked }} stock ingredients</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Low Stock Alerts</span>
+            <div class="card-value text-red">{{ inventoryData()!.lowStockAlertsCount }}</div>
+            <div class="card-subtext">Ingredients below minimum threshold</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Kitchen Wastage Cost</span>
+            <div class="card-value text-amber">₹{{ inventoryData()!.totalWastageCost | number:'1.2-2' }}</div>
+            <div class="card-subtext">{{ inventoryData()!.totalWastageQuantity }} units discarded</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Stock Movements</span>
+            <div class="card-value">{{ inventoryData()!.totalStockTransactionsCount }}</div>
+            <div class="card-subtext">Ledger transactions logged</div>
+          </div>
+        </div>
+
+        @if (inventoryData()!.lowStockItems.length > 0) {
+          <div class="glass-card alert-panel">
+            <div class="panel-header"><h3 class="panel-title text-red">⚠️ Critical Low Stock Warnings</h3></div>
+            <div class="low-stock-chips">
+              @for (item of inventoryData()!.lowStockItems; track item.ingredientId) {
+                <div class="low-stock-chip">
+                  <strong>{{ item.name }}</strong>
+                  <span>Current: {{ item.currentStock }} {{ item.baseUnit }} (Min: {{ item.minimumStockLevel }})</span>
+                  <span class="deficit-tag">Deficit: -{{ item.deficitQuantity }} {{ item.baseUnit }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Detailed Ingredients List -->
+        <div class="glass-card table-panel">
+          <div class="panel-header"><h3 class="panel-title">Ingredients Valuation Ledger</h3></div>
+          <div class="table-responsive">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Ingredient</th>
+                  <th>Category</th>
+                  <th>Current Stock</th>
+                  <th>Reserved</th>
+                  <th>Available</th>
+                  <th>Cost / Unit</th>
+                  <th>Valuation</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ing of inventoryData()!.ingredients.items; track ing.ingredientId) {
+                  <tr>
+                    <td><strong>{{ ing.name }}</strong></td>
+                    <td>{{ ing.category }}</td>
+                    <td>{{ ing.currentStock }} {{ ing.baseUnit }}</td>
+                    <td>{{ ing.reservedStock }} {{ ing.baseUnit }}</td>
+                    <td>{{ ing.availableStock }} {{ ing.baseUnit }}</td>
+                    <td>₹{{ ing.costPerBaseUnit | number:'1.2-2' }}</td>
+                    <td class="text-bold">₹{{ ing.valuation | number:'1.2-2' }}</td>
+                    <td>
+                      <span class="status-badge" [attr.data-status]="ing.isLowStock ? 'Cancelled' : 'Completed'">
+                        {{ ing.isLowStock ? 'Low Stock' : 'Optimal' }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ======================================================================
+         TAB 7: OFFERS & COUPONS REPORT
+         ====================================================================== -->
+    @if (activeTab() === 'coupons' && couponData()) {
+      <div class="tab-content-wrapper">
+        <div class="metric-cards-grid">
+          <div class="stat-card glass-card">
+            <span class="card-caption">Active Coupons</span>
+            <div class="card-value">{{ couponData()!.totalActiveCoupons }}</div>
+            <div class="card-subtext">Live promotional campaigns</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Total Redemptions</span>
+            <div class="card-value text-green">{{ couponData()!.totalRedemptionsCount }}</div>
+            <div class="card-subtext">Times redeemed by customers</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Total Discounts Given</span>
+            <div class="card-value text-amber">₹{{ couponData()!.totalDiscountGiven | number:'1.2-2' }}</div>
+            <div class="card-subtext">Avg ₹{{ couponData()!.averageDiscountPerRedemption | number:'1.2-2' }} / order</div>
+          </div>
+          <div class="stat-card glass-card highlight-border">
+            <span class="card-caption">Campaign ROI Multiplier</span>
+            <div class="card-value net-highlight">{{ couponData()!.promotionalRoiRatio }}x</div>
+            <div class="card-subtext">₹{{ couponData()!.totalOrderSalesWithDiscount | number:'1.2-2' }} sales generated</div>
+          </div>
+        </div>
+
+        <div class="glass-card table-panel">
+          <div class="panel-header"><h3 class="panel-title">Coupon Campaigns Performance</h3></div>
+          <div class="table-responsive">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Title</th>
+                  <th>Type</th>
+                  <th>Value</th>
+                  <th>Redemptions</th>
+                  <th>Discount Given</th>
+                  <th>Sales Generated</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of couponData()!.campaigns; track c.couponId) {
+                  <tr>
+                    <td class="font-mono"><strong>{{ c.code }}</strong></td>
+                    <td>{{ c.title }}</td>
+                    <td>{{ c.discountType }}</td>
+                    <td>{{ c.discountType === 'Percentage' ? (c.discountValue + '%') : ('₹' + c.discountValue) }}</td>
+                    <td>{{ c.redemptionsCount }}</td>
+                    <td class="text-amber">₹{{ c.totalDiscountGiven | number:'1.2-2' }}</td>
+                    <td class="text-bold">₹{{ c.totalSalesGenerated | number:'1.2-2' }}</td>
+                    <td><span class="status-badge" [attr.data-status]="c.isActive ? 'Active' : 'Inactive'">{{ c.isActive ? 'Active' : 'Inactive' }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ======================================================================
+         TAB 8: STAFF & PAYROLL REPORT
+         ====================================================================== -->
+    @if (activeTab() === 'staff' && staffData()) {
+      <div class="tab-content-wrapper">
+        <div class="metric-cards-grid">
+          <div class="stat-card glass-card">
+            <span class="card-caption">Total Staff Members</span>
+            <div class="card-value">{{ staffData()!.totalStaffCount }}</div>
+            <div class="card-subtext">{{ staffData()!.activeStaffCount }} active • {{ staffData()!.onLeaveStaffCount }} on leave</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Monthly Payroll</span>
+            <div class="card-value">₹{{ staffData()!.totalMonthlyPayroll | number:'1.2-2' }}</div>
+            <div class="card-subtext">Base payroll commitment</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Overall Attendance</span>
+            <div class="card-value text-green">{{ staffData()!.overallAttendanceRate }}%</div>
+            <div class="card-subtext">Presence across shifts</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Roles Tracked</span>
+            <div class="card-value">{{ staffData()!.roleBreakdown.length }}</div>
+            <div class="card-subtext">Chefs, Counter, Inventory, Cashiers</div>
+          </div>
+        </div>
+
+        <div class="glass-card table-panel">
+          <div class="panel-header"><h3 class="panel-title">Staff Members Roster & Attendance</h3></div>
+          <div class="table-responsive">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Employee ID</th>
+                  <th>Full Name</th>
+                  <th>Role</th>
+                  <th>Shift</th>
+                  <th>Present Days</th>
+                  <th>Absent Days</th>
+                  <th>Attendance Rate</th>
+                  <th>Salary</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (sm of staffData()!.staffMembers.items; track sm.staffId) {
+                  <tr>
+                    <td class="font-mono">{{ sm.employeeId }}</td>
+                    <td><strong>{{ sm.fullName }}</strong></td>
+                    <td>{{ sm.role }}</td>
+                    <td>{{ sm.shift }}</td>
+                    <td>{{ sm.presentDays }}</td>
+                    <td>{{ sm.absentDays }}</td>
+                    <td><span class="badge-pill">{{ sm.attendanceRate }}%</span></td>
+                    <td>{{ sm.salary ? ('₹' + (sm.salary | number:'1.2-2')) : '-' }}</td>
+                    <td><span class="status-badge" [attr.data-status]="sm.status">{{ sm.status }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ======================================================================
+         TAB 9: ATTENDANCE RECORDS REPORT
+         ====================================================================== -->
+    @if (activeTab() === 'attendance' && attendanceData()) {
+      <div class="tab-content-wrapper">
+        <div class="metric-cards-grid">
+          <div class="stat-card glass-card">
+            <span class="card-caption">Total Work Days</span>
+            <div class="card-value">{{ attendanceData()!.totalWorkDays }}</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Present Logs</span>
+            <div class="card-value text-green">{{ attendanceData()!.totalPresent }}</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Absent Logs</span>
+            <div class="card-value text-red">{{ attendanceData()!.totalAbsent }}</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Attendance Rate</span>
+            <div class="card-value net-highlight">{{ attendanceData()!.overallAttendanceRate }}%</div>
+          </div>
+        </div>
+
+        <div class="glass-card table-panel">
+          <div class="panel-header"><h3 class="panel-title">Daily Attendance Logs ({{ attendanceData()!.logEntries.totalCount }})</h3></div>
+          <div class="table-responsive">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Employee ID</th>
+                  <th>Staff Name</th>
+                  <th>Role</th>
+                  <th>Check In</th>
+                  <th>Check Out</th>
+                  <th>Status</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (att of attendanceData()!.logEntries.items; track att.attendanceId) {
+                  <tr>
+                    <td>{{ att.date | date:'mediumDate' }}</td>
+                    <td class="font-mono">{{ att.employeeId }}</td>
+                    <td><strong>{{ att.fullName }}</strong></td>
+                    <td>{{ att.role }}</td>
+                    <td>{{ att.checkInTime ? (att.checkInTime | date:'shortTime') : '-' }}</td>
+                    <td>{{ att.checkOutTime ? (att.checkOutTime | date:'shortTime') : '-' }}</td>
+                    <td><span class="status-badge" [attr.data-status]="att.status">{{ att.status }}</span></td>
+                    <td class="text-muted">{{ att.notes || '-' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ======================================================================
+         TAB 10: KITCHEN VELOCITY REPORT
+         ====================================================================== -->
+    @if (activeTab() === 'kitchen' && kitchenData()) {
+      <div class="tab-content-wrapper">
+        <div class="metric-cards-grid">
+          <div class="stat-card glass-card">
+            <span class="card-caption">Dishes Prepared</span>
+            <div class="card-value">{{ kitchenData()!.totalDishesPrepared }}</div>
+            <div class="card-subtext">{{ kitchenData()!.totalOrdersProcessed }} orders completed</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Avg Preparation Time</span>
+            <div class="card-value text-green">{{ kitchenData()!.averagePreparationMinutes }} mins</div>
+            <div class="card-subtext">Order creation to pickup</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Efficiency Rating</span>
+            <div class="card-value net-highlight">{{ kitchenData()!.kitchenEfficiencyScore }}%</div>
+            <div class="card-subtext">{{ kitchenData()!.ordersPreparedUnder15Minutes }} ready in under 15 mins</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Delayed Orders</span>
+            <div class="card-value text-red">{{ kitchenData()!.delayedOrdersCount }}</div>
+            <div class="card-subtext">Orders exceeding 20 mins wait</div>
+          </div>
+        </div>
+
+        <div class="visuals-split-grid">
+          <div class="glass-card">
+            <div class="panel-header"><h3 class="panel-title">Top Prepared Dishes</h3></div>
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Dish</th>
+                  <th>Category</th>
+                  <th>Units Cooked</th>
+                  <th>Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (d of kitchenData()!.topPreparedDishes; track d.productId) {
+                  <tr>
+                    <td><strong>{{ d.name }}</strong></td>
+                    <td>{{ d.categoryName }}</td>
+                    <td>{{ d.totalUnitsCooked }}</td>
+                    <td><span class="badge-pill">{{ d.percentageOfTotal }}%</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="glass-card">
+            <div class="panel-header"><h3 class="panel-title">Kitchen Orders Queue</h3></div>
+            <div class="table-responsive">
+              <table class="report-table">
+                <thead>
+                  <tr>
+                    <th>Order #</th>
+                    <th>Table</th>
+                    <th>Items</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (q of kitchenData()!.orderQueue.items; track q.orderId) {
+                    <tr>
+                      <td class="font-mono">#{{ q.orderNumber }}</td>
+                      <td>T-{{ q.tableNumber }}</td>
+                      <td>{{ q.totalItemsCount }} items</td>
+                      <td>
+                        <span [class.text-red]="q.isDelayed">{{ q.durationMinutes }} mins</span>
+                      </td>
+                      <td><span class="status-badge" [attr.data-status]="q.status">{{ q.status }}</span></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ======================================================================
+         TAB 11: PEAK HOURS & TRAFFIC REPORT
+         ====================================================================== -->
+    @if (activeTab() === 'peak-hours' && peakHourData()) {
+      <div class="tab-content-wrapper">
+        <div class="metric-cards-grid">
+          <div class="stat-card glass-card highlight-border">
+            <span class="card-caption">Busiest Rush Hour</span>
+            <div class="card-value net-highlight">{{ peakHourData()!.busiestHourLabel }}</div>
+            <div class="card-subtext">{{ peakHourData()!.busiestHourOrdersCount }} orders (₹{{ peakHourData()!.busiestHourSales | number:'1.2-2' }})</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Busiest Day of Week</span>
+            <div class="card-value text-green">{{ peakHourData()!.busiestDayOfWeek }}</div>
+            <div class="card-subtext">Peak dining volume</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Average Orders / Hour</span>
+            <div class="card-value">{{ peakHourData()!.averageOrdersPerHour }}</div>
+            <div class="card-subtext">Normalized hourly traffic</div>
+          </div>
+          <div class="stat-card glass-card">
+            <span class="card-caption">Peak Hour Contribution</span>
+            <div class="card-value text-amber">{{ peakHourData()!.peakHourRevenueContribution }}%</div>
+            <div class="card-subtext">Of total revenue generated</div>
+          </div>
+        </div>
+
+        <!-- 2. 24-Hour Order Traffic Heatmap -->
+        <div class="glass-card chart-panel">
+          <div class="panel-header">
+            <h3 class="panel-title">24-Hour Order Traffic Heatmap</h3>
+            <span class="panel-badge">Hourly Intensity Scale</span>
+          </div>
+          @if (hourlyTrafficHeatmapOption()) {
+            <div class="echart-card-box" [appEcharts]="hourlyTrafficHeatmapOption()"></div>
+          } @else {
+            <div class="empty-chart-notice">No hourly order activity recorded in this date range.</div>
+          }
+        </div>
+
+        <!-- Day of Week & Table Turnover Split -->
+        <div class="visuals-split-grid">
+          <!-- 3. Day of the Week Traffic Horizontal Bar Chart -->
+          <div class="glass-card">
+            <div class="panel-header"><h3 class="panel-title">Day of the Week Traffic</h3></div>
+            @if (dayOfWeekTrafficOption()) {
+              <div class="echart-card-box-sm" [appEcharts]="dayOfWeekTrafficOption()"></div>
+            }
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Day</th>
+                  <th>Orders</th>
+                  <th>Gross Revenue</th>
+                  <th>Traffic Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (d of peakHourData()!.dayOfWeekTraffic; track d.dayName) {
+                  <tr>
+                    <td><strong>{{ d.dayName }}</strong></td>
+                    <td>{{ d.ordersCount }}</td>
+                    <td>₹{{ d.grossSales | number:'1.2-2' }}</td>
+                    <td><span class="badge-pill">{{ d.percentageOfTotal }}%</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 4. Dining Table Turnover & Revenue Combo Chart -->
+          <div class="glass-card">
+            <div class="panel-header"><h3 class="panel-title">Dining Table Turnover & Revenue</h3></div>
+            @if (tableTurnoverComboOption()) {
+              <div class="echart-card-box-sm" [appEcharts]="tableTurnoverComboOption()"></div>
+            }
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Table</th>
+                  <th>Orders Served</th>
+                  <th>Revenue Generated</th>
+                  <th>Turnover Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of peakHourData()!.tableUtilization; track t.tableId) {
+                  <tr>
+                    <td><strong>Table {{ t.tableNumber }}</strong></td>
+                    <td>{{ t.totalOrdersServed }}</td>
+                    <td>₹{{ t.totalRevenueGenerated | number:'1.2-2' }}</td>
+                    <td><span class="badge-pill">{{ t.utilizationPercentage }}%</span></td>
+                  </tr>
+                }
+                @if (peakHourData()!.tableUtilization.length === 0) {
+                  <tr><td colspan="4" class="text-muted">No table orders recorded.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+  }
+
+</div>
+

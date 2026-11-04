@@ -169,6 +169,10 @@ public class KitchenAndTvDisplayTests
         public Task<bool> DeleteAsync(int id) => Task.FromResult(true);
         public Task<IEnumerable<CanteenSummaryDto>> GetOwnerCanteensAsync(int ownerId) => Task.FromResult<IEnumerable<CanteenSummaryDto>>(new List<CanteenSummaryDto>());
         public Task<bool> IsOwnerAuthorizedAsync(int ownerId, int canteenId) => Task.FromResult(IsAuthorized);
+
+        public Task<CanteenCancellationPolicyDto> GetCancellationPolicyAsync(int canteenId) => Task.FromResult(new CanteenCancellationPolicyDto { CanteenId = canteenId });
+        public Task<CanteenCancellationPolicyDto> UpdateCancellationPolicyAsync(int canteenId, UpdateCanteenCancellationPolicyDto dto) => Task.FromResult(new CanteenCancellationPolicyDto { CanteenId = canteenId });
+
         public Task<bool> IsCanteenActiveAsync(int canteenId) => Task.FromResult(true);
         public Task<PlatformAdminMetricsDto> GetPlatformMetricsAsync() => Task.FromResult(new PlatformAdminMetricsDto());
         public Task<IEnumerable<AdminCanteenItemDto>> GetAdminCanteensAsync() => Task.FromResult<IEnumerable<AdminCanteenItemDto>>(new List<AdminCanteenItemDto>());

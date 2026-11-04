@@ -17,4 +17,6 @@ public interface ICanteenRepository
     Task<bool> IsOwnerAuthorizedAndActiveAsync(int ownerId, int canteenId);
     Task<bool> IsCanteenActiveAsync(int canteenId);
     Task<IEnumerable<Model.Entities.Canteen>> GetAdminListAsync();
+    Task<Model.Entities.CanteenCancellationPolicy?> GetCancellationPolicyAsync(int canteenId);
+    Task<Model.Entities.CanteenCancellationPolicy> SaveCancellationPolicyAsync(int canteenId, Model.Entities.CanteenCancellationPolicy policy);
 }

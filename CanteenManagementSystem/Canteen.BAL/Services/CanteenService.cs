@@ -152,7 +152,10 @@ public class CanteenService : ICanteenService
         {
             entity.TaxPercentage = dto.TaxPercentage.Value;
         }
-        entity.IsActive = dto.IsActive;
+        if (dto.IsActive.HasValue)
+        {
+            entity.IsActive = dto.IsActive.Value;
+        }
 
         // Advance to Completed if required setup steps (address details) exist
         if (!string.IsNullOrWhiteSpace(entity.AddressLine1))
@@ -421,4 +424,65 @@ public class CanteenService : ICanteenService
         CreatedAt = c.CreatedAt,
         OwnerId = c.OwnerId
     };
+
+    public async Task<CanteenCancellationPolicyDto> GetCancellationPolicyAsync(int canteenId)
+    {
+        var policy = await _repo.GetCancellationPolicyAsync(canteenId);
+        if (policy == null)
+        {
+            return new CanteenCancellationPolicyDto
+            {
+                CanteenId = canteenId,
+                AppliedPlatformPolicyVersion = 1,
+                EnableCustomerCancellation = true,
+                CustomCutoffMinutes = 5,
+                PredefinedCancellationReasons = new() { "Item out of stock", "Kitchen overload", "Equipment breakdown", "Closing early" },
+                CustomPolicyNotice = "Cancellations are accepted before cooking begins.",
+                PlatformAllowsCustomerCancellation = true,
+                PlatformMaxCutoffMinutes = 5,
+                PlatformProhibitsPostPreparation = true,
+                UpdatedAt = DateTime.UtcNow
+            };
+        }
+
+        List<string> reasons;
+        try
+        {
+            reasons = System.Text.Json.JsonSerializer.Deserialize<List<string>>(policy.PredefinedCancellationReasonsJson) ?? new();
+        }
+        catch
+        {
+            reasons = new() { "Item out of stock", "Kitchen overload", "Equipment breakdown", "Closing early" };
+        }
+
+        return new CanteenCancellationPolicyDto
+        {
+            CanteenPolicyId = policy.CanteenPolicyId,
+            CanteenId = policy.CanteenId,
+            AppliedPlatformPolicyVersion = policy.AppliedPlatformPolicyVersion,
+            EnableCustomerCancellation = policy.EnableCustomerCancellation,
+            CustomCutoffMinutes = policy.CustomCutoffMinutes,
+            PredefinedCancellationReasons = reasons,
+            CustomPolicyNotice = policy.CustomPolicyNotice,
+            UpdatedAt = policy.UpdatedAt,
+            PlatformAllowsCustomerCancellation = true,
+            PlatformMaxCutoffMinutes = 5,
+            PlatformProhibitsPostPreparation = true
+        };
+    }
+
+    public async Task<CanteenCancellationPolicyDto> UpdateCancellationPolicyAsync(int canteenId, UpdateCanteenCancellationPolicyDto dto)
+    {
+        var entity = new Model.Entities.CanteenCancellationPolicy
+        {
+            CanteenId = canteenId,
+            EnableCustomerCancellation = dto.EnableCustomerCancellation,
+            CustomCutoffMinutes = Math.Clamp(dto.CustomCutoffMinutes, 1, 15),
+            PredefinedCancellationReasonsJson = System.Text.Json.JsonSerializer.Serialize(dto.PredefinedCancellationReasons ?? new()),
+            CustomPolicyNotice = dto.CustomPolicyNotice ?? string.Empty
+        };
+
+        await _repo.SaveCancellationPolicyAsync(canteenId, entity);
+        return await GetCancellationPolicyAsync(canteenId);
+    }
 }

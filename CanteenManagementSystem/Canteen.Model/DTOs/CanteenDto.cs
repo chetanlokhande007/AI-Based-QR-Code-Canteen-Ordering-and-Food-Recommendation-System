@@ -188,6 +188,6 @@ namespace Canteen.Model.DTOs
         public string? FeeAbsorptionPolicy { get; set; }
         public decimal? TaxPercentage { get; set; }
 
-        public bool IsActive { get; set; }
+        public bool? IsActive { get; set; }
     }
 }

@@ -25,6 +25,9 @@ import { AdminAuditLogsComponent } from './features/admin/admin-audit-logs/admin
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
 import { PaymentsComponent } from './features/payments/payments';
+import { StaffComponent } from './features/staff/staff';
+import { ReportsComponent } from './features/reports/reports';
+import { SettingsComponent } from './features/settings/settings';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -61,6 +64,10 @@ export const routes: Routes = [
       { path: 'owner/dashboard', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'orders', component: Orders },
       { path: 'payments', component: PaymentsComponent },
+      { path: 'staff', component: StaffComponent },
+      { path: 'staff-management', redirectTo: 'staff', pathMatch: 'full' },
+      { path: 'reports', component: ReportsComponent },
+      { path: 'analytics', redirectTo: 'reports', pathMatch: 'full' },
       { path: 'kitchen-display', component: KitchenDisplayComponent },
       { path: 'kitchen', redirectTo: 'kitchen-display', pathMatch: 'full' },
       { path: 'kds', redirectTo: 'kitchen-display', pathMatch: 'full' },
@@ -84,6 +91,8 @@ export const routes: Routes = [
       { path: 'canteens', redirectTo: 'my-canteens', pathMatch: 'full' },
       { path: 'canteen-setup', component: CanteenSetup },
       { path: 'canteen/setup', redirectTo: 'canteen-setup', pathMatch: 'full' },
+      { path: 'settings', component: SettingsComponent },
+      { path: 'canteen-settings', redirectTo: 'settings', pathMatch: 'full' },
     ]
   },
   

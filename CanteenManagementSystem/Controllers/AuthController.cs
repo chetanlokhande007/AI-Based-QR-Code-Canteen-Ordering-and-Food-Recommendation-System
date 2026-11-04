@@ -132,6 +132,28 @@ public class AuthController : ControllerBase
         return Ok(response);
     }
 
+
+    /// <summary>Change password for the authenticated owner or admin.</summary>
+    [HttpPost("change-password")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        var ownerId = User.GetOwnerId();
+        if (!ownerId.HasValue) return Unauthorized();
+
+        var success = await _authService.ChangePasswordAsync(ownerId.Value, dto);
+        if (!success)
+        {
+            return BadRequest(new { message = "Incorrect current password." });
+        }
+
+        return Ok(new { message = "Password changed successfully." });
+    }
+
     /// <summary>Request a password reset token.</summary>
     [HttpPost("forgot-password")]
     [AllowAnonymous]

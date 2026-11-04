@@ -2,7 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CanteenDto, CanteenSummaryDto, CreateCanteenRequest, PublicCanteenDto, UpdateCanteenRequest } from '../models/canteen.models';
+import { 
+  CanteenCancellationPolicy,
+  CanteenDto, 
+  CanteenSummaryDto, 
+  CreateCanteenRequest, 
+  PublicCanteenDto, 
+  UpdateCanteenCancellationPolicy,
+  UpdateCanteenRequest 
+} from '../models/canteen.models';
 
 @Injectable({
   providedIn: 'root'
@@ -33,5 +41,13 @@ export class CanteenService {
 
   update(id: number, payload: UpdateCanteenRequest): Observable<CanteenDto> {
     return this.http.put<CanteenDto>(`${this.baseUrl}/${id}`, payload);
+  }
+
+  getCancellationPolicy(canteenId: number): Observable<CanteenCancellationPolicy> {
+    return this.http.get<CanteenCancellationPolicy>(`${this.baseUrl}/${canteenId}/cancellation-policy`);
+  }
+
+  updateCancellationPolicy(canteenId: number, dto: UpdateCanteenCancellationPolicy): Observable<CanteenCancellationPolicy> {
+    return this.http.put<CanteenCancellationPolicy>(`${this.baseUrl}/${canteenId}/cancellation-policy`, dto);
   }
 }

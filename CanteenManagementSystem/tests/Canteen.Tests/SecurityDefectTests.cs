@@ -174,6 +174,10 @@ public class SecurityDefectTests
         public Task<bool> DeleteAsync(int id) => Task.FromResult(true);
         public Task<bool> ExistsAsync(int id) => Task.FromResult(false);
         public Task<IEnumerable<Canteen.Model.Entities.Canteen>> GetByOwnerIdAsync(int ownerId) => Task.FromResult<IEnumerable<Canteen.Model.Entities.Canteen>>(new List<Canteen.Model.Entities.Canteen>());
+
+        public Task<Canteen.Model.Entities.CanteenCancellationPolicy?> GetCancellationPolicyAsync(int canteenId) => Task.FromResult<Canteen.Model.Entities.CanteenCancellationPolicy?>(null);
+        public Task<Canteen.Model.Entities.CanteenCancellationPolicy> SaveCancellationPolicyAsync(int canteenId, Canteen.Model.Entities.CanteenCancellationPolicy policy) => Task.FromResult(policy);
+
         public Task<bool> IsOwnerAuthorizedAsync(int ownerId, int canteenId) => Task.FromResult(true);
         public Task<bool> IsOwnerAuthorizedAndActiveAsync(int ownerId, int canteenId) => Task.FromResult(true);
         public Task<bool> IsCanteenActiveAsync(int canteenId) => Task.FromResult(true);

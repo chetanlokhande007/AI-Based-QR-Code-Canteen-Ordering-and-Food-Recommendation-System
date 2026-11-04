@@ -19,4 +19,6 @@ public interface ICanteenService
     Task<IEnumerable<AdminCanteenItemDto>> GetAdminCanteensAsync();
     Task<bool> UpdateCanteenStatusAsync(int canteenId, bool isActive);
     Task<bool> UpdateCanteenStatusAsync(int canteenId, bool? isActive, TenantStatus? tenantStatus);
+    Task<CanteenCancellationPolicyDto> GetCancellationPolicyAsync(int canteenId);
+    Task<CanteenCancellationPolicyDto> UpdateCancellationPolicyAsync(int canteenId, UpdateCanteenCancellationPolicyDto dto);
 }

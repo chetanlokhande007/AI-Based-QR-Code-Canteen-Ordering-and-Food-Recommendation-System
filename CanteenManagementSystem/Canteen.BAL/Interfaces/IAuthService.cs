@@ -11,4 +11,5 @@ public interface IAuthService
     Task<ForgotPasswordResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto dto, bool isDevelopment);
     Task<bool> ResetPasswordAsync(ResetPasswordRequestDto dto);
     Task<AuthResponseDto?> SwitchCanteenAsync(int ownerId, int canteenId);
+    Task<bool> ChangePasswordAsync(int ownerId, ChangePasswordRequestDto dto);
 }

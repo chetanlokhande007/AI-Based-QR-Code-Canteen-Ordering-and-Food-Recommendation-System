@@ -14,6 +14,9 @@ using Microsoft.OpenApi.Models;
 using CanteenManagementSystem.Hubs;
 using CanteenManagementSystem.Services;
 
+// Enable legacy timestamp behavior so Npgsql accepts DateTimeKind.Unspecified or Utc gracefully
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<CanteenDbContext>(options =>
@@ -38,6 +41,8 @@ builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IRecommendationRepository, RecommendationRepository>();
 builder.Services.AddScoped<ICouponRepository, CouponRepository>();
 builder.Services.AddScoped<ITvDeviceRepository, TvDeviceRepository>();
+builder.Services.AddScoped<IStaffRepository, StaffRepository>();
+builder.Services.AddScoped<IReportsRepository, ReportsRepository>();
 
 // â”€â”€â”€ BAL â€“ Services â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddScoped<ICanteenService, CanteenService>();
@@ -54,6 +59,8 @@ builder.Services.AddScoped<IFoodRecommendationService, FoodRecommendationService
 builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<ITvDeviceService, TvDeviceService>();
 builder.Services.AddScoped<IPaymentDashboardService, PaymentDashboardService>();
+builder.Services.AddScoped<IStaffService, StaffService>();
+builder.Services.AddScoped<IReportsService, ReportsService>();
 
 builder.Services.AddHttpClient<RazorpayPaymentService>();
 var useMockPayment = builder.Configuration.GetValue<bool>("Razorpay:UseMock");

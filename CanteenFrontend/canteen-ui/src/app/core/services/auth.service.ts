@@ -2,13 +2,14 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {
-  AuthResponse,
-  ForgotPasswordRequest,
-  ForgotPasswordResponse,
-  LoginRequest,
-  RegisterOwnerRequest,
-  ResetPasswordRequest
+import { 
+  AuthResponse, 
+  ChangePasswordRequest,
+  ForgotPasswordRequest, 
+  ForgotPasswordResponse, 
+  LoginRequest, 
+  RegisterOwnerRequest, 
+  ResetPasswordRequest 
 } from '../models/auth.models';
 
 @Injectable({
@@ -29,24 +30,28 @@ export class AuthService {
     );
   }
 
-  register(payload: RegisterOwnerRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/register`, payload).pipe(
+  register(data: RegisterOwnerRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/register`, data).pipe(
       tap((response) => {
         this.saveAuth(response);
       })
     );
   }
 
-  forgotPassword(payload: ForgotPasswordRequest): Observable<ForgotPasswordResponse> {
-    return this.http.post<ForgotPasswordResponse>(`${this.baseUrl}/forgot-password`, payload);
+  forgotPassword(data: ForgotPasswordRequest): Observable<ForgotPasswordResponse> {
+    return this.http.post<ForgotPasswordResponse>(`${this.baseUrl}/forgot-password`, data);
   }
 
-  resetPassword(payload: ResetPasswordRequest): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.baseUrl}/reset-password`, payload);
+  resetPassword(data: ResetPasswordRequest): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/reset-password`, data);
+  }
+
+  changePassword(dto: ChangePasswordRequest): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/change-password`, dto);
   }
 
   getProfile(): Observable<AuthResponse> {
-    return this.http.get<AuthResponse>(`${this.baseUrl}/me`).pipe(
+    return this.http.get<AuthResponse>(`${this.baseUrl}/profile`).pipe(
       tap((response) => {
         this.saveAuth(response);
       })

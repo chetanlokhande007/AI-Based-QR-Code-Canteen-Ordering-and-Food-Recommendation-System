@@ -103,6 +103,7 @@ export interface CreateCanteenRequest {
   landmark?: string;
   operatingHoursJson?: string;
   imageUrl?: string;
+  isActive?: boolean;
 }
 
 export interface UpdateCanteenRequest {
@@ -131,5 +132,28 @@ export interface UpdateCanteenRequest {
   landmark?: string;
   operatingHoursJson?: string;
   imageUrl?: string;
+  feeAbsorptionPolicy?: 'CustomerPays' | 'CanteenAbsorbs' | string;
+  taxPercentage?: number;
   isActive?: boolean;
+}
+
+export interface CanteenCancellationPolicy {
+  canteenPolicyId: number;
+  canteenId: number;
+  appliedPlatformPolicyVersion: number;
+  enableCustomerCancellation: boolean;
+  customCutoffMinutes: number;
+  predefinedCancellationReasons: string[];
+  customPolicyNotice: string;
+  updatedAt: string;
+  platformAllowsCustomerCancellation: boolean;
+  platformMaxCutoffMinutes: number;
+  platformProhibitsPostPreparation: boolean;
+}
+
+export interface UpdateCanteenCancellationPolicy {
+  enableCustomerCancellation: boolean;
+  customCutoffMinutes: number;
+  predefinedCancellationReasons: string[];
+  customPolicyNotice: string;
 }

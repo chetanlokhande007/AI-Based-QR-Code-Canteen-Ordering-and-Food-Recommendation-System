@@ -1152,6 +1152,161 @@ namespace Canteen.DAL.Migrations
                     b.ToTable("Refunds");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.StaffActivityLog", b =>
+                {
+                    b.Property<int>("ActivityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ActivityId"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("text");
+
+                    b.Property<int>("StaffId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ActivityId");
+
+                    b.HasIndex("StaffId");
+
+                    b.HasIndex("CanteenId", "Timestamp");
+
+                    b.ToTable("StaffActivityLogs");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.StaffAttendance", b =>
+                {
+                    b.Property<int>("AttendanceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AttendanceId"));
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CheckInTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("CheckOutTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<int>("StaffId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("AttendanceId");
+
+                    b.HasIndex("CanteenId", "Date");
+
+                    b.HasIndex("StaffId", "Date");
+
+                    b.ToTable("StaffAttendances");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.StaffMember", b =>
+                {
+                    b.Property<int>("StaffId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StaffId"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CanteenId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EmergencyContact")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EmployeeId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("JoinedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MobileNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProfilePhotoUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal?>("Salary")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Shift")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("StaffId");
+
+                    b.HasIndex("CanteenId", "EmployeeId")
+                        .IsUnique();
+
+                    b.HasIndex("CanteenId", "Role");
+
+                    b.HasIndex("CanteenId", "Status");
+
+                    b.ToTable("StaffMembers");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.StockReservation", b =>
                 {
                     b.Property<int>("ReservationId")
@@ -1676,6 +1831,55 @@ namespace Canteen.DAL.Migrations
                     b.Navigation("Payment");
                 });
 
+            modelBuilder.Entity("Canteen.Model.Entities.StaffActivityLog", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany()
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.StaffMember", "StaffMember")
+                        .WithMany("ActivityLogs")
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+
+                    b.Navigation("StaffMember");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.StaffAttendance", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany()
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Canteen.Model.Entities.StaffMember", "StaffMember")
+                        .WithMany("Attendances")
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+
+                    b.Navigation("StaffMember");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.StaffMember", b =>
+                {
+                    b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
+                        .WithMany()
+                        .HasForeignKey("CanteenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Canteen");
+                });
+
             modelBuilder.Entity("Canteen.Model.Entities.StockReservation", b =>
                 {
                     b.HasOne("Canteen.Model.Entities.Canteen", "Canteen")
@@ -1853,6 +2057,13 @@ namespace Canteen.DAL.Migrations
             modelBuilder.Entity("Canteen.Model.Entities.Recipe", b =>
                 {
                     b.Navigation("Ingredients");
+                });
+
+            modelBuilder.Entity("Canteen.Model.Entities.StaffMember", b =>
+                {
+                    b.Navigation("ActivityLogs");
+
+                    b.Navigation("Attendances");
                 });
 
             modelBuilder.Entity("Canteen.Model.Entities.StockReservation", b =>

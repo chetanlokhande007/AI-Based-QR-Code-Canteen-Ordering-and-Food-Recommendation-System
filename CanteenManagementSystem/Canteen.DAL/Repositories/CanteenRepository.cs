@@ -115,4 +115,34 @@ public class CanteenRepository : ICanteenRepository
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync();
     }
+
+    public async Task<Model.Entities.CanteenCancellationPolicy?> GetCancellationPolicyAsync(int canteenId)
+    {
+        return await _context.CanteenCancellationPolicies
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.CanteenId == canteenId);
+    }
+
+    public async Task<Model.Entities.CanteenCancellationPolicy> SaveCancellationPolicyAsync(int canteenId, Model.Entities.CanteenCancellationPolicy policy)
+    {
+        var existing = await _context.CanteenCancellationPolicies
+            .FirstOrDefaultAsync(p => p.CanteenId == canteenId);
+
+        if (existing != null)
+        {
+            existing.EnableCustomerCancellation = policy.EnableCustomerCancellation;
+            existing.CustomCutoffMinutes = policy.CustomCutoffMinutes;
+            existing.PredefinedCancellationReasonsJson = policy.PredefinedCancellationReasonsJson;
+            existing.CustomPolicyNotice = policy.CustomPolicyNotice;
+            existing.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return existing;
+        }
+
+        policy.CanteenId = canteenId;
+        policy.UpdatedAt = DateTime.UtcNow;
+        _context.CanteenCancellationPolicies.Add(policy);
+        await _context.SaveChangesAsync();
+        return policy;
+    }
 }

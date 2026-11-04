@@ -84,7 +84,10 @@ public class CanteenDbContext : DbContext
     public DbSet<Coupon> Coupons => Set<Coupon>();
     public DbSet<CouponRedemption> CouponRedemptions => Set<CouponRedemption>();
     public DbSet<TvDevice> TvDevices => Set<TvDevice>();
-    public DbSet<TvPairingSession> TvPairingSessions => Set<TvPairingSession>();
+        public DbSet<TvPairingSession> TvPairingSessions => Set<TvPairingSession>();
+    public DbSet<StaffMember> StaffMembers => Set<StaffMember>();
+    public DbSet<StaffAttendance> StaffAttendances => Set<StaffAttendance>();
+    public DbSet<StaffActivityLog> StaffActivityLogs => Set<StaffActivityLog>();
 
 
 
@@ -901,7 +904,6 @@ public class CanteenDbContext : DbContext
             entity.HasData(new PlatformCancellationPolicy
 
             {
-
                 PolicyId = 1,
 
                 PolicyVersion = 1,
@@ -1543,6 +1545,64 @@ public class CanteenDbContext : DbContext
             entity.HasOne(e => e.Canteen)
                 .WithMany(c => c.TvPairingSessions)
                 .HasForeignKey(e => e.CanteenId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<StaffMember>(entity =>
+        {
+            entity.HasKey(s => s.StaffId);
+            entity.Property(s => s.FullName).IsRequired().HasMaxLength(100);
+            entity.Property(s => s.EmployeeId).IsRequired().HasMaxLength(50);
+            entity.Property(s => s.MobileNumber).IsRequired().HasMaxLength(20);
+            entity.Property(s => s.Role).IsRequired().HasMaxLength(50);
+            entity.Property(s => s.Shift).IsRequired().HasMaxLength(50);
+            entity.Property(s => s.Status).IsRequired().HasMaxLength(30);
+
+            entity.HasIndex(s => new { s.CanteenId, s.EmployeeId }).IsUnique();
+            entity.HasIndex(s => new { s.CanteenId, s.Status });
+            entity.HasIndex(s => new { s.CanteenId, s.Role });
+
+            entity.HasOne(s => s.Canteen)
+                .WithMany()
+                .HasForeignKey(s => s.CanteenId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<StaffAttendance>(entity =>
+        {
+            entity.HasKey(a => a.AttendanceId);
+            entity.Property(a => a.Status).IsRequired().HasMaxLength(30);
+
+            entity.HasIndex(a => new { a.CanteenId, a.Date });
+            entity.HasIndex(a => new { a.StaffId, a.Date });
+
+            entity.HasOne(a => a.StaffMember)
+                .WithMany(s => s.Attendances)
+                .HasForeignKey(a => a.StaffId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(a => a.Canteen)
+                .WithMany()
+                .HasForeignKey(a => a.CanteenId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<StaffActivityLog>(entity =>
+        {
+            entity.HasKey(l => l.ActivityId);
+            entity.Property(l => l.Action).IsRequired().HasMaxLength(150);
+
+            entity.HasIndex(l => new { l.CanteenId, l.Timestamp });
+            entity.HasIndex(l => l.StaffId);
+
+            entity.HasOne(l => l.StaffMember)
+                .WithMany(s => s.ActivityLogs)
+                .HasForeignKey(l => l.StaffId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(l => l.Canteen)
+                .WithMany()
+                .HasForeignKey(l => l.CanteenId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

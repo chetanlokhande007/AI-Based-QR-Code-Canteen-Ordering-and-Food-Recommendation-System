@@ -257,7 +257,14 @@ public class TvPairingAndDeviceTests
         public Task<IEnumerable<Canteen.Model.Entities.Canteen>> GetAdminListAsync() => Task.FromResult<IEnumerable<Canteen.Model.Entities.Canteen>>(Canteens);
         public Task<bool> DeleteAsync(int id) => throw new NotImplementedException();
         public Task<IEnumerable<Canteen.Model.Entities.Canteen>> GetByOwnerIdAsync(int ownerId) => throw new NotImplementedException();
+
+
+        public Task<Canteen.Model.Entities.CanteenCancellationPolicy?> GetCancellationPolicyAsync(int canteenId) => Task.FromResult<Canteen.Model.Entities.CanteenCancellationPolicy?>(null);
+        public Task<Canteen.Model.Entities.CanteenCancellationPolicy> SaveCancellationPolicyAsync(int canteenId, Canteen.Model.Entities.CanteenCancellationPolicy policy) => Task.FromResult(policy);
+
         public Task<bool> IsOwnerAuthorizedAsync(int ownerId, int canteenId) => Task.FromResult(true);
+
+
         public Task<bool> IsCanteenActiveAsync(int canteenId) => Task.FromResult(true);
         public Task<bool> SlugExistsAsync(string slug, int? excludeCanteenId = null) => Task.FromResult(false);
     }
@@ -292,7 +299,14 @@ public class TvPairingAndDeviceTests
         public Task<CanteenDto?> UpdateAsync(int id, UpdateCanteenDto dto) => throw new NotImplementedException();
         public Task<bool> DeleteAsync(int id) => throw new NotImplementedException();
         public Task<IEnumerable<CanteenSummaryDto>> GetOwnerCanteensAsync(int ownerId) => throw new NotImplementedException();
+
+
+        public Task<CanteenCancellationPolicyDto> GetCancellationPolicyAsync(int canteenId) => Task.FromResult(new CanteenCancellationPolicyDto { CanteenId = canteenId });
+        public Task<CanteenCancellationPolicyDto> UpdateCancellationPolicyAsync(int canteenId, UpdateCanteenCancellationPolicyDto dto) => Task.FromResult(new CanteenCancellationPolicyDto { CanteenId = canteenId });
+
         public Task<bool> IsOwnerAuthorizedAsync(int ownerId, int canteenId) => Task.FromResult(true);
+
+
         public Task<bool> IsCanteenActiveAsync(int canteenId) => throw new NotImplementedException();
         public Task<PlatformAdminMetricsDto> GetPlatformMetricsAsync() => throw new NotImplementedException();
         public Task<IEnumerable<AdminCanteenItemDto>> GetAdminCanteensAsync() => throw new NotImplementedException();

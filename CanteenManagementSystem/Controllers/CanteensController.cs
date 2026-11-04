@@ -38,7 +38,7 @@ public class CanteensController : ControllerBase
     public async Task<IActionResult> GetPublicInfo(int id)
     {
         var dto = await _service.GetByIdAsync(id);
-        if (dto is null || !dto.IsActive || dto.TenantStatus != TenantStatus.Active)
+        if (dto is null || dto.TenantStatus != TenantStatus.Active)
         {
             return NotFound();
         }
@@ -71,7 +71,7 @@ public class CanteensController : ControllerBase
     public async Task<IActionResult> GetPublicInfoBySlug(string slug)
     {
         var dto = await _service.GetBySlugAsync(slug);
-        if (dto is null || !dto.IsActive || dto.TenantStatus != TenantStatus.Active)
+        if (dto is null || dto.TenantStatus != TenantStatus.Active)
         {
             return NotFound();
         }
@@ -208,5 +208,39 @@ public class CanteensController : ControllerBase
 
         var deleted = await _service.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
+    }
+
+    /// <summary>Get cancellation policy rules configured for this canteen.</summary>
+    [HttpGet("{id:int}/cancellation-policy")]
+    [Authorize(Roles = "CanteenOwner,PlatformAdmin")]
+    [ProducesResponseType(typeof(CanteenCancellationPolicyDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCancellationPolicy(int id)
+    {
+        var ownerId = User.GetOwnerId();
+        if (!ownerId.HasValue && !User.IsInRole("PlatformAdmin")) return Unauthorized();
+        if (!User.IsInRole("PlatformAdmin") && !await _service.IsOwnerAuthorizedAndActiveAsync(ownerId!.Value, id))
+        {
+            return Forbid();
+        }
+
+        var policy = await _service.GetCancellationPolicyAsync(id);
+        return Ok(policy);
+    }
+
+    /// <summary>Update cancellation policy rules for this canteen.</summary>
+    [HttpPut("{id:int}/cancellation-policy")]
+    [Authorize(Roles = "CanteenOwner,PlatformAdmin")]
+    [ProducesResponseType(typeof(CanteenCancellationPolicyDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateCancellationPolicy(int id, [FromBody] UpdateCanteenCancellationPolicyDto dto)
+    {
+        var ownerId = User.GetOwnerId();
+        if (!ownerId.HasValue && !User.IsInRole("PlatformAdmin")) return Unauthorized();
+        if (!User.IsInRole("PlatformAdmin") && !await _service.IsOwnerAuthorizedAndActiveAsync(ownerId!.Value, id))
+        {
+            return Forbid();
+        }
+
+        var policy = await _service.UpdateCancellationPolicyAsync(id, dto);
+        return Ok(policy);
     }
 }

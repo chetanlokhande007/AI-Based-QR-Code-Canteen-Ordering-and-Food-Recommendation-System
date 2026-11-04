@@ -1,0 +1,967 @@
+<div class="settings-container">
+
+  <!-- ========================================================================
+       Page Header
+       ======================================================================== -->
+  <header class="settings-header">
+    <div class="header-left">
+      <div class="header-title-row">
+        <h1 class="page-title">Settings & Configuration</h1>
+        @if (canteen(); as c) {
+          <span class="canteen-badge" [class.badge-active]="c.isActive" [class.badge-inactive]="!c.isActive">
+            <span class="status-dot"></span>
+            {{ c.isActive ? 'Open for Orders' : 'Store Offline' }}
+          </span>
+        }
+      </div>
+      <p class="page-subtitle">Manage store branding, operations, working hours, payout banking, audio alerts, and security.</p>
+    </div>
+
+    @if (publicMenuUrl()) {
+      <div class="header-actions">
+        <a [href]="publicMenuUrl()" target="_blank" rel="noopener" class="btn btn-outline preview-menu-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+          <span>Live Customer Menu</span>
+        </a>
+        <button type="button" class="btn btn-primary" (click)="copyPublicMenuUrl()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <span>Copy Menu Link</span>
+        </button>
+      </div>
+    }
+  </header>
+
+  <!-- Status / Alert Banners -->
+  @if (successMessage()) {
+    <div class="alert-banner alert-success">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-svg">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+      <span>{{ successMessage() }}</span>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert-banner alert-danger">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-svg">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
+  <!-- ========================================================================
+       Horizontal Navigation Tabs
+       ======================================================================== -->
+  <nav class="settings-tabs-nav" aria-label="Settings Categories">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'canteen'"
+      (click)="setTab('canteen')"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+      <span>General Profile</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'address'"
+      (click)="setTab('address')"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+      <span>Location & Address</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'hours'"
+      (click)="setTab('hours')"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+      <span>Operating Hours</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'operations'"
+      (click)="setTab('operations')"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+        <polyline points="10 9 9 9 8 9" />
+      </svg>
+      <span>Operations & Cancellation</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'payments'"
+      (click)="setTab('payments')"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <line x1="2" y1="10" x2="22" y2="10" />
+      </svg>
+      <span>Payment & Tax</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'sound'"
+      (click)="setTab('sound')"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+      </svg>
+      <span>Sound & Alerts</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'security'"
+      (click)="setTab('security')"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+      <span>Security & Account</span>
+    </button>
+  </nav>
+
+  <!-- ========================================================================
+       TAB CONTENTS
+       ======================================================================== -->
+  <main class="settings-main-card">
+
+    @if (isLoading()) {
+      <div class="loading-state-box">
+        <div class="spinner"></div>
+        <p>Loading canteen configuration...</p>
+      </div>
+    } @else {
+
+      <!-- --------------------------------------------------------------------
+           TAB 1: GENERAL PROFILE
+           -------------------------------------------------------------------- -->
+      @if (activeTab() === 'canteen') {
+        <section class="tab-content-section" aria-labelledby="general-profile-heading">
+          <div class="section-header-row">
+            <div>
+              <h2 id="general-profile-heading" class="section-title">General Canteen Profile</h2>
+              <p class="section-desc">Manage store name, public ordering URL slug, campus location, and customer contact.</p>
+            </div>
+            <div class="section-header-extra">
+              <label class="toggle-switch-wrapper">
+                <input
+                  type="checkbox"
+                  [formControl]="$any(profileForm.controls.isActive)"
+                />
+                <span class="toggle-slider"></span>
+                <span class="toggle-label-text">
+                  {{ profileForm.controls.isActive.value ? 'Canteen Open' : 'Canteen Closed' }}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="form-layout">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="canteenName" class="form-label">Canteen Name *</label>
+                <input
+                  id="canteenName"
+                  type="text"
+                  class="form-input"
+                  formControlName="name"
+                  placeholder="e.g. Deshmukh Student Canteen"
+                />
+                @if (profileForm.controls.name.touched && profileForm.controls.name.invalid) {
+                  <span class="field-error">Canteen name must be between 2 and 150 characters.</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="canteenSlug" class="form-label">
+                  Public Menu URL Slug
+                  <span class="field-hint">(Customers access at /c/&#123;slug&#125;)</span>
+                </label>
+                <div class="slug-input-wrapper">
+                  <span class="slug-prefix">/c/</span>
+                  <input
+                    id="canteenSlug"
+                    type="text"
+                    class="form-input slug-input"
+                    formControlName="slug"
+                    placeholder="my-canteen-slug"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="canteenLocation" class="form-label">Campus / Premises Location *</label>
+                <input
+                  id="canteenLocation"
+                  type="text"
+                  class="form-input"
+                  formControlName="location"
+                  placeholder="e.g. Ground Floor, Engineering Block B"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="canteenType" class="form-label">Canteen Category / Type</label>
+                <select id="canteenType" class="form-select" formControlName="canteenType">
+                  <option value="College / University">College / University Canteen</option>
+                  <option value="Corporate Campus">Corporate Office Cafeteria</option>
+                  <option value="Hospital Cafeteria">Hospital & Healthcare Canteen</option>
+                  <option value="Public Food Court">Food Court / Commercial Hub</option>
+                  <option value="Industrial / Factory">Industrial / Factory Mess</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="canteenDesc" class="form-label">About / Description</label>
+              <textarea
+                id="canteenDesc"
+                rows="3"
+                class="form-textarea"
+                formControlName="description"
+                placeholder="Briefly describe your canteen, specialties, dietary offerings, or student meal discounts..."
+              ></textarea>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="canteenPhone" class="form-label">Contact Mobile / Helpline</label>
+                <input
+                  id="canteenPhone"
+                  type="text"
+                  class="form-input"
+                  formControlName="contactPhone"
+                  placeholder="e.g. +91 9876543210"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="canteenEmail" class="form-label">Contact / Support Email</label>
+                <input
+                  id="canteenEmail"
+                  type="email"
+                  class="form-input"
+                  formControlName="contactEmail"
+                  placeholder="e.g. manager@canteen.com"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="canteenImageUrl" class="form-label">Store Cover / Logo Image URL</label>
+              <input
+                id="canteenImageUrl"
+                type="text"
+                class="form-input"
+                formControlName="imageUrl"
+                placeholder="https://images.unsplash.com/... or data URI"
+              />
+              @if (profileForm.controls.imageUrl.value) {
+                <div class="image-preview-box">
+                  <img [src]="profileForm.controls.imageUrl.value" alt="Canteen Cover Preview" class="cover-preview-img" />
+                </div>
+              }
+            </div>
+
+            <div class="form-footer-actions">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="isSaving() || profileForm.invalid"
+              >
+                {{ isSaving() ? 'Saving...' : 'Save Profile Changes' }}
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+
+      <!-- --------------------------------------------------------------------
+           TAB 2: LOCATION & ADDRESS
+           -------------------------------------------------------------------- -->
+      @if (activeTab() === 'address') {
+        <section class="tab-content-section" aria-labelledby="location-address-heading">
+          <div class="section-header-row">
+            <div>
+              <h2 id="location-address-heading" class="section-title">Physical Address & Campus Location</h2>
+              <p class="section-desc">Keep your postal and delivery address accurate for suppliers, invoices and campus deliveries.</p>
+            </div>
+          </div>
+
+          <form [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="form-layout">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="addrLine1" class="form-label">Address Line 1</label>
+                <input
+                  id="addrLine1"
+                  type="text"
+                  class="form-input"
+                  formControlName="addressLine1"
+                  placeholder="e.g. Building 4, Central Campus Promenade"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="addrLine2" class="form-label">Address Line 2 (Optional)</label>
+                <input
+                  id="addrLine2"
+                  type="text"
+                  class="form-input"
+                  formControlName="addressLine2"
+                  placeholder="e.g. Opp. Science Library, Sector 3"
+                />
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label for="addrCity" class="form-label">City</label>
+                <input
+                  id="addrCity"
+                  type="text"
+                  class="form-input"
+                  formControlName="city"
+                  placeholder="e.g. Pune"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="addrState" class="form-label">State</label>
+                <input
+                  id="addrState"
+                  type="text"
+                  class="form-input"
+                  formControlName="state"
+                  placeholder="e.g. Maharashtra"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="addrPostal" class="form-label">PIN / Postal Code</label>
+                <input
+                  id="addrPostal"
+                  type="text"
+                  class="form-input"
+                  formControlName="postalCode"
+                  placeholder="e.g. 411007"
+                />
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="addrCountry" class="form-label">Country</label>
+                <input
+                  id="addrCountry"
+                  type="text"
+                  class="form-input"
+                  formControlName="country"
+                  placeholder="India"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="addrLandmark" class="form-label">Nearest Landmark / Gate</label>
+                <input
+                  id="addrLandmark"
+                  type="text"
+                  class="form-input"
+                  formControlName="landmark"
+                  placeholder="e.g. Near North Security Gate"
+                />
+              </div>
+            </div>
+
+            <div class="form-footer-actions">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="isSaving() || addressForm.invalid"
+              >
+                {{ isSaving() ? 'Saving...' : 'Save Address Details' }}
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+
+      <!-- --------------------------------------------------------------------
+           TAB 3: OPERATING HOURS
+           -------------------------------------------------------------------- -->
+      @if (activeTab() === 'hours') {
+        <section class="tab-content-section" aria-labelledby="operating-hours-heading">
+          <div class="section-header-row">
+            <div>
+              <h2 id="operating-hours-heading" class="section-title">Weekly Operating Hours</h2>
+              <p class="section-desc">Specify open and close timings for each day. Customers see real-time Open/Closed banners.</p>
+            </div>
+            <button type="button" class="btn btn-outline" (click)="copyMondayHoursToAll()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              <span>Copy Monday to Weekdays</span>
+            </button>
+          </div>
+
+          <div class="schedule-table-wrapper">
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th>Day</th>
+                  <th>Status</th>
+                  <th>Opening Time</th>
+                  <th>Closing Time</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of weeklySchedule(); track item.day) {
+                  <tr [class.day-closed-row]="!item.isOpen">
+                    <td class="day-cell-name">
+                      <strong>{{ item.day }}</strong>
+                    </td>
+                    <td>
+                      <span class="status-pill" [class.pill-open]="item.isOpen" [class.pill-closed]="!item.isOpen">
+                        {{ item.isOpen ? 'Open' : 'Closed' }}
+                      </span>
+                    </td>
+                    <td>
+                      <input
+                        type="time"
+                        class="form-input time-input"
+                        [disabled]="!item.isOpen"
+                        [(ngModel)]="item.openTime"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="time"
+                        class="form-input time-input"
+                        [disabled]="!item.isOpen"
+                        [(ngModel)]="item.closeTime"
+                      />
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        [class.btn-outline]="item.isOpen"
+                        [class.btn-primary]="!item.isOpen"
+                        (click)="toggleDayOpen(item.day)"
+                      >
+                        {{ item.isOpen ? 'Mark Closed' : 'Mark Open' }}
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="form-footer-actions">
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="isSaving()"
+              (click)="saveOperatingHours()"
+            >
+              {{ isSaving() ? 'Saving...' : 'Save Operating Schedule' }}
+            </button>
+          </div>
+        </section>
+      }
+
+      <!-- --------------------------------------------------------------------
+           TAB 4: OPERATIONS & CANCELLATION POLICY
+           -------------------------------------------------------------------- -->
+      @if (activeTab() === 'operations') {
+        <section class="tab-content-section" aria-labelledby="operations-heading">
+          <div class="section-header-row">
+            <div>
+              <h2 id="operations-heading" class="section-title">Dining Operations & Cancellation Policy</h2>
+              <p class="section-desc">Configure customer cancellation grace periods, staff cancellation reasons, and order fulfillment rules.</p>
+            </div>
+          </div>
+
+          <form [formGroup]="operationsForm" (ngSubmit)="saveOperations()" class="form-layout">
+            <div class="setting-card-block">
+              <h3 class="block-title">Customer Cancellation Rules</h3>
+              <p class="block-subtitle">Allow customers to cancel orders from their tracking screen before food preparation starts.</p>
+
+              <div class="form-row-checkbox">
+                <label class="toggle-switch-wrapper">
+                  <input
+                    type="checkbox"
+                    [formControl]="$any(operationsForm.controls.enableCustomerCancellation)"
+                  />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label-text">
+                    {{ operationsForm.controls.enableCustomerCancellation.value ? 'Customer Cancellation Enabled' : 'Customer Cancellation Disabled' }}
+                  </span>
+                </label>
+              </div>
+
+              <div class="form-grid-2 form-row-spaced">
+                <div class="form-group">
+                  <label for="cutoffMins" class="form-label">
+                    Cancellation Cutoff Window (Minutes)
+                    <span class="field-hint">(Platform maximum: 15 minutes)</span>
+                  </label>
+                  <input
+                    id="cutoffMins"
+                    type="number"
+                    min="1"
+                    max="15"
+                    class="form-input"
+                    formControlName="customCutoffMinutes"
+                  />
+                  <span class="field-hint">Customers can only cancel within this number of minutes after placing an order.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="customNotice" class="form-label">Policy Notice for Customers</label>
+                  <input
+                    id="customNotice"
+                    type="text"
+                    class="form-input"
+                    formControlName="customPolicyNotice"
+                    placeholder="e.g. Orders can only be cancelled before kitchen starts cooking."
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Predefined Cancellation Reasons Block -->
+            <div class="setting-card-block">
+              <h3 class="block-title">Staff Cancellation Reasons</h3>
+              <p class="block-subtitle">Predefined reasons kitchen and counter staff can select when cancelling or refunding an order.</p>
+
+              <div class="tags-container">
+                @for (reason of predefinedReasons(); track reason) {
+                  <span class="reason-tag">
+                    <span>{{ reason }}</span>
+                    <button type="button" class="tag-remove-btn" (click)="removeReasonTag(reason)" title="Remove reason">
+                      ×
+                    </button>
+                  </span>
+                }
+              </div>
+
+              <div class="add-tag-row">
+                <input
+                  type="text"
+                  class="form-input tag-input"
+                  placeholder="e.g. Raw ingredient shortage, Customer request"
+                  [value]="newReasonInput()"
+                  (input)="newReasonInput.set($any($event.target).value)"
+                  (keydown.enter)="$event.preventDefault(); addReasonTag()"
+                />
+                <button type="button" class="btn btn-outline" (click)="addReasonTag()">
+                  Add Reason Tag
+                </button>
+              </div>
+            </div>
+
+            <div class="form-footer-actions">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="isSaving() || operationsForm.invalid"
+              >
+                {{ isSaving() ? 'Saving...' : 'Save Operations & Policy' }}
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+
+      <!-- --------------------------------------------------------------------
+           TAB 5: PAYMENT & TAX SETTINGS
+           -------------------------------------------------------------------- -->
+      @if (activeTab() === 'payments') {
+        <section class="tab-content-section" aria-labelledby="payments-heading">
+          <div class="section-header-row">
+            <div>
+              <h2 id="payments-heading" class="section-title">Payment Settlement & GST Configuration</h2>
+              <p class="section-desc">Manage bank account for daily payouts, settlement UPI VPA, and applicable GST rate.</p>
+            </div>
+          </div>
+
+          <form [formGroup]="paymentsForm" (ngSubmit)="savePayments()" class="form-layout">
+            <div class="setting-card-block">
+              <h3 class="block-title">Settlement Bank Account</h3>
+              <p class="block-subtitle">Direct payout account where net daily order earnings will be transferred.</p>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="bankName" class="form-label">Bank Name</label>
+                  <input
+                    id="bankName"
+                    type="text"
+                    class="form-input"
+                    formControlName="bankName"
+                    placeholder="e.g. HDFC Bank, ICICI, SBI"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="accHolder" class="form-label">Account Holder Name</label>
+                  <input
+                    id="accHolder"
+                    type="text"
+                    class="form-input"
+                    formControlName="bankAccountHolder"
+                    placeholder="e.g. Canteen Enterprise LLP"
+                  />
+                </div>
+              </div>
+
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label for="accNumber" class="form-label">Bank Account Number</label>
+                  <input
+                    id="accNumber"
+                    type="text"
+                    class="form-input"
+                    formControlName="accountNumber"
+                    placeholder="9 to 18 digits"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="ifscCode" class="form-label">IFSC Code</label>
+                  <input
+                    id="ifscCode"
+                    type="text"
+                    class="form-input uppercase-input"
+                    formControlName="ifscCode"
+                    placeholder="e.g. HDFC0001234"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="accType" class="form-label">Account Type</label>
+                  <select id="accType" class="form-select" formControlName="accountType">
+                    <option value="Current">Current Account</option>
+                    <option value="Savings">Savings Account</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="settlementUpi" class="form-label">Settlement UPI ID (VPA)</label>
+                <input
+                  id="settlementUpi"
+                  type="text"
+                  class="form-input"
+                  formControlName="upiId"
+                  placeholder="e.g. canteen@okhdfcbank"
+                />
+              </div>
+            </div>
+
+            <div class="setting-card-block">
+              <h3 class="block-title">Taxes & Marketplace Fee Policy</h3>
+              <p class="block-subtitle">Control whether the customer or canteen bears platform service charges.</p>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="feePolicy" class="form-label">Platform Fee Policy</label>
+                  <select id="feePolicy" class="form-select" formControlName="feeAbsorptionPolicy">
+                    <option value="CustomerPays">Customer Pays (Fee added to customer checkout)</option>
+                    <option value="CanteenAbsorbs">Canteen Absorbs (Fee deducted from canteen payout)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="taxPct" class="form-label">Applicable GST / Tax Rate (%)</label>
+                  <input
+                    id="taxPct"
+                    type="number"
+                    min="0"
+                    max="28"
+                    step="0.5"
+                    class="form-input"
+                    formControlName="taxPercentage"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-footer-actions">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="isSaving() || paymentsForm.invalid"
+              >
+                {{ isSaving() ? 'Saving...' : 'Save Payment & Tax Settings' }}
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+
+      <!-- --------------------------------------------------------------------
+           TAB 6: SOUND & AUDIO ALERTS
+           -------------------------------------------------------------------- -->
+      @if (activeTab() === 'sound') {
+        <section class="tab-content-section" aria-labelledby="sound-alerts-heading">
+          <div class="section-header-row">
+            <div>
+              <h2 id="sound-alerts-heading" class="section-title">Sound Alerts & Kitchen Token Calling</h2>
+              <p class="section-desc">Configure Web Audio chimes for new orders and speech synthesis token calls for Kitchen Display & POS.</p>
+            </div>
+          </div>
+
+          <div class="sound-controls-card">
+            <div class="sound-setting-row">
+              <div class="sound-setting-info">
+                <h4>Order Chime Alerts</h4>
+                <p>Play an audible 3-tone ascending chime (C5-E5-G5) whenever a new incoming order is received in the Kitchen Display.</p>
+              </div>
+              <div class="sound-setting-action">
+                <label class="toggle-switch-wrapper">
+                  <input
+                    type="checkbox"
+                    [checked]="audioService.audioEnabled()"
+                    (change)="toggleAudioAlerts()"
+                  />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label-text">
+                    {{ audioService.audioEnabled() ? 'Audio Active' : 'Audio Muted' }}
+                  </span>
+                </label>
+                <button type="button" class="btn btn-outline btn-sm test-sound-btn" (click)="testAudioChime()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  </svg>
+                  <span>Play Test Chime</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="sound-setting-row">
+              <div class="sound-setting-info">
+                <h4>Voice Token Announcements</h4>
+                <p>Announce order pickup tokens aloud via Text-to-Speech (e.g. <em>"Token 104 is ready for pickup!"</em>).</p>
+              </div>
+              <div class="sound-setting-action">
+                <label class="toggle-switch-wrapper">
+                  <input
+                    type="checkbox"
+                    [checked]="audioService.voiceEnabled()"
+                    (change)="toggleVoiceAlerts()"
+                  />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label-text">
+                    {{ audioService.voiceEnabled() ? 'Voice Active' : 'Voice Disabled' }}
+                  </span>
+                </label>
+                <button type="button" class="btn btn-outline btn-sm test-sound-btn" (click)="testVoiceAnnouncement()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="23" />
+                    <line x1="8" y1="23" x2="16" y2="23" />
+                  </svg>
+                  <span>Test Voice Calling</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- --------------------------------------------------------------------
+           TAB 7: SECURITY & ACCOUNT
+           -------------------------------------------------------------------- -->
+      @if (activeTab() === 'security') {
+        <section class="tab-content-section" aria-labelledby="security-heading">
+          <div class="section-header-row">
+            <div>
+              <h2 id="security-heading" class="section-title">Security & Account Settings</h2>
+              <p class="section-desc">Manage authenticated owner account credentials, system theme preferences, and password updates.</p>
+            </div>
+          </div>
+
+          <!-- Account Details Card -->
+          <div class="setting-card-block">
+            <h3 class="block-title">Authenticated Profile</h3>
+            @if (currentUser(); as user) {
+              <div class="profile-meta-grid">
+                <div class="meta-item">
+                  <span class="meta-label">Full Name</span>
+                  <span class="meta-value">{{ user.fullName }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Email Address</span>
+                  <span class="meta-value">{{ user.email }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Access Role</span>
+                  <span class="meta-value role-badge">{{ user.role }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Owner ID</span>
+                  <span class="meta-value font-mono">#{{ user.ownerId }}</span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Theme Preference Block -->
+          <div class="setting-card-block">
+            <h3 class="block-title">Theme Preference</h3>
+            <p class="block-subtitle">Choose your preferred visual theme for the CanteenHub management interface.</p>
+
+            <div class="theme-choice-row">
+              <button
+                type="button"
+                class="theme-btn"
+                [class.active-theme]="themeService.currentMode() === 'light'"
+                (click)="setTheme('light')"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="theme-svg">
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+                <span>Light Mode</span>
+              </button>
+
+              <button
+                type="button"
+                class="theme-btn"
+                [class.active-theme]="themeService.currentMode() === 'dark'"
+                (click)="setTheme('dark')"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="theme-svg">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+                <span>Dark Mode</span>
+              </button>
+
+              <button
+                type="button"
+                class="theme-btn"
+                [class.active-theme]="themeService.currentMode() === 'system'"
+                (click)="setTheme('system')"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="theme-svg">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                  <line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+                <span>System Sync</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Change Password Block -->
+          <div class="setting-card-block">
+            <h3 class="block-title">Change Account Password</h3>
+            <p class="block-subtitle">Use at least 6 characters including letters, numbers, and special characters.</p>
+
+            <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="form-layout">
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label for="currPwd" class="form-label">Current Password *</label>
+                  <input
+                    id="currPwd"
+                    type="password"
+                    class="form-input"
+                    formControlName="currentPassword"
+                    placeholder="Enter current password"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="newPwd" class="form-label">New Password *</label>
+                  <input
+                    id="newPwd"
+                    type="password"
+                    class="form-input"
+                    formControlName="newPassword"
+                    placeholder="At least 6 characters"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="confirmPwd" class="form-label">Confirm New Password *</label>
+                  <input
+                    id="confirmPwd"
+                    type="password"
+                    class="form-input"
+                    formControlName="confirmPassword"
+                    placeholder="Re-type new password"
+                  />
+                </div>
+              </div>
+
+              <div class="form-footer-actions">
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  [disabled]="isSaving() || passwordForm.invalid"
+                >
+                  {{ isSaving() ? 'Updating...' : 'Update Password' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+      }
+
+    }
+  </main>
+</div>
+

@@ -1,0 +1,1402 @@
+<div class="staff-page-container">
+
+  <!-- ========================================================================
+       PAGE HEADER
+       ======================================================================== -->
+  <header class="page-header">
+    <div class="header-left">
+      <div class="header-icon-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="header-svg">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </div>
+      <div class="header-text-block">
+        <h1 class="page-title">Staff Management</h1>
+        <p class="page-subtitle">Manage your canteen staff, roles, permissions and working access.</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-outline" (click)="openImportModal()" title="Import staff from CSV or JSON">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-svg">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        <span>Import Staff</span>
+      </button>
+
+      <button type="button" class="btn btn-primary" (click)="openAddModal()" title="Add a new staff member">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="btn-svg">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        <span>+ Add Staff</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       TOP KPI SUMMARY CARDS (4 Cards matching reference design)
+       ======================================================================== -->
+  <section class="kpi-cards-grid">
+    <!-- Card 1: Total Staff -->
+    <div class="kpi-card">
+      <div class="kpi-card-inner">
+        <div class="kpi-icon-box kpi-mint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">Total Staff</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value">{{ metrics()?.totalStaff ?? 0 }}</span>
+          </div>
+          <span class="kpi-subtext kpi-up">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="trend-arrow">
+              <polyline points="18 15 12 9 6 15" />
+            </svg>
+            +{{ metrics()?.monthlyGrowth ?? 0 }} from last month
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Active Staff -->
+    <div class="kpi-card">
+      <div class="kpi-card-inner">
+        <div class="kpi-icon-box kpi-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">Active Staff</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value">{{ metrics()?.activeStaff ?? 0 }}</span>
+          </div>
+          <span class="kpi-subtext">{{ metrics()?.activePercentage ?? 0 }}% of total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: On Leave -->
+    <div class="kpi-card">
+      <div class="kpi-card-inner">
+        <div class="kpi-icon-box kpi-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">On Leave</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value">{{ metrics()?.onLeaveStaff ?? 0 }}</span>
+          </div>
+          <span class="kpi-subtext">{{ metrics()?.onLeavePercentage ?? 0 }}% of total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Inactive -->
+    <div class="kpi-card">
+      <div class="kpi-card-inner">
+        <div class="kpi-icon-box kpi-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <line x1="17" y1="8" x2="23" y2="14" />
+            <line x1="23" y1="8" x2="17" y2="14" />
+          </svg>
+        </div>
+        <div class="kpi-content">
+          <span class="kpi-label">Inactive</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value">{{ metrics()?.inactiveStaff ?? 0 }}</span>
+          </div>
+          <span class="kpi-subtext">{{ metrics()?.inactivePercentage ?? 0 }}% of total</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       NAVIGATION TABS (5 Tabs)
+       ======================================================================== -->
+  <nav class="staff-tabs-nav" aria-label="Staff Sections">
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'members'" (click)="onTabChange('members')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+      <span>Staff Members</span>
+    </button>
+
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'roles'" (click)="onTabChange('roles')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
+      <span>Roles & Permissions</span>
+    </button>
+
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'attendance'" (click)="onTabChange('attendance')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+      <span>Attendance</span>
+    </button>
+
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'schedules'" (click)="onTabChange('schedules')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+      <span>Schedules</span>
+    </button>
+
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'activity'" (click)="onTabChange('activity')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+        <line x1="8" y1="6" x2="21" y2="6" />
+        <line x1="8" y1="12" x2="21" y2="12" />
+        <line x1="8" y1="18" x2="21" y2="18" />
+        <line x1="3" y1="6" x2="3.01" y2="6" />
+        <line x1="3" y1="12" x2="3.01" y2="12" />
+        <line x1="3" y1="18" x2="3.01" y2="18" />
+      </svg>
+      <span>Activity Log</span>
+    </button>
+  </nav>
+
+  <!-- ========================================================================
+       TAB 1: STAFF MEMBERS (Main Table & Filters)
+       ======================================================================== -->
+  @if (activeTab() === 'members') {
+    <!-- Filters Toolbar -->
+    <section class="filters-toolbar-card">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-svg">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search by name, mobile or employee ID..."
+          [value]="searchTerm()"
+          (input)="onSearch($event)"
+        />
+      </div>
+
+      <div class="filters-group">
+        <!-- Role Filter -->
+        <div class="filter-dropdown-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="filter-lead-svg">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <select
+            class="filter-select"
+            [value]="selectedRole()"
+            (change)="onRoleFilter($any($event.target).value)"
+            aria-label="Filter by role"
+          >
+            <option value="All">All Roles</option>
+            <option *ngFor="let r of roleOptions.slice(1)" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="filter-dropdown-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="filter-lead-svg">
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <select
+            class="filter-select"
+            [value]="selectedStatus()"
+            (change)="onStatusFilter($any($event.target).value)"
+            aria-label="Filter by status"
+          >
+            <option value="All">All Status</option>
+            <option *ngFor="let s of statusOptions.slice(1)" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+
+        <!-- Shift Filter -->
+        <div class="filter-dropdown-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="filter-lead-svg">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          <select
+            class="filter-select"
+            [value]="selectedShift()"
+            (change)="onShiftFilter($any($event.target).value)"
+            aria-label="Filter by shift"
+          >
+            <option value="All">All Shifts</option>
+            <option *ngFor="let sh of shiftOptions.slice(1)" [value]="sh">{{ sh }}</option>
+          </select>
+        </div>
+
+        <!-- Reset Button -->
+        <button type="button" class="btn btn-ghost" (click)="resetFilters()" title="Reset all filters">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="reset-svg">
+            <polyline points="1 4 1 10 7 10" />
+            <polyline points="23 20 23 14 17 14" />
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+          </svg>
+          <span>Reset</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Staff Table Container -->
+    <section class="table-card-container">
+      @if (isStaffLoading()) {
+        <div class="loading-state-box">
+          <div class="spinner"></div>
+          <p>Loading staff roster...</p>
+        </div>
+      } @else if (staffError()) {
+        <div class="error-state-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="error-svg">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <p>{{ staffError() }}</p>
+          <button type="button" class="btn btn-outline" (click)="loadStaff()">Retry</button>
+        </div>
+      } @else if (staffMembers().length === 0) {
+        <div class="empty-state-box">
+          <div class="empty-icon-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <line x1="19" y1="8" x2="19" y2="14" />
+              <line x1="16" y1="11" x2="22" y2="11" />
+            </svg>
+          </div>
+          <h3>No Staff Members Found</h3>
+          <p>Start building your canteen team by adding chefs, counter staff, or kitchen assistants.</p>
+          <button type="button" class="btn btn-primary" (click)="openAddModal()">+ Add First Staff Member</button>
+        </div>
+      } @else {
+        <div class="table-scroll-wrapper">
+          <table class="staff-table">
+            <thead>
+              <tr>
+                <th scope="col" class="th-staff">Staff</th>
+                <th scope="col" class="th-role">Role</th>
+                <th scope="col" class="th-shift">Shift</th>
+                <th scope="col" class="th-mobile">Mobile</th>
+                <th scope="col" class="th-email">Email</th>
+                <th scope="col" class="th-status">Status</th>
+                <th scope="col" class="th-joined">Joined On</th>
+                <th scope="col" class="th-actions text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (member of staffMembers(); track member.staffId) {
+                <tr class="staff-row">
+                  <!-- Staff Name & Employee ID with Avatar / Photo -->
+                  <td class="td-staff">
+                    <div class="staff-profile-cell">
+                      @if (member.profilePhotoUrl) {
+                        <img [src]="member.profilePhotoUrl" class="staff-avatar-img" [alt]="member.fullName" />
+                      } @else {
+                        <div class="staff-avatar-initials" [ngClass]="getInitialsColor(member.initials)">
+                          {{ member.initials || 'ST' }}
+                        </div>
+                      }
+                      <div class="staff-info-col">
+                        <span class="staff-full-name">{{ member.fullName }}</span>
+                        <span class="staff-emp-id">{{ member.employeeId }}</span>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Role Pill with Icon -->
+                  <td class="td-role">
+                    <span class="role-pill">
+                      <!-- Chef Icon -->
+                      @if (member.role === 'Chef') {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pill-icon">
+                          <path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z" />
+                          <line x1="6" y1="17" x2="18" y2="17" />
+                        </svg>
+                      }
+                      <!-- Kitchen Staff Icon -->
+                      @else if (member.role === 'Kitchen Staff') {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pill-icon">
+                          <path d="M18 2v20" />
+                          <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                          <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+                          <path d="M7 2v20" />
+                        </svg>
+                      }
+                      <!-- Counter Staff Icon -->
+                      @else if (member.role === 'Counter Staff') {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pill-icon">
+                          <circle cx="8" cy="21" r="1" />
+                          <circle cx="19" cy="21" r="1" />
+                          <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+                        </svg>
+                      }
+                      <!-- Order Manager Icon -->
+                      @else if (member.role === 'Order Manager') {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pill-icon">
+                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                          <rect width="8" height="4" x="8" y="2" rx="1" />
+                        </svg>
+                      }
+                      <!-- Inventory Staff Icon -->
+                      @else if (member.role === 'Inventory Staff') {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pill-icon">
+                          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                        </svg>
+                      }
+                      <!-- Fallback Icon -->
+                      @else {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pill-icon">
+                          <circle cx="12" cy="12" r="10" />
+                          <circle cx="12" cy="12" r="4" />
+                        </svg>
+                      }
+                      <span>{{ member.role }}</span>
+                    </span>
+                  </td>
+
+                  <!-- Shift Pill with Sun/Moon Icon -->
+                  <td class="td-shift">
+                    <span
+                      class="shift-pill"
+                      [class.shift-morning]="member.shift.includes('Morning')"
+                      [class.shift-evening]="member.shift.includes('Evening')"
+                      [class.shift-night]="member.shift.includes('Night')"
+                      [class.shift-fullday]="member.shift.includes('Full Day')"
+                    >
+                      @if (member.shift.includes('Morning')) {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shift-svg">
+                          <circle cx="12" cy="12" r="5" />
+                          <line x1="12" y1="1" x2="12" y2="3" />
+                          <line x1="12" y1="21" x2="12" y2="23" />
+                          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                          <line x1="1" y1="12" x2="3" y2="12" />
+                          <line x1="21" y1="12" x2="23" y2="12" />
+                          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                        </svg>
+                      } @else if (member.shift.includes('Evening') || member.shift.includes('Night')) {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shift-svg">
+                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                        </svg>
+                      } @else {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shift-svg">
+                          <circle cx="12" cy="12" r="10" />
+                          <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                      }
+                      <span>{{ member.shift }}</span>
+                    </span>
+                  </td>
+
+                  <!-- Mobile Number -->
+                  <td class="td-mobile">{{ member.mobileNumber }}</td>
+
+                  <!-- Email -->
+                  <td class="td-email">{{ member.email || '—' }}</td>
+
+                  <!-- Status Pill -->
+                  <td class="td-status">
+                    <span
+                      class="status-pill"
+                      [class.status-active]="member.status === 'Active'"
+                      [class.status-leave]="member.status === 'On Leave'"
+                      [class.status-inactive]="member.status === 'Inactive'"
+                    >
+                      <span class="status-dot"></span>
+                      <span>{{ member.status }}</span>
+                    </span>
+                  </td>
+
+                  <!-- Joined Date -->
+                  <td class="td-joined">{{ member.joinedOn | date:'dd MMM yyyy' }}</td>
+
+                  <!-- Action Buttons -->
+                  <td class="td-actions text-right">
+                    <div class="action-btn-group">
+                      <button
+                        type="button"
+                        class="action-btn"
+                        (click)="openDetailsModal(member)"
+                        title="View details"
+                        aria-label="View staff details"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      </button>
+
+                      <button
+                        type="button"
+                        class="action-btn"
+                        (click)="openEditModal(member)"
+                        title="Edit staff details"
+                        aria-label="Edit staff member"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                        </svg>
+                      </button>
+
+                      <button
+                        type="button"
+                        class="action-btn action-btn-danger"
+                        (click)="confirmDelete(member)"
+                        title="Delete staff"
+                        aria-label="Delete staff member"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          <line x1="10" y1="11" x2="10" y2="17" />
+                          <line x1="14" y1="11" x2="14" y2="17" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Bar -->
+        <footer class="pagination-footer">
+          <div class="pagination-info">
+            Showing
+            <strong>{{ ((currentPage() - 1) * pageSize()) + (staffMembers().length > 0 ? 1 : 0) }}</strong>
+            -
+            <strong>{{ ((currentPage() - 1) * pageSize()) + staffMembers().length }}</strong>
+            of
+            <strong>{{ totalStaffCount() }}</strong>
+            staff members
+          </div>
+
+          <div class="pagination-controls">
+            <button
+              type="button"
+              class="page-nav-btn"
+              [disabled]="currentPage() === 1"
+              (click)="onPageChange(currentPage() - 1)"
+              aria-label="Previous page"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+
+            @for (p of getPageNumbers(); track $index) {
+              @if (p === '...') {
+                <span class="page-ellipsis">...</span>
+              } @else {
+                <button
+                  type="button"
+                  class="page-number-btn"
+                  [class.active]="currentPage() === p"
+                  (click)="onPageChange(+p)"
+                >
+                  {{ p }}
+                </button>
+              }
+            }
+
+            <button
+              type="button"
+              class="page-nav-btn"
+              [disabled]="currentPage() === totalPages() || totalPages() === 0"
+              (click)="onPageChange(currentPage() + 1)"
+              aria-label="Next page"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        </footer>
+      }
+    </section>
+  }
+
+  <!-- ========================================================================
+       TAB 2: ROLES & PERMISSIONS
+       ======================================================================== -->
+  @if (activeTab() === 'roles') {
+    <section class="roles-section">
+      <div class="section-intro-bar">
+        <h2>Role Definitions & Operational Access</h2>
+        <p>Pre-configured role templates enforced across your kitchen and ordering stations.</p>
+      </div>
+
+      <div class="roles-grid">
+        @for (rc of roleConfigs(); track rc.roleId) {
+          <div class="role-card">
+            <div class="role-card-header">
+              <div class="role-title-row">
+                <h3>{{ rc.roleName }}</h3>
+                <span class="role-badge-count">{{ rc.staffCount }} Active</span>
+              </div>
+              <p class="role-desc">{{ rc.description }}</p>
+            </div>
+            <div class="role-permissions-box">
+              <span class="perm-title">Allowed Capabilities</span>
+              <ul class="perm-list">
+                @for (perm of rc.permissions; track perm) {
+                  <li class="perm-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="perm-check">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span>{{ perm }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ========================================================================
+       TAB 3: ATTENDANCE & CLOCK-IN
+       ======================================================================== -->
+  @if (activeTab() === 'attendance') {
+    <section class="attendance-section">
+      <div class="section-intro-bar attendance-intro-header">
+        <div>
+          <h2>Daily Staff Attendance Log</h2>
+          <p>Real-time clock-in records, working duration and shift status for {{ selectedAttendanceDate() }}.</p>
+        </div>
+
+        <div class="attendance-header-actions">
+          <div class="date-navigator-box">
+            <button type="button" class="btn btn-sm btn-outline nav-arrow-btn" (click)="navigateAttendanceDate(-1)" title="Previous Day">
+              ‹
+            </button>
+            <input
+              type="date"
+              class="form-input date-picker-input"
+              [value]="selectedAttendanceDate()"
+              (change)="onAttendanceDateChange($event)"
+            />
+            <button
+              type="button"
+              class="btn btn-sm btn-outline today-btn"
+              [class.active-today-pill]="isAttendanceToday()"
+              (click)="setAttendanceToday()"
+            >
+              Today
+            </button>
+            <button type="button" class="btn btn-sm btn-outline nav-arrow-btn" (click)="navigateAttendanceDate(1)" title="Next Day">
+              ›
+            </button>
+          </div>
+
+          <button type="button" class="btn btn-primary" (click)="openMarkAttendanceModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span>Mark Attendance</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Attendance Roster Metric Strip -->
+      <div class="attendance-stat-row">
+        <div class="attendance-stat-pill">
+          <span class="stat-pill-label">Total Roster:</span>
+          <span class="stat-pill-val">{{ attendanceLogs().length }}</span>
+        </div>
+        <div class="attendance-stat-pill pill-present">
+          <span class="stat-pill-label">Clocked In:</span>
+          <span class="stat-pill-val">{{ getAttendanceClockedInCount() }}</span>
+        </div>
+        <div class="attendance-stat-pill pill-not-clocked">
+          <span class="stat-pill-label">Not Clocked In:</span>
+          <span class="stat-pill-val">{{ getAttendanceNotClockedInCount() }}</span>
+        </div>
+        <div class="attendance-stat-pill pill-on-leave">
+          <span class="stat-pill-label">On Leave / Absent:</span>
+          <span class="stat-pill-val">{{ getAttendanceLeaveAbsentCount() }}</span>
+        </div>
+      </div>
+
+      <div class="table-card-container">
+        @if (attendanceLogs().length === 0) {
+          <div class="empty-state-box">
+            <p>No staff members found in this canteen. Please add staff members in the "Staff Members" tab first.</p>
+          </div>
+        } @else {
+          <div class="table-scroll-wrapper">
+            <table class="staff-table">
+              <thead>
+                <tr>
+                  <th>Staff Member</th>
+                  <th>Role & Shift</th>
+                  <th>Date</th>
+                  <th>Check In</th>
+                  <th>Check Out</th>
+                  <th>Status</th>
+                  <th>Notes</th>
+                  <th class="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (att of attendanceLogs(); track att.staffId) {
+                  <tr>
+                    <td>
+                      <div class="staff-info-col">
+                        <span class="staff-full-name">{{ att.staffName }}</span>
+                        <span class="staff-emp-id">{{ att.employeeId }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="role-shift-col">
+                        <span class="role-badge">{{ att.role || 'Staff' }}</span>
+                        <span class="shift-subtext text-xs text-muted">{{ att.shift || 'Standard' }}</span>
+                      </div>
+                    </td>
+                    <td>{{ att.date | date:'dd MMM yyyy' }}</td>
+                    <td>{{ att.checkInTime ? (att.checkInTime | date:'hh:mm a') : '—' }}</td>
+                    <td>{{ att.checkOutTime ? (att.checkOutTime | date:'hh:mm a') : '—' }}</td>
+                    <td>
+                      <span class="status-pill" [ngClass]="getAttendanceStatusClass(att.status)">
+                        <span class="status-dot"></span>
+                        {{ att.status }}
+                      </span>
+                    </td>
+                    <td>{{ att.notes || '—' }}</td>
+                    <td class="text-right">
+                      <div class="attendance-action-btns">
+                        @if (att.status === 'Not Clocked In' || !att.checkInTime) {
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-clock-in"
+                            [disabled]="isClocking()"
+                            (click)="quickClock(att.staffId, 'CheckIn')"
+                            title="Record Check-In Time"
+                          >
+                            Clock In
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            [disabled]="isClocking()"
+                            (click)="quickClock(att.staffId, 'MarkAbsent')"
+                            title="Mark as Absent"
+                          >
+                            Absent
+                          </button>
+                        } @else if (!att.checkOutTime && (att.status === 'Present' || att.status === 'Active')) {
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-clock-out"
+                            [disabled]="isClocking()"
+                            (click)="quickClock(att.staffId, 'CheckOut')"
+                            title="Record Check-Out Time"
+                          >
+                            Clock Out
+                          </button>
+                        } @else if (att.checkOutTime || att.status === 'Completed') {
+                          <span class="completed-badge">✓ Completed</span>
+                        } @else {
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline"
+                            (click)="openMarkAttendanceModalForStaff(att)"
+                          >
+                            Edit
+                          </button>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ========================================================================
+       TAB 4: SCHEDULES (Grouped by Shift)
+       ======================================================================== -->
+  @if (activeTab() === 'schedules') {
+    <section class="schedules-section">
+      <div class="section-intro-bar">
+        <h2>Weekly Shift Rosters</h2>
+        <p>Team members mapped across daily operating shifts.</p>
+      </div>
+
+      <div class="schedules-grid">
+        <!-- Morning Shift Card -->
+        <div class="schedule-shift-card">
+          <div class="shift-header shift-morning-hdr">
+            <div class="shift-title-group">
+              <span class="shift-emoji">☀️</span>
+              <div>
+                <h3>Morning Shift</h3>
+                <span class="shift-time">6:00 AM – 2:00 PM</span>
+              </div>
+            </div>
+            <span class="shift-headcount">{{ getStaffForShift('Morning').length }} Staff</span>
+          </div>
+          <div class="shift-staff-roster">
+            @for (m of getStaffForShift('Morning'); track m.staffId) {
+              <div class="roster-item">
+                <div class="staff-profile-cell">
+                  @if (m.profilePhotoUrl) {
+                    <img [src]="m.profilePhotoUrl" class="staff-avatar-img" [alt]="m.fullName" />
+                  } @else {
+                    <div class="staff-avatar-initials" [ngClass]="getInitialsColor(m.initials)">
+                      {{ m.initials }}
+                    </div>
+                  }
+                  <div class="staff-info-col">
+                    <span class="staff-full-name">{{ m.fullName }}</span>
+                    <span class="staff-emp-id">{{ m.role }} • {{ m.mobileNumber }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Evening Shift Card -->
+        <div class="schedule-shift-card">
+          <div class="shift-header shift-evening-hdr">
+            <div class="shift-title-group">
+              <span class="shift-emoji">🌙</span>
+              <div>
+                <h3>Evening Shift</h3>
+                <span class="shift-time">2:00 PM – 10:00 PM</span>
+              </div>
+            </div>
+            <span class="shift-headcount">{{ getStaffForShift('Evening').length }} Staff</span>
+          </div>
+          <div class="shift-staff-roster">
+            @for (m of getStaffForShift('Evening'); track m.staffId) {
+              <div class="roster-item">
+                <div class="staff-profile-cell">
+                  @if (m.profilePhotoUrl) {
+                    <img [src]="m.profilePhotoUrl" class="staff-avatar-img" [alt]="m.fullName" />
+                  } @else {
+                    <div class="staff-avatar-initials" [ngClass]="getInitialsColor(m.initials)">
+                      {{ m.initials }}
+                    </div>
+                  }
+                  <div class="staff-info-col">
+                    <span class="staff-full-name">{{ m.fullName }}</span>
+                    <span class="staff-emp-id">{{ m.role }} • {{ m.mobileNumber }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Full Day & Night Shifts Card -->
+        <div class="schedule-shift-card">
+          <div class="shift-header shift-fullday-hdr">
+            <div class="shift-title-group">
+              <span class="shift-emoji">🕒</span>
+              <div>
+                <h3>Full Day / Flexible</h3>
+                <span class="shift-time">9:00 AM – 9:00 PM</span>
+              </div>
+            </div>
+            <span class="shift-headcount">{{ getStaffForShift('Full Day').length }} Staff</span>
+          </div>
+          <div class="shift-staff-roster">
+            @for (m of getStaffForShift('Full Day'); track m.staffId) {
+              <div class="roster-item">
+                <div class="staff-profile-cell">
+                  @if (m.profilePhotoUrl) {
+                    <img [src]="m.profilePhotoUrl" class="staff-avatar-img" [alt]="m.fullName" />
+                  } @else {
+                    <div class="staff-avatar-initials" [ngClass]="getInitialsColor(m.initials)">
+                      {{ m.initials }}
+                    </div>
+                  }
+                  <div class="staff-info-col">
+                    <span class="staff-full-name">{{ m.fullName }}</span>
+                    <span class="staff-emp-id">{{ m.role }} • {{ m.mobileNumber }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ========================================================================
+       TAB 5: ACTIVITY LOG (Audit Timeline)
+       ======================================================================== -->
+  @if (activeTab() === 'activity') {
+    <section class="activity-section">
+      <div class="section-intro-bar">
+        <h2>Staff Operational Audit Trail</h2>
+        <p>Security and management activity logged across your canteen staff workspace.</p>
+      </div>
+
+      <div class="timeline-container-card">
+        @if (activityLogs().length === 0) {
+          <div class="empty-state-box">
+            <p>No activity records logged yet.</p>
+          </div>
+        } @else {
+          <div class="timeline-list">
+            @for (act of activityLogs(); track act.activityId) {
+              <div class="timeline-item">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                  <div class="timeline-header-row">
+                    <span class="timeline-action-badge">{{ act.action }}</span>
+                    <span class="timeline-timestamp">{{ act.timestamp | date:'dd MMM yyyy, hh:mm a' }}</span>
+                  </div>
+                  <p class="timeline-desc">
+                    <strong>{{ act.staffName }}</strong> ({{ act.employeeId }}) – {{ act.details || act.action }}
+                  </p>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ========================================================================
+       MODAL 1: ADD / EDIT STAFF MEMBER
+       ======================================================================== -->
+  @if (showStaffModal()) {
+    <div class="modal-backdrop" (click)="closeStaffModal()">
+      <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div class="modal-title-group">
+            <h2 class="modal-title">{{ isEditing() ? 'Edit Staff Member' : 'Add New Staff Member' }}</h2>
+            <p class="modal-subtitle">
+              {{ isEditing() ? 'Update staff profile, assignment and contact information.' : 'Onboard a new employee to your canteen team.' }}
+            </p>
+          </div>
+          <button type="button" class="btn-close" (click)="closeStaffModal()" aria-label="Close modal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </header>
+
+        <form [formGroup]="staffForm" (ngSubmit)="saveStaff()" class="modal-form-body">
+          <!-- Alert feedback messages -->
+          @if (staffModalError()) {
+            <div class="alert alert-danger">{{ staffModalError() }}</div>
+          }
+          @if (staffModalSuccess()) {
+            <div class="alert alert-success">{{ staffModalSuccess() }}</div>
+          }
+
+          <!-- Profile Photo Upload Box -->
+          <div class="photo-upload-section">
+            <label class="form-label">Profile Photo (Saved to Database)</label>
+            <div class="photo-uploader-box">
+              <div class="photo-preview-slot">
+                @if (profilePhotoPreview()) {
+                  <img [src]="profilePhotoPreview()" class="preview-img" alt="Profile preview" />
+                  <button type="button" class="btn-remove-photo" (click)="removePhoto()" title="Remove photo">✕</button>
+                } @else {
+                  <div class="photo-placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </div>
+                }
+              </div>
+              <div class="photo-upload-instructions">
+                <label for="photoFileInput" class="btn btn-sm btn-outline">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-svg">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  <span>Choose Photo</span>
+                </label>
+                <input
+                  id="photoFileInput"
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp"
+                  (change)="onPhotoSelected($event)"
+                  style="display: none;"
+                />
+                <span class="upload-hint">JPG, PNG or WEBP up to 2MB. Auto-resized and stored in database.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <!-- Full Name -->
+            <div class="form-group">
+              <label class="form-label" for="staffFullName">Full Name *</label>
+              <input
+                id="staffFullName"
+                type="text"
+                class="form-control"
+                formControlName="fullName"
+                placeholder="e.g. Amit More"
+              />
+              @if (staffForm.get('fullName')?.touched && staffForm.get('fullName')?.invalid) {
+                <span class="form-error">Full name is required (min 2 characters).</span>
+              }
+            </div>
+
+            <!-- Mobile Number -->
+            <div class="form-group">
+              <label class="form-label" for="staffMobile">Mobile Number *</label>
+              <input
+                id="staffMobile"
+                type="tel"
+                class="form-control"
+                formControlName="mobileNumber"
+                placeholder="e.g. +91 98765 43210"
+              />
+              @if (staffForm.get('mobileNumber')?.touched && staffForm.get('mobileNumber')?.invalid) {
+                <span class="form-error">Valid mobile number is required (10-15 digits).</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <!-- Email -->
+            <div class="form-group">
+              <label class="form-label" for="staffEmail">Email Address</label>
+              <input
+                id="staffEmail"
+                type="email"
+                class="form-control"
+                formControlName="email"
+                placeholder="e.g. amit.more@canteenhub.com"
+              />
+            </div>
+
+            <!-- Role -->
+            <div class="form-group">
+              <label class="form-label" for="staffRole">Operational Role *</label>
+              <select id="staffRole" class="form-control" formControlName="role">
+                <option *ngFor="let r of roleOptions.slice(1)" [value]="r">{{ r }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-3">
+            <!-- Shift -->
+            <div class="form-group">
+              <label class="form-label" for="staffShift">Assigned Shift *</label>
+              <select id="staffShift" class="form-control" formControlName="shift">
+                <option *ngFor="let s of shiftOptions.slice(1)" [value]="s">{{ s }}</option>
+              </select>
+            </div>
+
+            <!-- Status -->
+            <div class="form-group">
+              <label class="form-label" for="staffStatus">Status *</label>
+              <select id="staffStatus" class="form-control" formControlName="status">
+                <option *ngFor="let st of statusOptions.slice(1)" [value]="st">{{ st }}</option>
+              </select>
+            </div>
+
+            <!-- Salary -->
+            <div class="form-group">
+              <label class="form-label" for="staffSalary">Monthly Salary (₹)</label>
+              <input
+                id="staffSalary"
+                type="number"
+                class="form-control"
+                formControlName="salary"
+                placeholder="e.g. 18000"
+              />
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <!-- Emergency Contact -->
+            <div class="form-group">
+              <label class="form-label" for="staffEmergency">Emergency Contact</label>
+              <input
+                id="staffEmergency"
+                type="text"
+                class="form-control"
+                formControlName="emergencyContact"
+                placeholder="e.g. Rahul More (+91 91234 56789)"
+              />
+            </div>
+
+            <!-- Address -->
+            <div class="form-group">
+              <label class="form-label" for="staffAddress">Residential Address</label>
+              <input
+                id="staffAddress"
+                type="text"
+                class="form-control"
+                formControlName="address"
+                placeholder="e.g. Flat 204, Green Heights, Pune"
+              />
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="form-group">
+            <label class="form-label" for="staffNotes">Notes / Special Instructions</label>
+            <textarea
+              id="staffNotes"
+              class="form-control"
+              rows="2"
+              formControlName="notes"
+              placeholder="e.g. Specialist in South Indian breakfast items, keyholder for morning opening."
+            ></textarea>
+          </div>
+
+          <footer class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeStaffModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="isSavingStaff() || staffForm.invalid">
+              @if (isSavingStaff()) {
+                <span class="spinner-sm"></span>
+                <span>Saving...</span>
+              } @else {
+                <span>{{ isEditing() ? 'Save Changes' : 'Onboard Staff' }}</span>
+              }
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================
+       MODAL 2: VIEW DETAILS MODAL
+       ======================================================================== -->
+  @if (showDetailsModal() && activeDetailsStaff()) {
+    <div class="modal-backdrop" (click)="closeDetailsModal()">
+      <div class="modal-card modal-md" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div class="modal-title-group">
+            <h2 class="modal-title">Staff Details</h2>
+            <p class="modal-subtitle">Comprehensive profile and operational assignment.</p>
+          </div>
+          <button type="button" class="btn-close" (click)="closeDetailsModal()" aria-label="Close modal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </header>
+
+        <div class="details-body">
+          <div class="details-profile-hero">
+            @if (activeDetailsStaff()?.profilePhotoUrl) {
+              <img [src]="activeDetailsStaff()?.profilePhotoUrl" class="details-avatar-lg" [alt]="activeDetailsStaff()?.fullName" />
+            } @else {
+              <div class="details-avatar-lg-initials" [ngClass]="getInitialsColor(activeDetailsStaff()?.initials)">
+                {{ activeDetailsStaff()?.initials }}
+              </div>
+            }
+            <div class="details-hero-info">
+              <h3>{{ activeDetailsStaff()?.fullName }}</h3>
+              <div class="details-id-badge">
+                <span class="badge-emp-id">{{ activeDetailsStaff()?.employeeId }}</span>
+                <span class="status-pill" [class.status-active]="activeDetailsStaff()?.status === 'Active'">
+                  {{ activeDetailsStaff()?.status }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="details-meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Role</span>
+              <span class="meta-value">{{ activeDetailsStaff()?.role }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Assigned Shift</span>
+              <span class="meta-value">{{ activeDetailsStaff()?.shift }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Mobile Number</span>
+              <span class="meta-value">{{ activeDetailsStaff()?.mobileNumber }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Email Address</span>
+              <span class="meta-value">{{ activeDetailsStaff()?.email || '—' }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Joined On</span>
+              <span class="meta-value">{{ activeDetailsStaff()?.joinedOn | date:'dd MMM yyyy' }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Monthly Salary</span>
+              <span class="meta-value">{{ activeDetailsStaff()?.salary ? ('₹' + activeDetailsStaff()?.salary) : '—' }}</span>
+            </div>
+            <div class="meta-item full-span">
+              <span class="meta-label">Emergency Contact</span>
+              <span class="meta-value">{{ activeDetailsStaff()?.emergencyContact || '—' }}</span>
+            </div>
+            <div class="meta-item full-span">
+              <span class="meta-label">Address</span>
+              <span class="meta-value">{{ activeDetailsStaff()?.address || '—' }}</span>
+            </div>
+            <div class="meta-item full-span">
+              <span class="meta-label">Notes</span>
+              <span class="meta-value">{{ activeDetailsStaff()?.notes || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-outline" (click)="closeDetailsModal()">Close</button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="closeDetailsModal(); openEditModal(activeDetailsStaff()!)"
+          >
+            Edit Profile
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================
+       MODAL 3: IMPORT STAFF (CSV / JSON)
+       ======================================================================== -->
+  @if (showImportModal()) {
+    <div class="modal-backdrop" (click)="closeImportModal()">
+      <div class="modal-card modal-md" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div class="modal-title-group">
+            <h2 class="modal-title">Import Staff Members</h2>
+            <p class="modal-subtitle">Bulk import staff records via CSV or JSON payload.</p>
+          </div>
+          <button type="button" class="btn-close" (click)="closeImportModal()" aria-label="Close modal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </header>
+
+        <div class="modal-form-body">
+          @if (importError()) {
+            <div class="alert alert-danger">{{ importError() }}</div>
+          }
+          @if (importMessage()) {
+            <div class="alert alert-success">{{ importMessage() }}</div>
+          }
+
+          <div class="import-instructions-box">
+            <h4>Accepted CSV Format (one employee per line):</h4>
+            <code>FullName, Mobile, Role, Shift, Email</code>
+            <p class="format-sample">Example: Rahul Sharma, +91 9876543210, Chef, Morning (6:00 AM - 2:00 PM), rahul&#64;gmail.com</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="importTextarea">Paste CSV or JSON Data</label>
+            <textarea
+              id="importTextarea"
+              class="form-control"
+              rows="6"
+              [value]="importDataText()"
+              (input)="importDataText.set($any($event.target).value)"
+              placeholder="Paste rows here..."
+            ></textarea>
+          </div>
+
+          <footer class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeImportModal()">Cancel</button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="isImporting() || !importDataText().trim()"
+              (click)="submitImport()"
+            >
+              @if (isImporting()) {
+                <span class="spinner-sm"></span>
+                <span>Importing...</span>
+              } @else {
+                <span>Submit Import</span>
+              }
+            </button>
+          </footer>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================
+       MODAL 4: DELETE CONFIRMATION
+       ======================================================================== -->
+  @if (showDeleteModal() && staffToDelete()) {
+    <div class="modal-backdrop" (click)="closeDeleteModal()">
+      <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div class="modal-title-group">
+            <h2 class="modal-title text-danger">Delete Staff Member</h2>
+            <p class="modal-subtitle">Are you sure you want to remove this employee?</p>
+          </div>
+          <button type="button" class="btn-close" (click)="closeDeleteModal()" aria-label="Close modal">✕</button>
+        </header>
+
+        <div class="modal-form-body">
+          <p>
+            You are about to remove <strong>{{ staffToDelete()?.fullName }}</strong> ({{ staffToDelete()?.employeeId }}).
+            Their status will be set to Inactive and access revoked.
+          </p>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-outline" (click)="closeDeleteModal()">Cancel</button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            [disabled]="isDeleting()"
+            (click)="deleteStaffConfirmed()"
+          >
+            @if (isDeleting()) {
+              <span>Deleting...</span>
+            } @else {
+              <span>Yes, Delete</span>
+            }
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================
+       MODAL 5: MARK ATTENDANCE MODAL
+       ======================================================================== -->
+  @if (showMarkAttendanceModal()) {
+    <div class="modal-backdrop" (click)="closeMarkAttendanceModal()">
+      <div class="modal-card modal-md" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div class="modal-title-group">
+            <h2 class="modal-title">Record Attendance</h2>
+            <p class="modal-subtitle">Log check-in, check-out or status override for {{ selectedAttendanceDate() }}</p>
+          </div>
+          <button type="button" class="btn-close" (click)="closeMarkAttendanceModal()" aria-label="Close modal">✕</button>
+        </header>
+
+        <div class="modal-form-body">
+          @if (markAttendanceError()) {
+            <div class="form-alert alert-error">
+              <span>{{ markAttendanceError() }}</span>
+            </div>
+          }
+
+          <div class="form-group">
+            <label class="form-label" for="attStaffSelect">Staff Member *</label>
+            <select
+              id="attStaffSelect"
+              class="form-select"
+              [value]="selectedStaffForAttendance()?.staffId"
+              (change)="onStaffSelectForAttendance($event)"
+            >
+              @for (s of staffMembers(); track s.staffId) {
+                <option [value]="s.staffId">{{ s.fullName }} ({{ s.employeeId }}) — {{ s.role }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="attActionSelect">Action / Status *</label>
+            <select
+              id="attActionSelect"
+              class="form-select"
+              [value]="attendanceActionType()"
+              (change)="onAttendanceActionTypeChange($event)"
+            >
+              <option value="CheckIn">Clock In (Present)</option>
+              <option value="CheckOut">Clock Out (Completed)</option>
+              <option value="MarkAbsent">Mark Absent</option>
+              <option value="MarkLeave">Mark On Leave</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="attNotesInput">Notes / Reason (Optional)</label>
+            <input
+              id="attNotesInput"
+              type="text"
+              class="form-input"
+              placeholder="e.g. Authorized shift change, medical leave, late check-in"
+              [value]="attendanceNotes()"
+              (input)="attendanceNotes.set($any($event.target).value)"
+            />
+          </div>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-outline" (click)="closeMarkAttendanceModal()">Cancel</button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="isClocking()"
+            (click)="submitMarkAttendance()"
+          >
+            @if (isClocking()) {
+              <span>Saving...</span>
+            } @else {
+              <span>Save Record</span>
+            }
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================
+       TOAST ACTION NOTIFICATION
+       ======================================================================== -->
+  @if (actionToast()) {
+    <div class="action-toast">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="toast-check">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+      <span>{{ actionToast() }}</span>
+    </div>
+  }
+
+</div>
+
